@@ -271,22 +271,47 @@ void exportLanguageStructToCSV(
     if (!file.is_open())
         return;
 
-    // 1. ヘッダー行 (Place)
-    file << "old Toki Pona" << ",";
+    // ヘッダー行 (Place)
+    file << ",";
     for (size_t i = 0; i < languages.size(); ++i)
     {
         file << languages[i].Place << ",";
     }
     file << "\n";
 
-    // 2. 最大行数を取得 (各Language.Languageベクトルの最大サイズ)
+    // 言語名（Toki Pona からの変化）
+    file << "Toki Pona" << ",";
+    int indexToki, indexPona;
+    for (size_t i = 0; i < oldLanguage.size(); i++)
+    {
+        const auto word = oldLanguage[i];
+        if (convertToString(word, table) == "toki")
+        {
+            indexToki = i;
+        }
+        if (convertToString(word, table) == "pona")
+        {
+            indexPona = i;
+        }
+    }
+    for (size_t i = 0; i < languages.size(); ++i)
+    {
+        auto toki = convertToString(languages[i].Lang[indexToki], table);
+        auto pona = convertToString(languages[i].Lang[indexPona], table);
+        toki[0] = std::toupper(toki[0]);
+        pona[0] = std::toupper(pona[0]);
+        file << toki << " " << pona << ",";
+    }
+    file << "\n";
+
+    // 最大行数を取得 (各Language.Languageベクトルの最大サイズ)
     size_t maxRows = 0;
     for (const auto &lang : languages)
     {
         maxRows = std::max(maxRows, lang.Lang.size());
     }
 
-    // 3. データ行の出力
+    // データ行の出力
     for (size_t r = 0; r < maxRows; ++r)
     {
         file << convertToString(oldLanguage[r], table) << ",";
@@ -308,7 +333,7 @@ void exportLanguageStructToCSV(
         file << "\n";
     }
 
-    // 4. 履歴出力
+    // 履歴出力
     // int i = 0;
     // while (true)
     // {
