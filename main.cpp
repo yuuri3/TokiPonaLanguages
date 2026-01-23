@@ -86,7 +86,7 @@ int main()
     }
 
     // 出力
-    exportLanguageStructToCSV(languageData, phoneticsData, "test.csv");
+    exportLanguageStructToCSV(languageData, phoneticsData, "TokiPonaLanguages.csv");
     std::cout << "kanryou" << std::endl;
     return 0;
 }
