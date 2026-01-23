@@ -87,7 +87,7 @@ int main()
 
     // 出力
     const auto TOKI_PONA_LANGUAGES = inputDataMap["TOKI_PONA_LANGUAGES"];
-    exportLanguageStructToCSV(languageData, phoneticsData, TOKI_PONA_LANGUAGES);
+    exportLanguageStructToCSV(oldTokiPonaNumData, languageData, phoneticsData, TOKI_PONA_LANGUAGES);
     std::cout << "kanryou" << std::endl;
     return 0;
 }

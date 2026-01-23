@@ -86,7 +86,7 @@ std::vector<Language> createConditionalPairs(
     return result;
 }
 
-std::string convertFromCoordinates(const std::vector<Phonetics> &phoneticses, const std::vector<std::vector<std::string>> &table)
+std::string convertToString(const std::vector<Phonetics> &phoneticses, const std::vector<std::vector<std::string>> &table)
 {
     std::string result = "";
 
@@ -262,6 +262,7 @@ SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector
 }
 
 void exportLanguageStructToCSV(
+    const std::vector<std::vector<Phonetics>> &oldLanguage,
     const std::vector<struct Language> &languages,
     const std::vector<std::vector<std::string>> &table,
     const std::string &filename)
@@ -271,6 +272,7 @@ void exportLanguageStructToCSV(
         return;
 
     // 1. ヘッダー行 (Place)
+    file << "old Toki Pona" << ",";
     for (size_t i = 0; i < languages.size(); ++i)
     {
         file << languages[i].Place << ",";
@@ -287,6 +289,7 @@ void exportLanguageStructToCSV(
     // 3. データ行の出力
     for (size_t r = 0; r < maxRows; ++r)
     {
+        file << convertToString(oldLanguage[r], table) << ",";
         for (size_t i = 0; i < languages.size(); ++i)
         {
             // 現在の行(r)が、その言語データの範囲内にあるかチェック
@@ -294,7 +297,7 @@ void exportLanguageStructToCSV(
             {
                 // ここで以前の convertFromCoordinates を呼び出す
                 // メンバ名がLanguageなので languages[i].Language となる
-                std::string decoded = convertFromCoordinates(languages[i].Lang[r], table);
+                std::string decoded = convertToString(languages[i].Lang[r], table);
                 file << decoded;
             }
 

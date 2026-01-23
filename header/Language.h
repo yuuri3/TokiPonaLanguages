@@ -101,7 +101,7 @@ std::vector<Language> createConditionalPairs(
  * @param phoneticses 音素列
  * @param table 音素表
  */
-std::string convertFromCoordinates(const std::vector<Phonetics> &phoneticses, const std::vector<std::vector<std::string>> &table);
+std::string convertToString(const std::vector<Phonetics> &phoneticses, const std::vector<std::vector<std::string>> &table);
 
 /**
  * 音変化
@@ -127,11 +127,13 @@ SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector
 
 /**
  * Language構造体のリストをCSVに出力する
+ * @param oldLanguage 祖語データ
  * @param languages 言語データ
  * @param table 音素表
  * @param filename 出力ファイル名
  */
 void exportLanguageStructToCSV(
+    const std::vector<std::vector<Phonetics>> &oldLanguage,
     const std::vector<struct Language> &languages,
     const std::vector<std::vector<std::string>> &table,
     const std::string &filename);
