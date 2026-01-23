@@ -4,4 +4,4 @@ P_REMOVE_SOUND,0.3
 OLD_TOKI_PONA,data\\OldTokiPona.csv
 PHONETICS,data\\Phonetics.csv
 MAP,data\\map.csv
-TOKI_PONA_LANGUAGES,TokiPonaLanguages.csv
+TOKI_PONA_LANGUAGES,ignore\\TokiPonaLanguages.csv
