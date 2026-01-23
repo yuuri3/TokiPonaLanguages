@@ -1,0 +1,6 @@
+N_BOLLOW,4
+P_SOUND_CHANGE,0.5
+P_REMOVE_SOUND,0.3
+OLD_TOKI_PONA,data\\OldTokiPona.csv
+PHONETICS,data\\Phonetics.csv
+MAP,data\\map.csv
