@@ -5,3 +5,4 @@ OLD_TOKI_PONA,test_data/OldTokiPona.csv
 PHONETICS,
 MAP,test_data/map.csv
 TOKI_PONA_LANGUAGES,ignore/test_data/TokiPonaLanguages_NoPhonetics.csv
+P_REMOVE_WORD,0

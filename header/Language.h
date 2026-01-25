@@ -238,3 +238,10 @@ Phonetics getRandomNonEmptyIndex(const Language &language);
  * @param language 言語
  */
 void changeLanguageStrength(Language &language);
+
+/**
+ * @brief 言語からランダムに単語を消去する
+ *
+ * @param language 言語
+ */
+void removeWordRandom(Language &language, const Language &oldLanguage);

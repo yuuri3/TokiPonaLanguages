@@ -511,3 +511,42 @@ void changeLanguageStrength(Language &language)
 {
     language.Strength = language.Strength * 0.9 + getRandomDouble(-1.0, 1.0) * 0.1;
 }
+
+void removeWordRandom(Language &language, const Language &oldLanguage)
+{
+    std::map<Word, std::vector<int>> mapOldWordToWordIndex;
+    for (int i = 0; i < language.Words.size(); i++)
+    {
+        const Word word = language.Words[i];
+        Word nearestOldWord;
+        double maxDot = -1.0;
+        for (const auto &oldWord : oldLanguage.Words)
+        {
+            const double dot = word.Meanings.Dot(oldWord.Meanings);
+            if (maxDot < dot)
+            {
+                maxDot = dot;
+                nearestOldWord = oldWord;
+            }
+        }
+        mapOldWordToWordIndex[nearestOldWord].emplace_back(i);
+    }
+
+    std::vector<std::vector<int>> wordIndeceHasSameMeaningPair;
+    for (const auto &oldWord : oldLanguage.Words)
+    {
+        if (mapOldWordToWordIndex[oldWord].size() > 1)
+        {
+            wordIndeceHasSameMeaningPair.emplace_back(mapOldWordToWordIndex[oldWord]);
+        }
+    }
+
+    if (wordIndeceHasSameMeaningPair.empty())
+    {
+        return;
+    }
+
+    const auto words = wordIndeceHasSameMeaningPair[getRandomInt(0, (int)wordIndeceHasSameMeaningPair.size() - 1)];
+    const auto index = words[getRandomInt(0, (int)words.size() - 1)];
+    language.Words.erase(language.Words.begin() + index);
+}

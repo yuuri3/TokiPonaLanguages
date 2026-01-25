@@ -13,6 +13,7 @@ start /wait "" ignore/a.exe test_data/Input_NoPhonetics.csv
 start /wait "" ignore/a.exe test_data/Input_SoundChange.csv
 start /wait "" ignore/a.exe test_data/Input_SoundChange_NoRemove.csv
 start /wait "" ignore/a.exe test_data/Input_SoundRemove.csv
+start /wait "" ignore/a.exe test_data/Input_WordRemove.csv
 
 dir "ignore\test_data"
 

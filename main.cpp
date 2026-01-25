@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
     const double P_SOUND_CHANGE = std::stod(inputDataMap["P_SOUND_CHANGE"]);
     // 音韻変化で音が脱落する確率
     const double P_REMOVE_SOUND = std::stod(inputDataMap["P_REMOVE_SOUND"]);
+    // 単語が脱落する確率
+    const double P_REMOVE_WORD = std::stod(inputDataMap["P_REMOVE_WORD"]);
 
     // ファイル読み込み
     const std::string OLD_TOKI_PONA = inputDataMap["OLD_TOKI_PONA"];
@@ -77,6 +79,15 @@ int main(int argc, char *argv[])
             const auto sound = getRandomNonEmptyIndex(language);
             SoundChange soundChange = makeSoundChangeRandom(sound, phoneticsData, P_REMOVE_SOUND);
             changeLanguageSound(language, soundChange);
+        }
+        // 単語の脱落と新語追加
+        for (auto &language : languageData)
+        {
+            // 単語が脱落するかどうか
+            if (getWithProbability(P_REMOVE_WORD))
+            {
+                removeWordRandom(language, oldTokiPona);
+            }
         }
         // 各位置に言語があれば終了
         bool isThereAllLanguage = true;
