@@ -2,6 +2,7 @@
 #include "Random.h"
 #include <vector>
 #include <string>
+#include <map>
 
 /**
  * @brief 音韻
@@ -33,6 +34,68 @@ struct Phonetics
 };
 
 /**
+ * @brief 意味ベクトル
+ *
+ */
+class Meaning : public std::map<std::string, double>
+{
+public:
+    /**
+     * @brief 意味ベクトルの加算
+     *
+     * @param mean 可算する意味ベクトル
+     */
+    Meaning Add(const Meaning &meaning) const;
+
+    /**
+     * @brief 意味ベクトルの内積
+     *
+     * @param meaning 掛ける意味ベクトル
+     */
+    double Dot(const Meaning &meaning) const;
+
+    /**
+     * @brief 実数倍
+     *
+     * @param scalar 掛ける実数
+     */
+    Meaning Product(const double scalar) const;
+
+    /**
+     * @brief 正規化
+     *
+     */
+    void Normalize();
+};
+
+/**
+ * @brief 単語
+ *
+ */
+struct Word
+{
+    // 発音
+    std::vector<Phonetics> Sounds;
+    // 意味
+    Meaning Meanings;
+
+    bool operator==(const Word &other) const
+    {
+        return Sounds == other.Sounds;
+    }
+
+    bool operator!=(const Word &other) const
+    {
+        return !operator==(other);
+    }
+
+    bool operator<(const Word &other) const
+    {
+        return Sounds < other.Sounds;
+    }
+};
+
+/**
  * @brief 言語
  *
  */
@@ -42,8 +105,8 @@ struct Language
     std::string Place;
     // 影響度、大きい方から小さいほうへ単語が借用される
     double Strength;
-    // 言語
-    std::vector<std::vector<Phonetics>> Lang;
+    // 語彙
+    std::vector<Word> Words;
     // 借用履歴
     std::vector<std::pair<int, std::string>> BollowHistory;
 };
@@ -86,6 +149,14 @@ struct SoundChange
 std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vector<std::vector<std::string>> &table);
 
 /**
+ * @brief 文字列の配列を言語に変換する
+ * @param strs 文字列の配列
+ * @param table 音素表
+ * @return 言語
+ */
+Language convertToLanguage(const std::vector<std::string> strs, const std::vector<std::vector<std::string>> &table);
+
+/**
  * 地図データの特定の位置に祖語を配置する
  * @param mapData 地図データ
  * @param startPlace 祖語を配置する位置
@@ -94,7 +165,7 @@ std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vec
 std::vector<Language> createConditionalPairs(
     const std::vector<std::string> &mapData,
     const std::string &startPlace,
-    const std::vector<std::vector<Phonetics>> &language);
+    const Language &language);
 
 /**
  * 音素列を変換表に基づいて文字列に復元する
@@ -133,7 +204,7 @@ SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector
  * @param filename 出力ファイル名
  */
 void exportLanguageStructToCSV(
-    const std::vector<std::vector<Phonetics>> &oldLanguage,
+    const Language &oldLanguage,
     const std::vector<struct Language> &languages,
     const std::vector<std::vector<std::string>> &table,
     const std::string &filename);

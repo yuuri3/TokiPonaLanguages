@@ -1,6 +1,36 @@
 #include "Language.h"
-#include <map>
 #include <fstream>
+
+Meaning Meaning::Add(const Meaning &meaning) const
+{
+    Meaning result = *this;
+    for (const auto &m : meaning)
+    {
+        result[m.first] += m.second;
+    }
+    return result;
+}
+
+double Meaning::Dot(const Meaning &meaning) const
+{
+    Meaning m1 = *(this);
+    double result = 0.0;
+    for (const auto &m : meaning)
+    {
+        result += m.second * m1[m.first];
+    }
+    return result;
+}
+
+Meaning Meaning::Product(const double scalar) const
+{
+    Meaning result = *this;
+    for (auto &m : result)
+    {
+        m.second *= scalar;
+    }
+    return result;
+}
 
 std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vector<std::vector<std::string>> &table)
 {
@@ -58,10 +88,25 @@ std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vec
     return output;
 }
 
+Language convertToLanguage(const std::vector<std::string> strs, const std::vector<std::vector<std::string>> &table)
+{
+    Language result;
+    for (const auto &str : strs)
+    {
+        Word word;
+        word.Sounds = convertToPhonetics(str, table);
+        word.Meanings[str] = 1.0;
+        result.Words.emplace_back(word);
+    }
+    result.Strength = 0.0;
+    result.BollowHistory = {};
+    return result;
+}
+
 std::vector<Language> createConditionalPairs(
     const std::vector<std::string> &mapData,
     const std::string &startPlace,
-    const std::vector<std::vector<Phonetics>> &language)
+    const Language &language)
 {
     std::vector<Language> result;
 
@@ -69,16 +114,18 @@ std::vector<Language> createConditionalPairs(
     {
         // 1番目の要素をitem、2番目を空文字で初期化してペアを作成
         Language p;
-        p.Place = item;
         p.Strength = 0.0;
-        p.Lang = {};
+        p.Words = {};
         p.BollowHistory = {};
 
         // もし1番目の要素がtargetAと一致したら、2番目をreplacementBにする
         if (item == startPlace)
         {
-            p.Lang = language;
+            p = language;
         }
+
+        // 位置を設定
+        p.Place = item;
 
         result.push_back(p);
     }
@@ -119,39 +166,40 @@ void changeLanguageSound(
     Language newLanguage;
     newLanguage.Place = language.Place;
     newLanguage.BollowHistory = language.BollowHistory;
-    for (auto &word : language.Lang)
+    for (auto &word : language.Words)
     {
-        std::vector<Phonetics> newWord;
-        for (size_t i = 0; i < word.size(); i += 1)
+        Word newWord;
+        newWord.Meanings = word.Meanings;
+        for (size_t i = 0; i < word.Sounds.size(); i += 1)
         {
-            if (word[i] == soundChange.beforePhon)
+            if (word.Sounds[i] == soundChange.beforePhon)
             {
                 if (soundChange.Condition == SoundChangeCondition::Start && i != 0)
                 {
-                    newWord.push_back(word[i]);
+                    newWord.Sounds.push_back(word.Sounds[i]);
                     continue;
                 }
-                if (soundChange.Condition == SoundChangeCondition::End && i != word.size() - 1)
+                if (soundChange.Condition == SoundChangeCondition::End && i != word.Sounds.size() - 1)
                 {
-                    newWord.push_back(word[i]);
+                    newWord.Sounds.push_back(word.Sounds[i]);
                     continue;
                 }
-                if (soundChange.Condition == SoundChangeCondition::Middle && (i == 0 || i == word.size() - 1))
+                if (soundChange.Condition == SoundChangeCondition::Middle && (i == 0 || i == word.Sounds.size() - 1))
                 {
-                    newWord.push_back(word[i]);
+                    newWord.Sounds.push_back(word.Sounds[i]);
                     continue;
                 }
                 if (!soundChange.IsRemove)
                 {
-                    newWord.push_back(soundChange.AfterPhone);
+                    newWord.Sounds.push_back(soundChange.AfterPhone);
                 }
             }
             else
             {
-                newWord.push_back(word[i]);
+                newWord.Sounds.push_back(word.Sounds[i]);
             }
         }
-        newLanguage.Lang.emplace_back(newWord);
+        newLanguage.Words.emplace_back(newWord);
     }
     // 子音、母音の重複を禁止する処理
     if (isSoundDuplication)
@@ -160,39 +208,39 @@ void changeLanguageSound(
         // 後でファイル入力にする
         constexpr int MAX_CONSONANT_MANNAR = 3;
 
-        for (size_t i = 0; i < newLanguage.Lang.size(); ++i)
+        for (size_t i = 0; i < newLanguage.Words.size(); ++i)
         {
-            if (newLanguage.Lang[i].empty())
+            if (newLanguage.Words[i].Sounds.empty())
             {
-                newLanguage.Lang[i] = language.Lang[i];
+                newLanguage.Words[i] = language.Words[i];
             }
-            if (newLanguage.Lang[i].size() == 1)
+            if (newLanguage.Words[i].Sounds.size() == 1)
             {
-                if (newLanguage.Lang[i][0].Mannar <= MAX_CONSONANT_MANNAR)
+                if (newLanguage.Words[i].Sounds[0].Mannar <= MAX_CONSONANT_MANNAR)
                 {
-                    newLanguage.Lang[i] = language.Lang[i];
+                    newLanguage.Words[i] = language.Words[i];
                 }
             }
             else
             {
                 bool isDuplicate = false;
-                if (newLanguage.Lang[i][0].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Lang[i][1].Mannar <= MAX_CONSONANT_MANNAR)
+                if (newLanguage.Words[i].Sounds[0].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[1].Mannar <= MAX_CONSONANT_MANNAR)
                 {
-                    newLanguage.Lang[i] = language.Lang[i];
+                    newLanguage.Words[i] = language.Words[i];
                 }
-                if (newLanguage.Lang[i][newLanguage.Lang[i].size() - 2].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Lang[i][newLanguage.Lang[i].size() - 1].Mannar <= MAX_CONSONANT_MANNAR)
+                if (newLanguage.Words[i].Sounds[newLanguage.Words[i].Sounds.size() - 2].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[newLanguage.Words[i].Sounds.size() - 1].Mannar <= MAX_CONSONANT_MANNAR)
                 {
-                    newLanguage.Lang[i] = language.Lang[i];
+                    newLanguage.Words[i] = language.Words[i];
                 }
                 else
                 {
-                    for (size_t j = 0; j < newLanguage.Lang[i].size() - 2; j += 1)
+                    for (size_t j = 0; j < newLanguage.Words[i].Sounds.size() - 2; j += 1)
                     {
-                        if (newLanguage.Lang[i][j].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Lang[i][j + 1].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Lang[i][j + 2].Mannar <= MAX_CONSONANT_MANNAR)
+                        if (newLanguage.Words[i].Sounds[j].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[j + 1].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[j + 2].Mannar <= MAX_CONSONANT_MANNAR)
                         {
                             isDuplicate = true;
                         }
-                        if (newLanguage.Lang[i][j].Mannar > MAX_CONSONANT_MANNAR && newLanguage.Lang[i][j + 1].Mannar > MAX_CONSONANT_MANNAR && newLanguage.Lang[i][j + 2].Mannar > MAX_CONSONANT_MANNAR)
+                        if (newLanguage.Words[i].Sounds[j].Mannar > MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[j + 1].Mannar > MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[j + 2].Mannar > MAX_CONSONANT_MANNAR)
                         {
                             isDuplicate = true;
                         }
@@ -200,7 +248,7 @@ void changeLanguageSound(
                 }
                 if (isDuplicate)
                 {
-                    newLanguage.Lang[i] = language.Lang[i];
+                    newLanguage.Words[i] = language.Words[i];
                 }
             }
         }
@@ -211,22 +259,22 @@ void changeLanguageSound(
         // 1. 各要素が全体で何回現れるかをカウントする
         // 重複を「先出し」で判定するため、一度全件走査が必要
         std::map<std::vector<Phonetics>, int> counts;
-        for (const auto &item : newLanguage.Lang)
+        for (const auto &item : newLanguage.Words)
         {
-            counts[item]++;
+            counts[item.Sounds]++;
         }
 
         // 2. カウントが1より大きい（重複している）要素をBの要素で置換する
-        for (size_t i = 0; i < newLanguage.Lang.size(); ++i)
+        for (size_t i = 0; i < newLanguage.Words.size(); ++i)
         {
             // A[i] という値が全体で2回以上現れているかチェック
-            if (counts[newLanguage.Lang[i]] > 1)
+            if (counts[newLanguage.Words[i].Sounds] > 1)
             {
                 // AとBのインデックスを同期させて置き換え
                 // BのサイズがAより小さい場合に備えて境界チェックを行う
-                if (i < language.Lang.size())
+                if (i < language.Words.size())
                 {
-                    newLanguage.Lang[i] = language.Lang[i];
+                    newLanguage.Words[i] = language.Words[i];
                 }
             }
         }
@@ -262,7 +310,7 @@ SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector
 }
 
 void exportLanguageStructToCSV(
-    const std::vector<std::vector<Phonetics>> &oldLanguage,
+    const Language &oldLanguage,
     const std::vector<struct Language> &languages,
     const std::vector<std::vector<std::string>> &table,
     const std::string &filename)
@@ -278,86 +326,87 @@ void exportLanguageStructToCSV(
         file << languages[i].Place << ",";
     }
     file << "\n";
-
+    // 祖語の単語との対応
+    std::vector<std::map<Word, std::vector<Word>>> mapsOldWordToWord(languages.size());
+    for (int i = 0; i < languages.size(); i++)
+    {
+        const auto language = languages[i];
+        for (const auto &word : language.Words)
+        {
+            Word nearestOldWord;
+            double maxDot = -1.0;
+            for (const auto &oldWord : oldLanguage.Words)
+            {
+                const double dot = word.Meanings.Dot(oldWord.Meanings);
+                if (maxDot < dot)
+                {
+                    maxDot = dot;
+                    nearestOldWord = oldWord;
+                }
+            }
+            mapsOldWordToWord[i][nearestOldWord].emplace_back(word);
+        }
+    }
     // 言語名（Toki Pona からの変化）
     file << "Toki Pona" << ",";
     int indexToki, indexPona;
-    for (size_t i = 0; i < oldLanguage.size(); i++)
+    for (size_t i = 0; i < oldLanguage.Words.size(); i++)
     {
-        const auto word = oldLanguage[i];
-        if (convertToString(word, table) == "toki")
+        const auto word = oldLanguage.Words[i];
+        if (convertToString(word.Sounds, table) == "toki")
         {
             indexToki = i;
         }
-        if (convertToString(word, table) == "pona")
+        if (convertToString(word.Sounds, table) == "pona")
         {
             indexPona = i;
         }
     }
     for (size_t i = 0; i < languages.size(); ++i)
     {
-        auto toki = convertToString(languages[i].Lang[indexToki], table);
-        auto pona = convertToString(languages[i].Lang[indexPona], table);
-        toki[0] = std::toupper(toki[0]);
-        pona[0] = std::toupper(pona[0]);
-        file << toki << " " << pona << ",";
+        if (mapsOldWordToWord[i][oldLanguage.Words[indexToki]].empty() || mapsOldWordToWord[i][oldLanguage.Words[indexPona]].empty())
+        {
+            file << ",";
+        }
+        else
+        {
+            auto toki = convertToString(mapsOldWordToWord[i][oldLanguage.Words[indexToki]][0].Sounds, table);
+            auto pona = convertToString(mapsOldWordToWord[i][oldLanguage.Words[indexPona]][0].Sounds, table);
+            toki[0] = std::toupper(toki[0]);
+            pona[0] = std::toupper(pona[0]);
+            file << toki << " " << pona << ",";
+        }
     }
     file << "\n";
-
-    // 最大行数を取得 (各Language.Languageベクトルの最大サイズ)
-    size_t maxRows = 0;
-    for (const auto &lang : languages)
+    // 単語出力
+    for (const auto &oldWord : oldLanguage.Words)
     {
-        maxRows = std::max(maxRows, lang.Lang.size());
-    }
-
-    // データ行の出力
-    for (size_t r = 0; r < maxRows; ++r)
-    {
-        file << convertToString(oldLanguage[r], table) << ",";
+        int maxWordNumNearToOldWord = 0;
         for (size_t i = 0; i < languages.size(); ++i)
         {
-            // 現在の行(r)が、その言語データの範囲内にあるかチェック
-            if (r < languages[i].Lang.size())
-            {
-                // ここで以前の convertFromCoordinates を呼び出す
-                // メンバ名がLanguageなので languages[i].Language となる
-                std::string decoded = convertToString(languages[i].Lang[r], table);
-                file << decoded;
-            }
-
-            // カンマの出力
-            if (i < languages.size() - 1)
-                file << ",";
+            maxWordNumNearToOldWord = std::max(maxWordNumNearToOldWord, (int)mapsOldWordToWord[i][oldWord].size());
         }
-        file << "\n";
+        for (int i = 0; i < maxWordNumNearToOldWord; i++)
+        {
+            if (i == 0)
+            {
+                file << convertToString(oldWord.Sounds, table);
+            }
+            file << ",";
+            for (size_t j = 0; j < languages.size(); ++j)
+            {
+                if (i < mapsOldWordToWord[j][oldWord].size())
+                {
+                    file << convertToString(mapsOldWordToWord[j][oldWord][i].Sounds, table);
+                }
+                if (j != languages.size() - 1)
+                {
+                    file << ",";
+                }
+            }
+            file << "\n";
+        }
     }
-
-    // 履歴出力
-    // int i = 0;
-    // while (true)
-    // {
-    //     bool isExported = false;
-    //     for (size_t j = 0; j < languages.size(); j++)
-    //     {
-    //         if (i < languages[j].BollowHistory.size())
-    //         {
-    //             std::cout << j << " " << i << std::endl;
-    //             file << languages[j].BollowHistory[i];
-    //             isExported = true;
-    //         }
-
-    //         // カンマの出力
-    //         if (j < languages.size() - 1)
-    //             file << ",";
-    //     }
-    //     if (!isExported)
-    //     {
-    //         break;
-    //     }
-    //     file << "\n";
-    //     i++;
-    // }
 
     file.close();
 }
@@ -376,44 +425,44 @@ void BollowWord(std::vector<Language> &languages, const int &generation, const s
             langPair.second = &(languages[i]);
         }
     }
-    if (langPair.first->Lang.empty() && langPair.second->Lang.empty())
+    if (langPair.first->Words.empty() && langPair.second->Words.empty())
     {
         return;
     }
-    else if (!langPair.first->Lang.empty() && langPair.second->Lang.empty())
+    else if (!langPair.first->Words.empty() && langPair.second->Words.empty())
     {
-        langPair.second->Lang = langPair.first->Lang;
+        langPair.second->Words = langPair.first->Words;
         langPair.second->Strength = langPair.first->Strength;
         langPair.second->BollowHistory.push_back({generation, langPair.first->Place});
         return;
     }
-    else if (langPair.first->Lang.empty() && !langPair.second->Lang.empty())
+    else if (langPair.first->Words.empty() && !langPair.second->Words.empty())
     {
-        langPair.first->Lang = langPair.second->Lang;
+        langPair.first->Words = langPair.second->Words;
         langPair.first->Strength = langPair.second->Strength;
         langPair.first->BollowHistory.push_back({generation, langPair.second->Place});
         return;
     }
-    else if (!langPair.first->Lang.empty() && !langPair.second->Lang.empty())
+    else if (!langPair.first->Words.empty() && !langPair.second->Words.empty())
     {
         if (langPair.first->Strength > langPair.second->Strength)
         {
-            for (size_t i = 0; i < langPair.first->Lang.size(); i++)
+            for (size_t i = 0; i < langPair.first->Words.size(); i++)
             {
                 if (getRandomInt(0, 1) == 0)
                 {
-                    langPair.second->Lang[i] = langPair.first->Lang[i];
+                    langPair.second->Words[i] = langPair.first->Words[i];
                     langPair.second->BollowHistory.push_back({generation, langPair.first->Place});
                 }
             }
         }
         else
         {
-            for (size_t i = 0; i < langPair.first->Lang.size(); i++)
+            for (size_t i = 0; i < langPair.first->Words.size(); i++)
             {
                 if (getRandomInt(0, 1) == 0)
                 {
-                    langPair.first->Lang[i] = langPair.second->Lang[i];
+                    langPair.first->Words[i] = langPair.second->Words[i];
                     langPair.first->BollowHistory.push_back({generation, langPair.second->Place});
                 }
             }
@@ -449,13 +498,13 @@ Phonetics getRandomNonEmptyIndex(const std::vector<std::vector<std::string>> &ta
 
 Phonetics getRandomNonEmptyIndex(const Language &language)
 {
-    if (language.Lang.empty())
+    if (language.Words.empty())
     {
         return {0, 0};
     }
-    const int index1 = getRandomInt(0, (int)(language.Lang.size()) - 1);
-    const int index2 = getRandomInt(0, (int)(language.Lang[index1].size()) - 1);
-    return language.Lang[index1][index2];
+    const int index1 = getRandomInt(0, (int)(language.Words.size()) - 1);
+    const int index2 = getRandomInt(0, (int)(language.Words[index1].Sounds.size()) - 1);
+    return language.Words[index1].Sounds[index2];
 }
 
 void changeLanguageStrength(Language &language)

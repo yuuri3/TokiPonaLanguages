@@ -33,21 +33,17 @@ int main(int argc, char *argv[])
     const auto mapData = readCSV(MAP);
 
     // データ準備
-    std::vector<std::vector<Phonetics>> oldTokiPonaNumData;
-    for (const auto &word : oldTokiPonaData)
-    {
-        oldTokiPonaNumData.emplace_back(convertToPhonetics(word.front(), phoneticsData));
-    }
+    const auto oldTokiPona = convertToLanguage(oldTokiPonaData[0], phoneticsData);
     const auto mapAdjacentData = getAdjacencies(mapData);
     const auto placeNameData = getNonEmptyStrings(mapData);
-    auto languageData = createConditionalPairs(placeNameData, "0", oldTokiPonaNumData);
+    auto languageData = createConditionalPairs(placeNameData, "0", oldTokiPona);
 
     int generation = -1;
     if (N_BOLLOW == 0)
     {
         return 0;
     }
-    if (oldTokiPonaNumData.empty())
+    if (oldTokiPona.Words.empty())
     {
         return 0;
     }
@@ -74,7 +70,7 @@ int main(int argc, char *argv[])
                 continue;
             }
             // 言語があるか
-            if (language.Lang.empty())
+            if (language.Words.empty())
             {
                 continue;
             }
@@ -86,7 +82,7 @@ int main(int argc, char *argv[])
         bool isThereAllLanguage = true;
         for (auto &language : languageData)
         {
-            if (language.Lang.empty())
+            if (language.Words.empty())
             {
                 isThereAllLanguage = false;
                 break;
@@ -100,7 +96,7 @@ int main(int argc, char *argv[])
 
     // 出力
     const auto TOKI_PONA_LANGUAGES = inputDataMap["TOKI_PONA_LANGUAGES"];
-    exportLanguageStructToCSV(oldTokiPonaNumData, languageData, phoneticsData, TOKI_PONA_LANGUAGES);
+    exportLanguageStructToCSV(oldTokiPona, languageData, phoneticsData, TOKI_PONA_LANGUAGES);
     std::cout << "kanryou" << std::endl;
     return 0;
 }
