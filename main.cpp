@@ -58,10 +58,12 @@ int main()
         // 音韻変化
         for (auto &language : languageData)
         {
+            // 音韻変化するかどうか
             if (!getWithProbability(P_SOUND_CHANGE))
             {
                 continue;
             }
+            // 言語があるか
             if (language.Lang.empty())
             {
                 continue;
@@ -70,6 +72,7 @@ int main()
             SoundChange soundChange = makeSoundChangeRandom(sound, phoneticsData, P_REMOVE_SOUND);
             changeLanguageSound(language, soundChange);
         }
+        // 各位置に言語があれば終了
         bool isThereAllLanguage = true;
         for (auto &language : languageData)
         {
