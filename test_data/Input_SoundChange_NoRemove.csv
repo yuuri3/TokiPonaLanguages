@@ -6,3 +6,5 @@ PHONETICS,test_data/Phonetics.csv
 MAP,test_data/map.csv
 TOKI_PONA_LANGUAGES,ignore/test_data/TokiPonaLanguages_SoundChange_NoRemove.csv
 P_REMOVE_WORD,0
+P_MEANING_CHANGE,0
+MAX_MEANING_CHANGE_RATE,0

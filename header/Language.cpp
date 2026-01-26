@@ -1,5 +1,11 @@
 #include "Language.h"
 #include <fstream>
+#include <cmath>
+
+namespace
+{
+    double TOLERANCE = 1.0e-6;
+}
 
 Meaning Meaning::Add(const Meaning &meaning) const
 {
@@ -30,6 +36,16 @@ Meaning Meaning::Product(const double scalar) const
         m.second *= scalar;
     }
     return result;
+}
+
+void Meaning::Normalize()
+{
+    const double norm = std::sqrt(Dot(*this));
+    if (norm <= TOLERANCE)
+    {
+        return;
+    }
+    *this = Product(1.0 / norm);
 }
 
 std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vector<std::vector<std::string>> &table)
@@ -279,6 +295,65 @@ void changeLanguageSound(
             }
         }
     }
+    language = newLanguage;
+}
+
+void changeLanguageMeaning(
+    Language &language,
+    const Language &OldLanguage,
+    const double maxChangeRate)
+{
+    if (language.Words.empty())
+    {
+        return;
+    }
+    Language newLanguage = language;
+    // 単語の意味変化
+    const auto index = getRandomInt(0, (int)newLanguage.Words.size() - 1);
+    const auto word2 = language.Words[getRandomInt(0, (int)language.Words.size() - 1)];
+    const int changeRate = getRandomDouble(0.0, maxChangeRate);
+    newLanguage.Words[index].Meanings = newLanguage.Words[index].Meanings.Add(word2.Meanings.Product(changeRate));
+    newLanguage.Words[index].Meanings.Normalize();
+
+    Word nearestToWord2OldWord;
+    double maxDot = -1.0;
+    for (const auto &oldWord : OldLanguage.Words)
+    {
+        const double dot = word2.Meanings.Dot(oldWord.Meanings);
+        if (maxDot < dot)
+        {
+            maxDot = dot;
+            nearestToWord2OldWord = oldWord;
+        }
+    }
+    std::map<Word, std::vector<Word>> mapOldWordToNewWord;
+    for (const auto &word : newLanguage.Words)
+    {
+        Word nearestOldWord;
+        maxDot = -1.0;
+        for (const auto &oldWord : OldLanguage.Words)
+        {
+            if (oldWord != nearestToWord2OldWord)
+            {
+                continue;
+            }
+            const double dot = word.Meanings.Dot(oldWord.Meanings);
+            if (maxDot < dot)
+            {
+                maxDot = dot;
+                nearestOldWord = oldWord;
+            }
+        }
+        mapOldWordToNewWord[nearestOldWord].emplace_back(word);
+    }
+    for (const auto &m : mapOldWordToNewWord)
+    {
+        if (m.second.empty())
+        {
+            return;
+        }
+    }
+
     language = newLanguage;
 }
 

@@ -23,6 +23,10 @@ int main(int argc, char *argv[])
     const double P_SOUND_CHANGE = std::stod(inputDataMap["P_SOUND_CHANGE"]);
     // 音韻変化で音が脱落する確率
     const double P_REMOVE_SOUND = std::stod(inputDataMap["P_REMOVE_SOUND"]);
+    // 意味変化が起こる確率
+    const double P_MEANING_CHANGE = std::stod(inputDataMap["P_MEANING_CHANGE"]);
+    // 意味の最大変化率
+    const double MAX_MEANING_CHANGE_RATE = std::stod(inputDataMap["MAX_MEANING_CHANGE_RATE"]);
     // 単語が脱落する確率
     const double P_REMOVE_WORD = std::stod(inputDataMap["P_REMOVE_WORD"]);
 
@@ -87,6 +91,15 @@ int main(int argc, char *argv[])
             if (getWithProbability(P_REMOVE_WORD))
             {
                 removeWordRandom(language, oldTokiPona);
+            }
+        }
+        // 単語の意味変化
+        for (auto &language : languageData)
+        {
+            // 意味変化するかどうか
+            if (getWithProbability(P_MEANING_CHANGE))
+            {
+                changeLanguageMeaning(language, oldTokiPona, MAX_MEANING_CHANGE_RATE);
             }
         }
         // 各位置に言語があれば終了

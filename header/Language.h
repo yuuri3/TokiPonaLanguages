@@ -180,12 +180,28 @@ std::string convertToString(const std::vector<Phonetics> &phoneticses, const std
  * @param soundChange 変化規則
  * @param isProhibitMinimalPair ミニマルペアを禁止するか
  * @param isSoundDuplication 音素の重複を禁止するか
+ *
+ * @note ある言語の単語を一斉に変化させる。
  */
 void changeLanguageSound(
     Language &language,
     const SoundChange &soundChange,
     const bool isProhibitMinimalPair = true,
     const bool isSoundDuplication = true);
+
+/**
+ * @brief 意味変化
+ *
+ * @param language 言語
+ * @param oldLanguage 祖語
+ * @param maxChangeRate 最大変化率
+ *
+ * @note 単語１つの意味を変化させる
+ */
+void changeLanguageMeaning(
+    Language &language,
+    const Language &oldLanguage,
+    const double maxChangeRate);
 
 /**
  * 変化規則をランダムに生成
