@@ -2,9 +2,11 @@
 #include <iostream>
 #include <map>
 
-int main()
+int main(int argc, char *argv[])
 {
-    const auto inputData = readCSV("Input.csv");
+    std::string INPUT = argv[1];
+
+    const auto inputData = readCSV(INPUT);
     std::map<std::string, std::string> inputDataMap;
     for (const auto &d : inputData)
     {
@@ -41,6 +43,14 @@ int main()
     auto languageData = createConditionalPairs(placeNameData, "0", oldTokiPonaNumData);
 
     int generation = -1;
+    if (N_BOLLOW == 0)
+    {
+        return 0;
+    }
+    if (oldTokiPonaNumData.empty())
+    {
+        return 0;
+    }
     while (true)
     {
         generation++;
