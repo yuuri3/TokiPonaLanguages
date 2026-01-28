@@ -93,6 +93,14 @@ struct Word
     {
         return Sounds < other.Sounds;
     }
+
+    /**
+     * @brief 複合語を生成
+     *
+     * @param word 単語
+     * @return 複合語
+     */
+    Word Add(const Word &word) const;
 };
 
 /**
@@ -261,3 +269,10 @@ void changeLanguageStrength(Language &language);
  * @param language 言語
  */
 void removeWordRandom(Language &language, const Language &oldLanguage);
+
+/**
+ * @brief 言語に単語を追加する
+ *
+ * @param language 言語
+ */
+void createWord(Language &language);

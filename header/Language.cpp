@@ -48,6 +48,16 @@ void Meaning::Normalize()
     *this = Product(1.0 / norm);
 }
 
+Word Word::Add(const Word &word) const
+{
+    Word result;
+    result.Sounds = Sounds;
+    result.Sounds.insert(result.Sounds.end(), word.Sounds.begin(), word.Sounds.end());
+    result.Meanings = Meanings.Add(word.Meanings);
+    result.Meanings.Normalize();
+    return result;
+}
+
 std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vector<std::vector<std::string>> &table)
 {
     std::vector<Phonetics> output;
@@ -668,4 +678,17 @@ void removeWordRandom(Language &language, const Language &oldLanguage)
     const auto words = wordIndeceHasSameMeaningPair[getRandomInt(0, (int)wordIndeceHasSameMeaningPair.size() - 1)];
     const auto index = words[getRandomInt(0, (int)words.size() - 1)];
     language.Words.erase(language.Words.begin() + index);
+}
+
+void createWord(Language &language)
+{
+    if (language.Words.empty())
+    {
+        return;
+    }
+    const auto word1 = language.Words[getRandomInt(0, (int)language.Words.size() - 1)];
+    const auto word2 = language.Words[getRandomInt(0, (int)language.Words.size() - 1)];
+
+    const auto newWord = word1.Add(word2);
+    language.Words.emplace_back(newWord);
 }

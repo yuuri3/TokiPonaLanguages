@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
     const double MAX_MEANING_CHANGE_RATE = std::stod(inputDataMap["MAX_MEANING_CHANGE_RATE"]);
     // 単語が脱落する確率
     const double P_REMOVE_WORD = std::stod(inputDataMap["P_REMOVE_WORD"]);
+    // 単語を生成する確率
+    const double P_CREATE_WORD = std::stod(inputDataMap["P_CREATE_WORD"]);
 
     // ファイル読み込み
     const std::string OLD_TOKI_PONA = inputDataMap["OLD_TOKI_PONA"];
@@ -92,6 +94,11 @@ int main(int argc, char *argv[])
             {
                 removeWordRandom(language, oldTokiPona);
             }
+            // 単語を追加するかどうか
+            if (getWithProbability(P_CREATE_WORD))
+            {
+                createWord(language);
+            }
         }
         // 単語の意味変化
         for (auto &language : languageData)
@@ -117,10 +124,8 @@ int main(int argc, char *argv[])
             break;
         }
     }
-
     // 出力
     const auto TOKI_PONA_LANGUAGES = inputDataMap["TOKI_PONA_LANGUAGES"];
     exportLanguageStructToCSV(oldTokiPona, languageData, phoneticsData, TOKI_PONA_LANGUAGES);
-    std::cout << "kanryou" << std::endl;
     return 0;
 }
