@@ -231,7 +231,7 @@ void exportLanguageToCSV(
     const Language &oldLanguage,
     const std::vector<struct Language> &languages,
     const std::vector<std::vector<std::string>> &table,
-    const std::string &filename);
+    const std::wstring &filename);
 
 /**
  * 単語を借用

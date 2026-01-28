@@ -1,46 +1,30 @@
-#include "header\\Language.h"
+#include "Language.h"
 #include <iostream>
 #include <map>
 
-int main(int argc, char *argv[])
+int evolution(
+    const int N_BOLLOW,
+    const double P_SOUND_CHANGE,
+    const double P_REMOVE_SOUND,
+    const double P_MEANING_CHANGE,
+    const double MAX_MEANING_CHANGE_RATE,
+    const double P_REMOVE_WORD,
+    const double P_CREATE_WORD,
+    const std::wstring &OLD_TOKI_PONA,
+    const std::wstring &PHONETICS,
+    const std::wstring &MAP,
+    const std::wstring &TOKI_PONA_LANGUAGES)
 {
-    std::string INPUT = argv[1];
-
-    const auto inputData = readCSV(INPUT);
-    std::map<std::string, std::string> inputDataMap;
-    for (const auto &d : inputData)
-    {
-        if (d.size() < 2)
-        {
-            continue;
-        }
-        inputDataMap[d[0]] = d[1];
-    }
-
-    // １世代ごとの借用回数
-    const int N_BOLLOW = std::stoi(inputDataMap["N_BOLLOW"]);
-    // 音韻変化が起こる確率
-    const double P_SOUND_CHANGE = std::stod(inputDataMap["P_SOUND_CHANGE"]);
-    // 音韻変化で音が脱落する確率
-    const double P_REMOVE_SOUND = std::stod(inputDataMap["P_REMOVE_SOUND"]);
-    // 意味変化が起こる確率
-    const double P_MEANING_CHANGE = std::stod(inputDataMap["P_MEANING_CHANGE"]);
-    // 意味の最大変化率
-    const double MAX_MEANING_CHANGE_RATE = std::stod(inputDataMap["MAX_MEANING_CHANGE_RATE"]);
-    // 単語が脱落する確率
-    const double P_REMOVE_WORD = std::stod(inputDataMap["P_REMOVE_WORD"]);
-    // 単語を生成する確率
-    const double P_CREATE_WORD = std::stod(inputDataMap["P_CREATE_WORD"]);
-
     // ファイル読み込み
-    const std::string OLD_TOKI_PONA = inputDataMap["OLD_TOKI_PONA"];
-    const std::string PHONETICS = inputDataMap["PHONETICS"];
-    const std::string MAP = inputDataMap["MAP"];
     const auto oldTokiPonaData = readCSV(OLD_TOKI_PONA);
     const auto phoneticsData = readCSV(PHONETICS);
     const auto mapData = readCSV(MAP);
 
     // データ準備
+    if (oldTokiPonaData.empty() || phoneticsData.empty() || mapData.empty())
+    {
+        return 0;
+    }
     const auto oldTokiPona = convertToLanguage(oldTokiPonaData[0], phoneticsData);
     const auto mapAdjacentData = getAdjacencies(mapData);
     const auto placeNameData = getNonEmptyStrings(mapData);
@@ -125,7 +109,6 @@ int main(int argc, char *argv[])
         }
     }
     // 出力
-    const auto TOKI_PONA_LANGUAGES = inputDataMap["TOKI_PONA_LANGUAGES"];
     exportLanguageToCSV(oldTokiPona, languageData, phoneticsData, TOKI_PONA_LANGUAGES);
     return 0;
 }

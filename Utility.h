@@ -4,13 +4,13 @@
 /**
  * CSVファイルを読み込んで2次元ベクトルで返す関数
  */
-std::vector<std::vector<std::string>> readCSV(const std::string &filename);
+std::vector<std::vector<std::string>> readCSV(const std::wstring &filename);
 
 /**
  * 2次元ベクトルをCSVファイルに出力する関数
  * @return 保存に成功したらtrue、失敗したらfalse
  */
-bool writeCSV(const std::string &filename, const std::vector<std::vector<std::string>> &data);
+bool writeCSV(const std::wstring &filename, const std::vector<std::vector<std::string>> &data);
 
 /**
  * 2次元データから隣接関係（横・縦）を抽出する関数

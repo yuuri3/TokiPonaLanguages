@@ -398,9 +398,9 @@ void exportLanguageToCSV(
     const Language &oldLanguage,
     const std::vector<struct Language> &languages,
     const std::vector<std::vector<std::string>> &table,
-    const std::string &filename)
+    const std::wstring &filename)
 {
-    std::ofstream file(filename);
+    std::ofstream file(filename.c_str());
     if (!file.is_open())
         return;
 
