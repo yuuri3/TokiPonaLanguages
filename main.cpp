@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     const auto oldTokiPona = convertToLanguage(oldTokiPonaData[0], phoneticsData);
     const auto mapAdjacentData = getAdjacencies(mapData);
     const auto placeNameData = getNonEmptyStrings(mapData);
-    auto languageData = createConditionalPairs(placeNameData, "0", oldTokiPona);
+    auto languageData = setOldLanguageOnMap(placeNameData, "0", oldTokiPona);
 
     int generation = -1;
     if (N_BOLLOW == 0)
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < N_BOLLOW; i++)
         {
             const auto adjucent = mapAdjacentData[getRandomInt(0, mapAdjacentData.size() - 1)];
-            BollowWord(languageData, generation, adjucent);
+            bollowWord(languageData, generation, adjucent);
         }
         // 音韻変化
         for (auto &language : languageData)
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
             {
                 continue;
             }
-            const auto sound = getRandomNonEmptyIndex(language);
+            const auto sound = getRandomSoundFromLanguage(language);
             SoundChange soundChange = makeSoundChangeRandom(sound, phoneticsData, P_REMOVE_SOUND);
             changeLanguageSound(language, soundChange);
         }
@@ -126,6 +126,6 @@ int main(int argc, char *argv[])
     }
     // 出力
     const auto TOKI_PONA_LANGUAGES = inputDataMap["TOKI_PONA_LANGUAGES"];
-    exportLanguageStructToCSV(oldTokiPona, languageData, phoneticsData, TOKI_PONA_LANGUAGES);
+    exportLanguageToCSV(oldTokiPona, languageData, phoneticsData, TOKI_PONA_LANGUAGES);
     return 0;
 }

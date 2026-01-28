@@ -129,7 +129,7 @@ Language convertToLanguage(const std::vector<std::string> strs, const std::vecto
     return result;
 }
 
-std::vector<Language> createConditionalPairs(
+std::vector<Language> setOldLanguageOnMap(
     const std::vector<std::string> &mapData,
     const std::string &startPlace,
     const Language &language)
@@ -394,7 +394,7 @@ SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector
     return result;
 }
 
-void exportLanguageStructToCSV(
+void exportLanguageToCSV(
     const Language &oldLanguage,
     const std::vector<struct Language> &languages,
     const std::vector<std::vector<std::string>> &table,
@@ -496,7 +496,7 @@ void exportLanguageStructToCSV(
     file.close();
 }
 
-void BollowWord(std::vector<Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData)
+void bollowWord(std::vector<Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData)
 {
     std::pair<Language *, Language *> langPair;
     for (size_t i = 0; i < languages.size(); i++)
@@ -599,7 +599,7 @@ void BollowWord(std::vector<Language> &languages, const int &generation, const s
     }
 }
 
-Phonetics getRandomNonEmptyIndex(const std::vector<std::vector<std::string>> &table)
+Phonetics getRandomSoundFromTable(const std::vector<std::vector<std::string>> &table)
 {
     // 1. 空ではないセルの「座標」をリストに貯める
     std::vector<Phonetics> pool;
@@ -625,7 +625,7 @@ Phonetics getRandomNonEmptyIndex(const std::vector<std::vector<std::string>> &ta
     return pool[getRandomInt(0, pool.size() - 1)];
 }
 
-Phonetics getRandomNonEmptyIndex(const Language &language)
+Phonetics getRandomSoundFromLanguage(const Language &language)
 {
     if (language.Words.empty())
     {

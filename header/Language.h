@@ -170,7 +170,7 @@ Language convertToLanguage(const std::vector<std::string> strs, const std::vecto
  * @param startPlace 祖語を配置する位置
  * @param language 祖語
  */
-std::vector<Language> createConditionalPairs(
+std::vector<Language> setOldLanguageOnMap(
     const std::vector<std::string> &mapData,
     const std::string &startPlace,
     const Language &language);
@@ -227,7 +227,7 @@ SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector
  * @param table 音素表
  * @param filename 出力ファイル名
  */
-void exportLanguageStructToCSV(
+void exportLanguageToCSV(
     const Language &oldLanguage,
     const std::vector<struct Language> &languages,
     const std::vector<std::vector<std::string>> &table,
@@ -241,21 +241,21 @@ void exportLanguageStructToCSV(
  *
  * @note 借用の履歴をlanguageに記録
  */
-void BollowWord(std::vector<Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData);
+void bollowWord(std::vector<Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData);
 
 /**
  * @brief 音素表から、音素をランダムに1つ選択する
  * @param table 音素表
  * @return 音素
  */
-Phonetics getRandomNonEmptyIndex(const std::vector<std::vector<std::string>> &table);
+Phonetics getRandomSoundFromTable(const std::vector<std::vector<std::string>> &table);
 
 /**
  * @brief 言語から、音素をランダムに1つ選択する
  * @param language 言語
  * @return 音素
  */
-Phonetics getRandomNonEmptyIndex(const Language &language);
+Phonetics getRandomSoundFromLanguage(const Language &language);
 
 /**
  * @brief 言語の影響度をランダムに変化させる
