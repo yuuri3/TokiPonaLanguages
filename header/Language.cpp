@@ -522,25 +522,69 @@ void BollowWord(std::vector<Language> &languages, const int &generation, const s
     {
         if (langPair.first->Strength > langPair.second->Strength)
         {
-            for (size_t i = 0; i < langPair.first->Words.size(); i++)
+            for (size_t i = 0; i < langPair.second->Words.size(); i++)
             {
+                Word nearestWord;
+                double maxDot = -1.0;
+                for (const auto &word : langPair.first->Words)
+                {
+                    const auto dot = langPair.second->Words[i].Meanings.Dot(word.Meanings);
+                    if (maxDot < dot)
+                    {
+                        maxDot = dot;
+                        nearestWord = word;
+                    }
+                }
                 if (getRandomInt(0, 1) == 0)
                 {
-                    langPair.second->Words[i] = langPair.first->Words[i];
-                    langPair.second->BollowHistory.push_back({generation, langPair.first->Place});
+                    bool isSameSoundWord = false;
+                    for (const auto &word : langPair.second->Words)
+                    {
+                        if (word.Sounds == nearestWord.Sounds)
+                        {
+                            isSameSoundWord = true;
+                        }
+                    }
+                    if (!isSameSoundWord)
+                    {
+                        langPair.second->Words[i].Sounds = nearestWord.Sounds;
+                    }
                 }
             }
+            langPair.second->BollowHistory.push_back({generation, langPair.first->Place});
         }
         else
         {
             for (size_t i = 0; i < langPair.first->Words.size(); i++)
             {
+                Word nearestWord;
+                double maxDot = -1.0;
+                for (const auto &word : langPair.second->Words)
+                {
+                    const auto dot = langPair.first->Words[i].Meanings.Dot(word.Meanings);
+                    if (maxDot < dot)
+                    {
+                        maxDot = dot;
+                        nearestWord = word;
+                    }
+                }
                 if (getRandomInt(0, 1) == 0)
                 {
-                    langPair.first->Words[i] = langPair.second->Words[i];
-                    langPair.first->BollowHistory.push_back({generation, langPair.second->Place});
+                    bool isSameSoundWord = false;
+                    for (const auto &word : langPair.first->Words)
+                    {
+                        if (word.Sounds == nearestWord.Sounds)
+                        {
+                            isSameSoundWord = true;
+                        }
+                    }
+                    if (!isSameSoundWord)
+                    {
+                        langPair.first->Words[i].Sounds = nearestWord.Sounds;
+                    }
                 }
             }
+            langPair.first->BollowHistory.push_back({generation, langPair.second->Place});
         }
     }
 }
