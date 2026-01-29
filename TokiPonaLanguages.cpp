@@ -157,6 +157,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
                 ConvertToStr(ctrl.hMapPath),
                 ConvertToStr(ctrl.hOutPath));
 
+            MessageBoxW(hwnd, L"simulation complete", L"", MB_OK);
+
             break;
         }
         break;
