@@ -157,7 +157,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
                 ConvertToStr(ctrl.hMapPath),
                 ConvertToStr(ctrl.hOutPath));
 
-            PostQuitMessage(0); // GUIを閉じる
             break;
         }
         break;
