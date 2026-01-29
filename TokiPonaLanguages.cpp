@@ -31,6 +31,7 @@ void SelectFile(HWND owner, HWND targetEdit)
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile);
     ofn.lpstrFilter = L"CSV Files\0*.csv\0All Files\0*.*\0";
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
     if (GetOpenFileNameW(&ofn))
         SetWindowTextW(targetEdit, szFile);
 }
