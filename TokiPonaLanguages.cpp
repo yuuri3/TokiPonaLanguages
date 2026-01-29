@@ -120,12 +120,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
                 return std::stod(buffer);
             };
 
-            auto ConvertToStr = [&](HWND hEdit)
+            auto ConvertToStr = [&](HWND hEdit) -> std::wstring
             {
-                wchar_t buffer[1024];
-                GetWindowTextW(hEdit, buffer, sizeof(buffer));
-                std::wstring result = buffer;
-                return result;
+                const int BUF_SIZE = 1024;
+                wchar_t buffer[BUF_SIZE] = {0};
+
+                int length = GetWindowTextW(hEdit, buffer, BUF_SIZE);
+
+                if (length <= 0)
+                    return L"";
+
+                for (int i = 0; i < length; ++i)
+                {
+                    if (buffer[i] == L'\\')
+                    {
+                        buffer[i] = L'/';
+                    }
+                }
+
+                return std::wstring(buffer, length);
             };
 
             MessageBoxW(hwnd, L"start simulation", L"Success", MB_OK);
