@@ -10,30 +10,35 @@ namespace
 Meaning Meaning::Add(const Meaning &meaning) const
 {
     Meaning result = *this;
-    for (const auto &m : meaning)
+    for (const auto &[key, value] : meaning)
     {
-        result[m.first] += m.second;
+        result[key] += value;
     }
     return result;
 }
 
 double Meaning::Dot(const Meaning &meaning) const
 {
-    Meaning m1 = *(this);
     double result = 0.0;
-    for (const auto &m : meaning)
+
+    for (const auto &[key, value] : meaning)
     {
-        result += m.second * m1[m.first];
+        auto it = find(key);
+        if (it != end())
+        {
+            result += value * it->second;
+        }
     }
+
     return result;
 }
 
 Meaning Meaning::Product(const double scalar) const
 {
     Meaning result = *this;
-    for (auto &m : result)
+    for (auto &[key, value] : result)
     {
-        m.second *= scalar;
+        value *= scalar;
     }
     return result;
 }
