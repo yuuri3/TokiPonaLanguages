@@ -174,7 +174,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
         PostQuitMessage(0);
         break;
     default:
-        return DefWindowProc(hwnd, uMsg, wp, lp);
+        return DefWindowProcW(hwnd, uMsg, wp, lp);
     }
     return 0;
 }
@@ -188,7 +188,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nShow)
     wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
     wc.lpszClassName = L"ParamWin";
     RegisterClassW(&wc);
-    HWND hwnd = CreateWindowW(L"ParamWin", L"TokiPonaLanguage Setting", WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 100, 100, 480, 480, NULL, NULL, hInst, NULL);
+    HWND hwnd = CreateWindowW(L"ParamWin", L"TokiPonaLanguages", WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 100, 100, 480, 480, NULL, NULL, hInst, NULL);
     ShowWindow(hwnd, nShow);
     MSG msg;
     while (GetMessageW(&msg, NULL, 0, 0))
