@@ -3,22 +3,22 @@
 #include <map>
 
 int evolution(
-    const int N_BOLLOW,
+    const int N_BORROW,
     const double P_SOUND_CHANGE,
-    const double P_REMOVE_SOUND,
-    const double P_MEANING_CHANGE,
-    const double MAX_MEANING_CHANGE_RATE,
-    const double P_REMOVE_WORD,
-    const double P_CREATE_WORD,
-    const std::wstring &OLD_TOKI_PONA,
-    const std::wstring &PHONETICS,
-    const std::wstring &MAP,
-    const std::wstring &TOKI_PONA_LANGUAGES)
+    const double P_SOUND_LOSS,
+    const double P_SEMANTIC_SHIFT,
+    const double MAX_SEMANTIC_SHIFT_RATE,
+    const double P_WORD_LOSS,
+    const double P_WORD_BIRTH,
+    const std::wstring &PROTO_LANGUAGE_PATH,
+    const std::wstring &PHONEME_TABLE_PATH,
+    const std::wstring &MAP_PATH,
+    const std::wstring &OUTPUT_PATH)
 {
     // ファイル読み込み
-    const auto oldTokiPonaData = readCSV(OLD_TOKI_PONA);
-    const auto phoneticsData = readCSV(PHONETICS);
-    const auto mapData = readCSV(MAP);
+    const auto oldTokiPonaData = readCSV(PROTO_LANGUAGE_PATH);
+    const auto phoneticsData = readCSV(PHONEME_TABLE_PATH);
+    const auto mapData = readCSV(MAP_PATH);
 
     // データ準備
     if (oldTokiPonaData.empty() || phoneticsData.empty() || mapData.empty())
@@ -31,7 +31,7 @@ int evolution(
     auto languageData = setOldLanguageOnMap(placeNameData, "0", oldTokiPona);
 
     int generation = -1;
-    if (N_BOLLOW == 0)
+    if (N_BORROW == 0)
     {
         return 0;
     }
@@ -48,7 +48,7 @@ int evolution(
             changeLanguageStrength(language);
         }
         // 借用
-        for (int i = 0; i < N_BOLLOW; i++)
+        for (int i = 0; i < N_BORROW; i++)
         {
             const auto adjucent = mapAdjacentData[getRandomInt(0, mapAdjacentData.size() - 1)];
             bollowWord(languageData, generation, adjucent);
@@ -67,19 +67,19 @@ int evolution(
                 continue;
             }
             const auto sound = getRandomSoundFromLanguage(language);
-            SoundChange soundChange = makeSoundChangeRandom(sound, phoneticsData, P_REMOVE_SOUND);
+            SoundChange soundChange = makeSoundChangeRandom(sound, phoneticsData, P_SOUND_LOSS);
             changeLanguageSound(language, soundChange);
         }
         // 単語の脱落と新語追加
         for (auto &language : languageData)
         {
             // 単語が脱落するかどうか
-            if (getWithProbability(P_REMOVE_WORD))
+            if (getWithProbability(P_WORD_LOSS))
             {
                 removeWordRandom(language, oldTokiPona);
             }
             // 単語を追加するかどうか
-            if (getWithProbability(P_CREATE_WORD))
+            if (getWithProbability(P_WORD_BIRTH))
             {
                 createWord(language);
             }
@@ -88,9 +88,9 @@ int evolution(
         for (auto &language : languageData)
         {
             // 意味変化するかどうか
-            if (getWithProbability(P_MEANING_CHANGE))
+            if (getWithProbability(P_SEMANTIC_SHIFT))
             {
-                changeLanguageMeaning(language, oldTokiPona, MAX_MEANING_CHANGE_RATE);
+                changeLanguageMeaning(language, oldTokiPona, MAX_SEMANTIC_SHIFT_RATE);
             }
         }
         // 各位置に言語があれば終了
@@ -109,6 +109,6 @@ int evolution(
         }
     }
     // 出力
-    exportLanguageToCSV(oldTokiPona, languageData, phoneticsData, TOKI_PONA_LANGUAGES);
+    exportLanguageToCSV(oldTokiPona, languageData, phoneticsData, OUTPUT_PATH);
     return 0;
 }

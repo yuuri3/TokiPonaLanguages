@@ -65,21 +65,21 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
         };
 
         // パラメータ行（ボタンなし: 第3引数を省略）
-        AddRow(L"N_BOLLOW", L"4", ctrl.hN_Bollow);
+        AddRow(L"N_BORROW", L"4", ctrl.hN_Bollow);
         AddRow(L"P_SOUND_CHANGE", L"0.3", ctrl.hPSound);
-        AddRow(L"P_REMOVE_SOUND", L"0.3", ctrl.hPRemoveS);
-        AddRow(L"P_MEANING_CHANGE", L"0.0", ctrl.hPMeaning);
-        AddRow(L"MAX_MEANING_RATE", L"0.0", ctrl.hMaxMeaning);
-        AddRow(L"P_REMOVE_WORD", L"0.0", ctrl.hPRemoveW);
-        AddRow(L"P_CREATE_WORD", L"0.0", ctrl.hPCreateW);
+        AddRow(L"P_SOUND_LOSS", L"0.3", ctrl.hPRemoveS);
+        AddRow(L"P_SEMANTIC_SHIFT", L"0.0", ctrl.hPMeaning);
+        AddRow(L"MAX_SHIFT_RATE", L"0.0", ctrl.hMaxMeaning);
+        AddRow(L"P_WORD_LOSS", L"0.0", ctrl.hPRemoveW);
+        AddRow(L"P_WORD_BIRTH", L"0.0", ctrl.hPCreateW);
 
         y += 10; // 少し隙間を空ける
 
         // ファイルパス行（ボタンあり: IDを指定）
-        AddRow(L"OLD_TOKI_PONA (.csv)", L"OldTokiPona.csv", ctrl.hOldPath, ID_BTN_OLD_CSV);
-        AddRow(L"PHONETICS (.csv)", L"Phonetics.csv", ctrl.hPhonPath, ID_BTN_PHON_CSV);
-        AddRow(L"MAP (.csv)", L"Map.csv", ctrl.hMapPath, ID_BTN_MAP_CSV);
-        AddRow(L"OUTPUT PATH", L"ignore/Output.csv", ctrl.hOutPath, ID_BTN_OUT_PATH);
+        AddRow(L"PROTO_LANGUAGE_PATH", L"OldTokiPona.csv", ctrl.hOldPath, ID_BTN_OLD_CSV);
+        AddRow(L"PHONEME_TABLE_PATH", L"Phonetics.csv", ctrl.hPhonPath, ID_BTN_PHON_CSV);
+        AddRow(L"MAP_PATH", L"Map.csv", ctrl.hMapPath, ID_BTN_MAP_CSV);
+        AddRow(L"OUTPUT_PATH", L"ignore/Output.csv", ctrl.hOutPath, ID_BTN_OUT_PATH);
 
         // 実行ボタン
         CreateWindowW(L"BUTTON", L"START",
@@ -174,7 +174,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
         PostQuitMessage(0);
         break;
     default:
-        return DefWindowProc(hwnd, uMsg, wp, lp);
+        return DefWindowProcW(hwnd, uMsg, wp, lp);
     }
     return 0;
 }
@@ -188,7 +188,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nShow)
     wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
     wc.lpszClassName = L"ParamWin";
     RegisterClassW(&wc);
-    HWND hwnd = CreateWindowW(L"ParamWin", L"TokiPonaLanguage Setting", WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 100, 100, 480, 480, NULL, NULL, hInst, NULL);
+    HWND hwnd = CreateWindowW(L"ParamWin", L"TokiPonaLanguages", WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 100, 100, 480, 480, NULL, NULL, hInst, NULL);
     ShowWindow(hwnd, nShow);
     MSG msg;
     while (GetMessageW(&msg, NULL, 0, 0))
