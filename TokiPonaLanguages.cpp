@@ -12,7 +12,8 @@ enum
     ID_BTN_PHON_CSV,
     ID_BTN_MAP_CSV,
     ID_BTN_OUT_PATH,
-    ID_BTN_RUN
+    ID_BTN_RUN,
+    ID_BTN_END
 };
 
 // 入力欄のハンドルを保持する構造体
@@ -82,7 +83,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
 
         // 実行ボタン
         CreateWindowW(L"BUTTON", L"START",
-                      WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 150, y + 20, 150, 40, hwnd, (HMENU)ID_BTN_RUN, NULL, NULL);
+                      WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 70, y + 20, 150, 40, hwnd, (HMENU)ID_BTN_RUN, NULL, NULL);
+        CreateWindowW(L"BUTTON", L"END",
+                      WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 230, y + 20, 150, 40, hwnd, (HMENU)ID_BTN_END, NULL, NULL);
         break;
     }
     case WM_COMMAND:
@@ -105,7 +108,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
             break;
 
         case ID_BTN_RUN:
-
+        {
             // 各エディタコントロールから文字列を取得して書き込む関数
             auto ConvertToInt = [&](HWND hEdit)
             {
@@ -159,6 +162,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
 
             MessageBoxW(hwnd, L"simulation complete", L"", MB_OK);
 
+            break;
+        }
+        case ID_BTN_END:
+            PostQuitMessage(0);
             break;
         }
         break;
