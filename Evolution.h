@@ -81,7 +81,7 @@ int evolution(
             // 単語を追加するかどうか
             if (getWithProbability(P_WORD_BIRTH))
             {
-                createWord(language);
+                createWord(language, oldTokiPona);
             }
         }
         // 単語の意味変化

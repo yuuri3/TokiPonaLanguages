@@ -1,6 +1,7 @@
 #include "Language.h"
 #include <fstream>
 #include <cmath>
+#include <set>
 
 namespace
 {
@@ -61,6 +62,20 @@ Word Word::Add(const Word &word) const
     result.Meanings = Meanings.Add(word.Meanings);
     result.Meanings.Normalize();
     return result;
+}
+
+void Word::UpdateNearestProtoWord(const Language &language)
+{
+    double maxDot = -1.0;
+    for (const auto &word : language.Words)
+    {
+        const double dot = Meanings.Dot(word.Meanings);
+        if (dot > maxDot)
+        {
+            maxDot = dot;
+            NearestProtoWord = word.Sounds;
+        }
+    }
 }
 
 std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vector<std::vector<std::string>> &table)
@@ -127,6 +142,7 @@ Language convertToLanguage(const std::vector<std::string> &strs, const std::vect
         Word word;
         word.Sounds = convertToPhonetics(str, table);
         word.Meanings[str] = 1.0;
+        word.NearestProtoWord = word.Sounds;
         result.Words.emplace_back(word);
     }
     result.Strength = 0.0;
@@ -323,47 +339,19 @@ void changeLanguageMeaning(
     const int changeRate = getRandomDouble(0.0, maxChangeRate);
     newLanguage.Words[index].Meanings = newLanguage.Words[index].Meanings.Add(word2.Meanings.Product(changeRate));
     newLanguage.Words[index].Meanings.Normalize();
+    newLanguage.Words[index].UpdateNearestProtoWord(OldLanguage);
 
-    Word nearestToWord2OldWord;
-    double maxDot = -1.0;
-    for (const auto &oldWord : OldLanguage.Words)
-    {
-        const double dot = word2.Meanings.Dot(oldWord.Meanings);
-        if (maxDot < dot)
-        {
-            maxDot = dot;
-            nearestToWord2OldWord = oldWord;
-        }
-    }
-    std::map<Word, std::vector<Word>> mapOldWordToNewWord;
+    // 祖語と最低１単語の意味が対応するようにする。
+    // newLanguage に対応する単語がある祖語の単語のセット
+    std::set<std::vector<Phonetics>> NewToProtoWordSet;
     for (const auto &word : newLanguage.Words)
     {
-        Word nearestOldWord;
-        maxDot = -1.0;
-        for (const auto &oldWord : OldLanguage.Words)
-        {
-            if (oldWord != nearestToWord2OldWord)
-            {
-                continue;
-            }
-            const double dot = word.Meanings.Dot(oldWord.Meanings);
-            if (maxDot < dot)
-            {
-                maxDot = dot;
-                nearestOldWord = oldWord;
-            }
-        }
-        mapOldWordToNewWord[nearestOldWord].emplace_back(word);
+        NewToProtoWordSet.insert(word.NearestProtoWord);
     }
-    for (const auto &m : mapOldWordToNewWord)
+    if (language.Words.size() == NewToProtoWordSet.size())
     {
-        if (m.second.empty())
-        {
-            return;
-        }
+        language = newLanguage;
     }
-
-    language = newLanguage;
 }
 
 SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector<std::vector<std::string>> &table, const double pRemoveSound)
@@ -642,44 +630,32 @@ void changeLanguageStrength(Language &language)
 
 void removeWordRandom(Language &language, const Language &oldLanguage)
 {
-    std::map<Word, std::vector<int>> mapOldWordToWordIndex;
+    // 対応する祖語の単語ごとに単語を分ける
+    std::map<std::vector<Phonetics>, std::vector<int>> mapProtoWordToWordIndice;
     for (int i = 0; i < language.Words.size(); i++)
     {
-        const Word word = language.Words[i];
-        Word nearestOldWord;
-        double maxDot = -1.0;
-        for (const auto &oldWord : oldLanguage.Words)
-        {
-            const double dot = word.Meanings.Dot(oldWord.Meanings);
-            if (maxDot < dot)
-            {
-                maxDot = dot;
-                nearestOldWord = oldWord;
-            }
-        }
-        mapOldWordToWordIndex[nearestOldWord].emplace_back(i);
+        const auto &word = language.Words[i];
+        mapProtoWordToWordIndice[word.NearestProtoWord].emplace_back(i);
     }
-
-    std::vector<std::vector<int>> wordIndeceHasSameMeaningPair;
-    for (const auto &oldWord : oldLanguage.Words)
+    // 同じ祖語の単語に対応する単語がある単語
+    std::vector<int> duplicatedWordIndice;
+    for (const auto &[key, value] : mapProtoWordToWordIndice)
     {
-        if (mapOldWordToWordIndex[oldWord].size() > 1)
+        if (value.size() > 1)
         {
-            wordIndeceHasSameMeaningPair.emplace_back(mapOldWordToWordIndex[oldWord]);
+            duplicatedWordIndice.insert(duplicatedWordIndice.end(), value.begin(), value.end());
         }
     }
-
-    if (wordIndeceHasSameMeaningPair.empty())
+    if (duplicatedWordIndice.empty())
     {
         return;
     }
 
-    const auto words = wordIndeceHasSameMeaningPair[getRandomInt(0, (int)wordIndeceHasSameMeaningPair.size() - 1)];
-    const auto index = words[getRandomInt(0, (int)words.size() - 1)];
-    language.Words.erase(language.Words.begin() + index);
+    const int index = getRandomInt(0, (int)duplicatedWordIndice.size() - 1);
+    language.Words.erase(language.Words.begin() + duplicatedWordIndice[index]);
 }
 
-void createWord(Language &language)
+void createWord(Language &language, const Language &oldLanguage)
 {
     if (language.Words.empty())
     {
@@ -688,6 +664,7 @@ void createWord(Language &language)
     const auto word1 = language.Words[getRandomInt(0, (int)language.Words.size() - 1)];
     const auto word2 = language.Words[getRandomInt(0, (int)language.Words.size() - 1)];
 
-    const auto newWord = word1.Add(word2);
+    auto newWord = word1.Add(word2);
+    newWord.UpdateNearestProtoWord(oldLanguage);
     language.Words.emplace_back(newWord);
 }

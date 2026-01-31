@@ -68,6 +68,8 @@ public:
     void Normalize();
 };
 
+struct Language;
+
 /**
  * @brief 単語
  *
@@ -78,6 +80,9 @@ struct Word
     std::vector<Phonetics> Sounds;
     // 意味
     Meaning Meanings;
+    // 最も意味の近い祖語の単語
+    // 高速化のためメンバ化
+    std::vector<Phonetics> NearestProtoWord;
 
     bool operator==(const Word &other) const
     {
@@ -101,6 +106,13 @@ struct Word
      * @return 複合語
      */
     Word Add(const Word &word) const;
+
+    /**
+     * @brief NearestProtoWordを更新する
+     *
+     * @param language 祖語
+     */
+    void UpdateNearestProtoWord(const Language &language);
 };
 
 /**
@@ -274,5 +286,6 @@ void removeWordRandom(Language &language, const Language &oldLanguage);
  * @brief 言語に単語を追加する
  *
  * @param language 言語
+ * @param oldLanguage 祖語
  */
-void createWord(Language &language);
+void createWord(Language &language, const Language &oldLanguage);
