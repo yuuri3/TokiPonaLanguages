@@ -81,6 +81,7 @@ void Word::UpdateNearestProtoWord(const Language &language)
 std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vector<std::vector<std::string>> &table)
 {
     std::vector<Phonetics> output;
+    output.reserve(str.length());
 
     // 1. 検索を高速化するために Map に変換 (文字列 -> {行, 列})
     std::map<std::string, Phonetics> lookup;
@@ -156,6 +157,7 @@ std::vector<Language> setOldLanguageOnMap(
     const Language &language)
 {
     std::vector<Language> result;
+    result.reserve(mapData.size());
 
     for (const std::string &item : mapData)
     {
@@ -590,6 +592,7 @@ Phonetics getRandomSoundFromTable(const std::vector<std::vector<std::string>> &t
 {
     // 1. 空ではないセルの「座標」をリストに貯める
     std::vector<Phonetics> pool;
+    pool.reserve(table.size() * table[0].size());
 
     for (int r = 0; r < (int)table.size(); ++r)
     {
@@ -639,6 +642,7 @@ void removeWordRandom(Language &language, const Language &oldLanguage)
     }
     // 同じ祖語の単語に対応する単語がある単語
     std::vector<int> duplicatedWordIndice;
+    duplicatedWordIndice.reserve(language.Words.size());
     for (const auto &[key, value] : mapProtoWordToWordIndice)
     {
         if (value.size() > 1)
