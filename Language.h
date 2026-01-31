@@ -121,8 +121,6 @@ struct Word
  */
 struct Language
 {
-    // 位置
-    std::string Place;
     // 影響度、大きい方から小さいほうへ単語が借用される
     double Strength;
     // 語彙
@@ -182,7 +180,7 @@ Language convertToLanguage(const std::vector<std::string> &strs, const std::vect
  * @param startPlace 祖語を配置する位置
  * @param language 祖語
  */
-std::vector<Language> setOldLanguageOnMap(
+std::map<std::string, Language> setOldLanguageOnMap(
     const std::vector<std::string> &mapData,
     const std::string &startPlace,
     const Language &language);
@@ -241,7 +239,7 @@ SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector
  */
 void exportLanguageToCSV(
     const Language &oldLanguage,
-    const std::vector<struct Language> &languages,
+    const std::map<std::string, Language> &languages,
     const std::vector<std::vector<std::string>> &table,
     const std::wstring &filename);
 
@@ -253,7 +251,7 @@ void exportLanguageToCSV(
  *
  * @note 借用の履歴をlanguageに記録
  */
-void bollowWord(std::vector<Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData);
+void bollowWord(std::map<std::string, Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData);
 
 /**
  * @brief 音素表から、音素をランダムに1つ選択する

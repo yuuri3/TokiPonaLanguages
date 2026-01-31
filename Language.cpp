@@ -151,13 +151,12 @@ Language convertToLanguage(const std::vector<std::string> &strs, const std::vect
     return result;
 }
 
-std::vector<Language> setOldLanguageOnMap(
+std::map<std::string, Language> setOldLanguageOnMap(
     const std::vector<std::string> &mapData,
     const std::string &startPlace,
     const Language &language)
 {
-    std::vector<Language> result;
-    result.reserve(mapData.size());
+    std::map<std::string, Language> result;
 
     for (const std::string &item : mapData)
     {
@@ -174,9 +173,7 @@ std::vector<Language> setOldLanguageOnMap(
         }
 
         // 位置を設定
-        p.Place = item;
-
-        result.push_back(p);
+        result[item] = p;
     }
 
     return result;
@@ -213,11 +210,11 @@ void changeLanguageSound(
     const bool isSoundDuplication)
 {
     Language newLanguage;
-    newLanguage.Place = language.Place;
     newLanguage.BollowHistory = language.BollowHistory;
     for (auto &word : language.Words)
     {
         Word newWord;
+        newWord.NearestProtoWord = word.NearestProtoWord;
         newWord.Meanings = word.Meanings;
         for (size_t i = 0; i < word.Sounds.size(); i += 1)
         {
@@ -385,7 +382,7 @@ SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector
 
 void exportLanguageToCSV(
     const Language &oldLanguage,
-    const std::vector<struct Language> &languages,
+    const std::map<std::string, Language> &languages,
     const std::vector<std::vector<std::string>> &table,
     const std::wstring &filename)
 {
@@ -395,31 +392,21 @@ void exportLanguageToCSV(
 
     // ヘッダー行 (Place)
     file << ",";
-    for (size_t i = 0; i < languages.size(); ++i)
+    for (const auto &[place, language] : languages)
     {
-        file << languages[i].Place << ",";
+        file << place << ",";
     }
     file << "\n";
     // 祖語の単語との対応
-    std::vector<std::map<Word, std::vector<Word>>> mapsOldWordToWord(languages.size());
-    for (int i = 0; i < languages.size(); i++)
+    std::vector<std::map<std::vector<Phonetics>, std::vector<Word>>> mapsOldWordToWord;
+    for (const auto &[place, language] : languages)
     {
-        const auto language = languages[i];
+        std::map<std::vector<Phonetics>, std::vector<Word>> map;
         for (const auto &word : language.Words)
         {
-            Word nearestOldWord;
-            double maxDot = -1.0;
-            for (const auto &oldWord : oldLanguage.Words)
-            {
-                const double dot = word.Meanings.Dot(oldWord.Meanings);
-                if (maxDot < dot)
-                {
-                    maxDot = dot;
-                    nearestOldWord = oldWord;
-                }
-            }
-            mapsOldWordToWord[i][nearestOldWord].emplace_back(word);
+            map[word.NearestProtoWord].emplace_back(word);
         }
+        mapsOldWordToWord.emplace_back(map);
     }
     // 言語名（Toki Pona からの変化）
     file << "Toki Pona" << ",";
@@ -438,14 +425,14 @@ void exportLanguageToCSV(
     }
     for (size_t i = 0; i < languages.size(); ++i)
     {
-        if (mapsOldWordToWord[i][oldLanguage.Words[indexToki]].empty() || mapsOldWordToWord[i][oldLanguage.Words[indexPona]].empty())
+        if (mapsOldWordToWord[i][oldLanguage.Words[indexToki].Sounds].empty() || mapsOldWordToWord[i][oldLanguage.Words[indexPona].Sounds].empty())
         {
             file << ",";
         }
         else
         {
-            auto toki = convertToString(mapsOldWordToWord[i][oldLanguage.Words[indexToki]][0].Sounds, table);
-            auto pona = convertToString(mapsOldWordToWord[i][oldLanguage.Words[indexPona]][0].Sounds, table);
+            auto toki = convertToString(mapsOldWordToWord[i][oldLanguage.Words[indexToki].Sounds][0].Sounds, table);
+            auto pona = convertToString(mapsOldWordToWord[i][oldLanguage.Words[indexPona].Sounds][0].Sounds, table);
             toki[0] = std::toupper(toki[0]);
             pona[0] = std::toupper(pona[0]);
             file << toki << " " << pona << ",";
@@ -458,7 +445,7 @@ void exportLanguageToCSV(
         int maxWordNumNearToOldWord = 0;
         for (size_t i = 0; i < languages.size(); ++i)
         {
-            maxWordNumNearToOldWord = std::max(maxWordNumNearToOldWord, (int)mapsOldWordToWord[i][oldWord].size());
+            maxWordNumNearToOldWord = std::max(maxWordNumNearToOldWord, (int)mapsOldWordToWord[i][oldWord.Sounds].size());
         }
         for (int i = 0; i < maxWordNumNearToOldWord; i++)
         {
@@ -469,9 +456,9 @@ void exportLanguageToCSV(
             file << ",";
             for (size_t j = 0; j < languages.size(); ++j)
             {
-                if (i < mapsOldWordToWord[j][oldWord].size())
+                if (i < mapsOldWordToWord[j][oldWord.Sounds].size())
                 {
-                    file << convertToString(mapsOldWordToWord[j][oldWord][i].Sounds, table);
+                    file << convertToString(mapsOldWordToWord[j][oldWord.Sounds][i].Sounds, table);
                 }
                 if (j != languages.size() - 1)
                 {
@@ -485,49 +472,38 @@ void exportLanguageToCSV(
     file.close();
 }
 
-void bollowWord(std::vector<Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData)
+void bollowWord(std::map<std::string, Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData)
 {
-    std::pair<Language *, Language *> langPair;
-    for (size_t i = 0; i < languages.size(); i++)
-    {
-        if (languages[i].Place == adjucentData.first)
-        {
-            langPair.first = &(languages[i]);
-        }
-        else if (languages[i].Place == adjucentData.second)
-        {
-            langPair.second = &(languages[i]);
-        }
-    }
-    if (langPair.first->Words.empty() && langPair.second->Words.empty())
+    std::pair<Language &, Language &> langPair = {languages[adjucentData.first], languages[adjucentData.second]};
+    if (langPair.first.Words.empty() && langPair.second.Words.empty())
     {
         return;
     }
-    else if (!langPair.first->Words.empty() && langPair.second->Words.empty())
+    else if (!langPair.first.Words.empty() && langPair.second.Words.empty())
     {
-        langPair.second->Words = langPair.first->Words;
-        langPair.second->Strength = langPair.first->Strength;
-        langPair.second->BollowHistory.push_back({generation, langPair.first->Place});
+        langPair.second.Words = langPair.first.Words;
+        langPair.second.Strength = langPair.first.Strength;
+        langPair.second.BollowHistory.push_back({generation, adjucentData.first});
         return;
     }
-    else if (langPair.first->Words.empty() && !langPair.second->Words.empty())
+    else if (langPair.first.Words.empty() && !langPair.second.Words.empty())
     {
-        langPair.first->Words = langPair.second->Words;
-        langPair.first->Strength = langPair.second->Strength;
-        langPair.first->BollowHistory.push_back({generation, langPair.second->Place});
+        langPair.first.Words = langPair.second.Words;
+        langPair.first.Strength = langPair.second.Strength;
+        langPair.first.BollowHistory.push_back({generation, adjucentData.second});
         return;
     }
-    else if (!langPair.first->Words.empty() && !langPair.second->Words.empty())
+    else if (!langPair.first.Words.empty() && !langPair.second.Words.empty())
     {
-        if (langPair.first->Strength > langPair.second->Strength)
+        if (langPair.first.Strength > langPair.second.Strength)
         {
-            for (size_t i = 0; i < langPair.second->Words.size(); i++)
+            for (size_t i = 0; i < langPair.second.Words.size(); i++)
             {
                 Word nearestWord;
                 double maxDot = -1.0;
-                for (const auto &word : langPair.first->Words)
+                for (const auto &word : langPair.first.Words)
                 {
-                    const auto dot = langPair.second->Words[i].Meanings.Dot(word.Meanings);
+                    const auto dot = langPair.second.Words[i].Meanings.Dot(word.Meanings);
                     if (maxDot < dot)
                     {
                         maxDot = dot;
@@ -537,7 +513,7 @@ void bollowWord(std::vector<Language> &languages, const int &generation, const s
                 if (getRandomInt(0, 1) == 0)
                 {
                     bool isSameSoundWord = false;
-                    for (const auto &word : langPair.second->Words)
+                    for (const auto &word : langPair.second.Words)
                     {
                         if (word.Sounds == nearestWord.Sounds)
                         {
@@ -546,21 +522,21 @@ void bollowWord(std::vector<Language> &languages, const int &generation, const s
                     }
                     if (!isSameSoundWord)
                     {
-                        langPair.second->Words[i].Sounds = nearestWord.Sounds;
+                        langPair.second.Words[i].Sounds = nearestWord.Sounds;
                     }
                 }
             }
-            langPair.second->BollowHistory.push_back({generation, langPair.first->Place});
+            langPair.second.BollowHistory.push_back({generation, adjucentData.first});
         }
         else
         {
-            for (size_t i = 0; i < langPair.first->Words.size(); i++)
+            for (size_t i = 0; i < langPair.first.Words.size(); i++)
             {
                 Word nearestWord;
                 double maxDot = -1.0;
-                for (const auto &word : langPair.second->Words)
+                for (const auto &word : langPair.second.Words)
                 {
-                    const auto dot = langPair.first->Words[i].Meanings.Dot(word.Meanings);
+                    const auto dot = langPair.first.Words[i].Meanings.Dot(word.Meanings);
                     if (maxDot < dot)
                     {
                         maxDot = dot;
@@ -570,7 +546,7 @@ void bollowWord(std::vector<Language> &languages, const int &generation, const s
                 if (getRandomInt(0, 1) == 0)
                 {
                     bool isSameSoundWord = false;
-                    for (const auto &word : langPair.first->Words)
+                    for (const auto &word : langPair.first.Words)
                     {
                         if (word.Sounds == nearestWord.Sounds)
                         {
@@ -579,11 +555,11 @@ void bollowWord(std::vector<Language> &languages, const int &generation, const s
                     }
                     if (!isSameSoundWord)
                     {
-                        langPair.first->Words[i].Sounds = nearestWord.Sounds;
+                        langPair.first.Words[i].Sounds = nearestWord.Sounds;
                     }
                 }
             }
-            langPair.first->BollowHistory.push_back({generation, langPair.second->Place});
+            langPair.first.BollowHistory.push_back({generation, adjucentData.second});
         }
     }
 }

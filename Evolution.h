@@ -2,6 +2,8 @@
 #include <iostream>
 #include <map>
 
+#include <iostream>
+
 int evolution(
     const int N_BORROW,
     const double P_SOUND_CHANGE,
@@ -43,7 +45,7 @@ int evolution(
     {
         generation++;
         // 言語の影響度を変化させる。
-        for (auto &language : languageData)
+        for (auto &[_, language] : languageData)
         {
             changeLanguageStrength(language);
         }
@@ -54,7 +56,7 @@ int evolution(
             bollowWord(languageData, generation, adjucent);
         }
         // 音韻変化
-        for (auto &language : languageData)
+        for (auto &[_, language] : languageData)
         {
             // 音韻変化するかどうか
             if (!getWithProbability(P_SOUND_CHANGE))
@@ -71,7 +73,7 @@ int evolution(
             changeLanguageSound(language, soundChange);
         }
         // 単語の脱落と新語追加
-        for (auto &language : languageData)
+        for (auto &[_, language] : languageData)
         {
             // 単語が脱落するかどうか
             if (getWithProbability(P_WORD_LOSS))
@@ -85,7 +87,7 @@ int evolution(
             }
         }
         // 単語の意味変化
-        for (auto &language : languageData)
+        for (auto &[_, language] : languageData)
         {
             // 意味変化するかどうか
             if (getWithProbability(P_SEMANTIC_SHIFT))
@@ -95,7 +97,7 @@ int evolution(
         }
         // 各位置に言語があれば終了
         bool isThereAllLanguage = true;
-        for (auto &language : languageData)
+        for (auto &[_, language] : languageData)
         {
             if (language.Words.empty())
             {
