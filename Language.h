@@ -162,7 +162,7 @@ std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vec
  * @param table 音素表
  * @return 言語
  */
-Language convertToLanguage(const std::vector<std::string> strs, const std::vector<std::vector<std::string>> &table);
+Language convertToLanguage(const std::vector<std::string> &strs, const std::vector<std::vector<std::string>> &table);
 
 /**
  * 地図データの特定の位置に祖語を配置する

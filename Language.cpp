@@ -119,7 +119,7 @@ std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vec
     return output;
 }
 
-Language convertToLanguage(const std::vector<std::string> strs, const std::vector<std::vector<std::string>> &table)
+Language convertToLanguage(const std::vector<std::string> &strs, const std::vector<std::vector<std::string>> &table)
 {
     Language result;
     for (const auto &str : strs)
