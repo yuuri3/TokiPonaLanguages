@@ -284,7 +284,7 @@ void changeLanguageSound(
             }
         }
     }
-    // ミニマルペアを戻す処理
+    // 同音語になる単語は変化させない
     if (isProhibiteMinimalPair)
     {
         // 1. 各要素が全体で何回現れるかをカウントする
@@ -295,22 +295,16 @@ void changeLanguageSound(
             counts[item.Sounds]++;
         }
 
-        // 2. カウントが1より大きい（重複している）要素をBの要素で置換する
+        // 2. カウントが1の要素を変更
         for (size_t i = 0; i < newLanguage.Words.size(); ++i)
         {
             // A[i] という値が全体で2回以上現れているかチェック
-            if (counts[newLanguage.Words[i].Sounds] > 1)
+            if (counts[newLanguage.Words[i].Sounds] == 1)
             {
-                // AとBのインデックスを同期させて置き換え
-                // BのサイズがAより小さい場合に備えて境界チェックを行う
-                if (i < language.Words.size())
-                {
-                    newLanguage.Words[i] = language.Words[i];
-                }
+                language.Words[i] = newLanguage.Words[i];
             }
         }
     }
-    language = newLanguage;
 }
 
 void changeLanguageMeaning(
