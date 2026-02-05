@@ -124,9 +124,7 @@ struct Language
     // 影響度、大きい方から小さいほうへ単語が借用される
     double Strength;
     // 語彙
-    std::vector<Word> Words;
-    // 借用履歴
-    std::vector<std::pair<int, std::string>> BollowHistory;
+    std::map<int, Word> Words;
 };
 
 /**
@@ -376,7 +374,7 @@ SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector
  * @param filename 出力ファイル名
  */
 void exportLanguageToCSV(
-    const Language &oldLanguage,
+    Language &oldLanguage,
     const std::map<std::string, Language> &languages,
     const std::vector<std::vector<std::string>> &table,
     const std::wstring &filename);
@@ -403,7 +401,7 @@ Phonetics getRandomSoundFromTable(const std::vector<std::vector<std::string>> &t
  * @param language 言語
  * @return 音素
  */
-Phonetics getRandomSoundFromLanguage(const Language &language);
+Phonetics getRandomSoundFromLanguage(Language &language);
 
 /**
  * @brief 言語の影響度をランダムに変化させる

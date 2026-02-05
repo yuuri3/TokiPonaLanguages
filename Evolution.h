@@ -27,7 +27,8 @@ int evolution(
     {
         return 0;
     }
-    const auto oldTokiPona = convertToLanguage(oldTokiPonaData[0], phoneticsData);
+
+    auto oldTokiPona = convertToLanguage(oldTokiPonaData[0], phoneticsData);
     const auto mapAdjacentData = getAdjacencies(mapData);
     const auto placeNameData = getNonEmptyStrings(mapData);
     auto languageData = setOldLanguageOnMap(placeNameData, "0", oldTokiPona);

@@ -67,7 +67,7 @@ Word Word::Add(const Word &word) const
 void Word::UpdateNearestProtoWord(const Language &language)
 {
     double maxDot = -1.0;
-    for (const auto &word : language.Words)
+    for (const auto &[_, word] : language.Words)
     {
         const double dot = Meanings.Dot(word.Meanings);
         if (dot > maxDot)
@@ -209,10 +209,17 @@ Language convertToLanguage(const std::vector<std::string> &strs, const std::vect
         word.Sounds = convertToPhonetics(str, table);
         word.Meanings[str] = 1.0;
         word.NearestProtoWord = word.Sounds;
-        result.Words.emplace_back(word);
+        if (result.Words.empty())
+        {
+            result.Words[0] = word;
+        }
+        else
+        {
+            const int newWordId = result.Words.rbegin()->first + 1;
+            result.Words[newWordId] = word;
+        }
     }
     result.Strength = 0.0;
-    result.BollowHistory = {};
     return result;
 }
 
@@ -229,7 +236,6 @@ std::map<std::string, Language> setOldLanguageOnMap(
         Language p;
         p.Strength = 0.0;
         p.Words = {};
-        p.BollowHistory = {};
 
         // もし1番目の要素がtargetAと一致したら、2番目をreplacementBにする
         if (item == startPlace)
@@ -275,8 +281,7 @@ void changeLanguageSound(
     const bool isSoundDuplication)
 {
     Language newLanguage;
-    newLanguage.BollowHistory = language.BollowHistory;
-    for (auto &word : language.Words)
+    for (auto &[_, word] : language.Words)
     {
         Word newWord;
         newWord.NearestProtoWord = word.NearestProtoWord;
@@ -310,7 +315,15 @@ void changeLanguageSound(
                 newWord.Sounds.push_back(word.Sounds[i]);
             }
         }
-        newLanguage.Words.emplace_back(newWord);
+        if (newLanguage.Words.empty())
+        {
+            newLanguage.Words[0] = newWord;
+        }
+        else
+        {
+            const int newWordId = newLanguage.Words.rbegin()->first + 1;
+            newLanguage.Words[newWordId] = newWord;
+        }
     }
     // 子音、母音の重複を禁止する処理
     if (isSoundDuplication)
@@ -370,7 +383,7 @@ void changeLanguageSound(
         // 1. 各要素が全体で何回現れるかをカウントする
         // 重複を「先出し」で判定するため、一度全件走査が必要
         std::map<std::vector<Phonetics>, int> counts;
-        for (const auto &item : newLanguage.Words)
+        for (const auto &[_, item] : newLanguage.Words)
         {
             counts[item.Sounds]++;
         }
@@ -408,7 +421,7 @@ void changeLanguageMeaning(
     // 祖語と最低１単語の意味が対応するようにする。
     // newLanguage に対応する単語がある祖語の単語のセット
     std::set<std::vector<Phonetics>> NewToProtoWordSet;
-    for (const auto &word : newLanguage.Words)
+    for (const auto &[_, word] : newLanguage.Words)
     {
         NewToProtoWordSet.insert(word.NearestProtoWord);
     }
@@ -446,7 +459,7 @@ SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector
 }
 
 void exportLanguageToCSV(
-    const Language &oldLanguage,
+    Language &oldLanguage,
     const std::map<std::string, Language> &languages,
     const std::vector<std::vector<std::string>> &table,
     const std::wstring &filename)
@@ -467,7 +480,7 @@ void exportLanguageToCSV(
     for (const auto &[place, language] : languages)
     {
         std::map<std::vector<Phonetics>, std::vector<Word>> map;
-        for (const auto &word : language.Words)
+        for (const auto &[_, word] : language.Words)
         {
             map[word.NearestProtoWord].emplace_back(word);
         }
@@ -505,7 +518,7 @@ void exportLanguageToCSV(
     }
     file << "\n";
     // 単語出力
-    for (const auto &oldWord : oldLanguage.Words)
+    for (const auto &[_, oldWord] : oldLanguage.Words)
     {
         int maxWordNumNearToOldWord = 0;
         for (size_t i = 0; i < languages.size(); ++i)
@@ -548,14 +561,12 @@ void bollowWord(std::map<std::string, Language> &languages, const int &generatio
     {
         langPair.second.Words = langPair.first.Words;
         langPair.second.Strength = langPair.first.Strength;
-        langPair.second.BollowHistory.push_back({generation, adjucentData.first});
         return;
     }
     else if (langPair.first.Words.empty() && !langPair.second.Words.empty())
     {
         langPair.first.Words = langPair.second.Words;
         langPair.first.Strength = langPair.second.Strength;
-        langPair.first.BollowHistory.push_back({generation, adjucentData.second});
         return;
     }
     else if (!langPair.first.Words.empty() && !langPair.second.Words.empty())
@@ -566,7 +577,7 @@ void bollowWord(std::map<std::string, Language> &languages, const int &generatio
             {
                 Word nearestWord;
                 double maxDot = -1.0;
-                for (const auto &word : langPair.first.Words)
+                for (const auto &[_, word] : langPair.first.Words)
                 {
                     const auto dot = langPair.second.Words[i].Meanings.Dot(word.Meanings);
                     if (maxDot < dot)
@@ -578,7 +589,7 @@ void bollowWord(std::map<std::string, Language> &languages, const int &generatio
                 if (getRandomInt(0, 1) == 0)
                 {
                     bool isSameSoundWord = false;
-                    for (const auto &word : langPair.second.Words)
+                    for (const auto &[_, word] : langPair.second.Words)
                     {
                         if (word.Sounds == nearestWord.Sounds)
                         {
@@ -591,7 +602,6 @@ void bollowWord(std::map<std::string, Language> &languages, const int &generatio
                     }
                 }
             }
-            langPair.second.BollowHistory.push_back({generation, adjucentData.first});
         }
         else
         {
@@ -599,7 +609,7 @@ void bollowWord(std::map<std::string, Language> &languages, const int &generatio
             {
                 Word nearestWord;
                 double maxDot = -1.0;
-                for (const auto &word : langPair.second.Words)
+                for (const auto &[_, word] : langPair.second.Words)
                 {
                     const auto dot = langPair.first.Words[i].Meanings.Dot(word.Meanings);
                     if (maxDot < dot)
@@ -611,7 +621,7 @@ void bollowWord(std::map<std::string, Language> &languages, const int &generatio
                 if (getRandomInt(0, 1) == 0)
                 {
                     bool isSameSoundWord = false;
-                    for (const auto &word : langPair.first.Words)
+                    for (const auto &[_, word] : langPair.first.Words)
                     {
                         if (word.Sounds == nearestWord.Sounds)
                         {
@@ -624,7 +634,6 @@ void bollowWord(std::map<std::string, Language> &languages, const int &generatio
                     }
                 }
             }
-            langPair.first.BollowHistory.push_back({generation, adjucentData.second});
         }
     }
 }
@@ -656,7 +665,7 @@ Phonetics getRandomSoundFromTable(const std::vector<std::vector<std::string>> &t
     return pool[getRandomInt(0, pool.size() - 1)];
 }
 
-Phonetics getRandomSoundFromLanguage(const Language &language)
+Phonetics getRandomSoundFromLanguage(Language &language)
 {
     if (language.Words.empty())
     {
@@ -697,7 +706,7 @@ void removeWordRandom(Language &language, const Language &oldLanguage)
     }
 
     const int index = getRandomInt(0, (int)duplicatedWordIndice.size() - 1);
-    language.Words.erase(language.Words.begin() + duplicatedWordIndice[index]);
+    language.Words.erase(index);
 }
 
 void createWord(Language &language, const Language &oldLanguage)
@@ -711,5 +720,13 @@ void createWord(Language &language, const Language &oldLanguage)
 
     auto newWord = word1.Add(word2);
     newWord.UpdateNearestProtoWord(oldLanguage);
-    language.Words.emplace_back(newWord);
+    if (language.Words.empty())
+    {
+        language.Words[0] = newWord;
+    }
+    else
+    {
+        const int newWordId = language.Words.rbegin()->first + 1;
+        language.Words[newWordId] = newWord;
+    }
 }
