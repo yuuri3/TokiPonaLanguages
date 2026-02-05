@@ -284,6 +284,20 @@ struct LanguageDifference
 };
 
 /**
+ * @brief 語族
+ *
+ */
+struct LanguageSystem
+{
+    // 地名
+    std::vector<std::vector<std::string>> Map;
+    // 音韻
+    std::vector<std::vector<std::string>> PhonemeMap;
+    // 言語
+    std::map<int, Language> Languages;
+};
+
+/**
  * 文字列を変換表に基づいて音素列に変換する
  * @param str 文字列
  * @param table 音素表
