@@ -160,6 +160,130 @@ struct SoundChange
 };
 
 /**
+ * @brief 語族差分タイプ
+ *
+ */
+enum LanguageDifferenceType
+{
+    // 単語追加
+    // int 地理ID
+    // int 単語ID
+    // string 語形
+    // Meaning 意味
+    AddWord,
+    // 影響度変化
+    // int 地理ID
+    // double 影響度
+    ChangeStrength,
+    // 音韻変化
+    // int 地理ID
+    // int 単語ID
+    // SoundChange 音韻変化
+    ChangeSound,
+    // 意味変化
+    // int 地理ID
+    // int 単語ID
+    // Meaning 意味変化
+    ChangeMeaning,
+    // 借用
+    // int 借用元地理ID
+    // int 借用元単語ID
+    // int 借用先地理ID
+    // int 借用先単語ID
+    BorrowWord,
+    // 複合語
+    // int 地理ID
+    // int 単語ID
+    // int... 参照単語ID
+    AddCompoundWord,
+    // 死語
+    // int 地理ID
+    // int 単語ID
+    Remove
+};
+
+/**
+ * @brief 語族差分
+ *
+ */
+struct LanguageDifference
+{
+    // タイプ
+    LanguageDifferenceType Type;
+    // 時代
+    int Section;
+    // 整数パラメータ
+    std::vector<int> IntParam;
+    // 実数パラメータ
+    std::vector<double> DoubleParam;
+    // 文字列パラメータ
+    std::vector<std::string> StringParam;
+    // 音韻変化（あとで消す）
+    SoundChange SoundChanges;
+    // 意味変化（あとで消す）
+    Meaning MeaningChange;
+    /**
+     * @brief Change 言語 影響度
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param strength 影響度
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateChangeStrength(const int ID, const int section, const double strength);
+    /**
+     * @brief Change 言語 音韻
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param wordID 単語ID
+     * @param soundChange 音韻変化
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateChangeSound(const int ID, const int section, const int wordID, const SoundChange soundChange);
+    /**
+     * @brief Change 単語の意味
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param wordID 単語ID
+     * @param meaning 意味変化
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateChangeMeaning(const int ID, const int section, const int wordID, const Meaning meaning);
+    /**
+     * @brief 借用
+     *
+     * @param ID1 借用元言語ID
+     * @param ID2 借用先言語ID
+     * @param section 時代
+     * @param wordID1 借用元単語ID
+     * @param wordID2 借用先単語ID
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateBorrowWord(const int ID1, const int ID2, const int section, const int wordID1, const int wordID2);
+    /**
+     * @brief 複合語
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param wordID 単語ID
+     * @param wordIDs 参照単語ID
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateAddCompoundWord(const int ID, const int section, const int wordID, const std::vector<int> wordIDs);
+    /**
+     * @brief 単語削除
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param wordID 単語ID
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateRemoveWord(const int ID, const int section, const int wordID);
+};
+
+/**
  * 文字列を変換表に基づいて音素列に変換する
  * @param str 文字列
  * @param table 音素表
