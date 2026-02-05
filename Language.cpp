@@ -143,14 +143,9 @@ LanguageDifference LanguageDifference::CreateRemoveWord(const int ID, const int 
     return result;
 }
 
-std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vector<std::vector<std::string>> &table)
+PhoneticsConverter PhoneticsConverter::Create(const std::vector<std::vector<std::string>> &table)
 {
-    std::vector<Phonetics> output;
-    output.reserve(str.length());
-
-    // 1. 検索を高速化するために Map に変換 (文字列 -> {行, 列})
-    std::map<std::string, Phonetics> lookup;
-    size_t maxTokenLen = 0; // 変換表にある文字列の最大長を保持
+    PhoneticsConverter result;
 
     for (int r = 0; r < (int)table.size(); ++r)
     {
@@ -160,13 +155,16 @@ std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vec
             Phonetics p;
             p.Mannar = r;
             p.Place = c;
-            lookup[token] = p;
-            if (token.length() > maxTokenLen)
-            {
-                maxTokenLen = token.length();
-            }
+            result.Map[token] = p;
         }
     }
+    return result;
+}
+
+std::vector<Phonetics> PhoneticsConverter::convertToPhonetics(const std::string &str)
+{
+    std::vector<Phonetics> output;
+    output.reserve(str.length());
 
     // 2. 文字列の解析
     for (size_t i = 0; i < str.length();)
@@ -174,15 +172,15 @@ std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vec
         bool matched = false;
 
         // 長い一致を優先して検索 (例: "f'" を "f" と "'" より先に探す)
-        for (size_t len = maxTokenLen; len > 0; --len)
+        for (size_t len = 1; len > 0; --len)
         {
             if (i + len <= str.length())
             {
                 std::string sub = str.substr(i, len);
-                if (lookup.count(sub))
+                if (Map.count(sub))
                 {
                     // 見つかったら行と列を追加
-                    output.push_back(lookup[sub]);
+                    output.push_back(Map[sub]);
                     i += len; // マッチした長さ分進める
                     matched = true;
                     break;
@@ -200,24 +198,18 @@ std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vec
     return output;
 }
 
-Language convertToLanguage(const std::vector<std::string> &strs, const std::vector<std::vector<std::string>> &table)
+Language PhoneticsConverter::convertToLanguage(const std::vector<std::string> &strs)
 {
     Language result;
+    int wordID = 0;
     for (const auto &str : strs)
     {
         Word word;
-        word.Sounds = convertToPhonetics(str, table);
+        word.Sounds = convertToPhonetics(str);
         word.Meanings[str] = 1.0;
         word.NearestProtoWord = word.Sounds;
-        if (result.Words.empty())
-        {
-            result.Words[0] = word;
-        }
-        else
-        {
-            const int newWordId = result.Words.rbegin()->first + 1;
-            result.Words[newWordId] = word;
-        }
+        result.Words[wordID] = word;
+        wordID++;
     }
     result.Strength = 0.0;
     return result;
@@ -281,7 +273,7 @@ void changeLanguageSound(
     const bool isSoundDuplication)
 {
     Language newLanguage;
-    for (auto &[_, word] : language.Words)
+    for (auto &[wordID, word] : language.Words)
     {
         Word newWord;
         newWord.NearestProtoWord = word.NearestProtoWord;
@@ -315,15 +307,7 @@ void changeLanguageSound(
                 newWord.Sounds.push_back(word.Sounds[i]);
             }
         }
-        if (newLanguage.Words.empty())
-        {
-            newLanguage.Words[0] = newWord;
-        }
-        else
-        {
-            const int newWordId = newLanguage.Words.rbegin()->first + 1;
-            newLanguage.Words[newWordId] = newWord;
-        }
+        newLanguage.Words[wordID] = newWord;
     }
     // 子音、母音の重複を禁止する処理
     if (isSoundDuplication)

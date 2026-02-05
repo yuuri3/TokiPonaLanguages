@@ -296,19 +296,29 @@ struct LanguageSystem
 };
 
 /**
- * 文字列を変換表に基づいて音素列に変換する
- * @param str 文字列
- * @param table 音素表
+ * @brief 音素 <-> 表記変換
+ *
  */
-std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vector<std::vector<std::string>> &table);
+struct PhoneticsConverter
+{
+    std::map<std::string, Phonetics> Map;
+    PhoneticsConverter static Create(const std::vector<std::vector<std::string>> &table);
 
-/**
- * @brief 文字列の配列を言語に変換する
- * @param strs 文字列の配列
- * @param table 音素表
- * @return 言語
- */
-Language convertToLanguage(const std::vector<std::string> &strs, const std::vector<std::vector<std::string>> &table);
+    /**
+     * 文字列を変換表に基づいて音素列に変換する
+     * @param str 文字列
+     * @param table 音素表
+     */
+    std::vector<Phonetics> convertToPhonetics(const std::string &str);
+
+    /**
+     * @brief 文字列の配列を言語に変換する
+     * @param strs 文字列の配列
+     * @param table 音素表
+     * @return 言語
+     */
+    Language convertToLanguage(const std::vector<std::string> &strs);
+};
 
 /**
  * 地図データの特定の位置に祖語を配置する
