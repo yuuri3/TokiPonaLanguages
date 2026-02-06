@@ -173,35 +173,28 @@ std::vector<Phonetics> PhoneticsConverter::convertToPhonetics(const std::string 
     std::vector<Phonetics> output;
     output.reserve(str.length());
 
-    // 2. 文字列の解析
     for (size_t i = 0; i < str.length();)
     {
         bool matched = false;
-
-        // 長い一致を優先して検索 (例: "f'" を "f" と "'" より先に探す)
-        for (size_t len = 1; len > 0; --len)
+        // 最長一致を優先（最大長が既知ならその値から開始）
+        for (size_t len = 2; len > 0; --len)
         {
             if (i + len <= str.length())
             {
                 std::string sub = str.substr(i, len);
-                if (Map.count(sub))
+                auto it = Map.find(sub);
+                if (it != Map.end())
                 {
-                    // 見つかったら行と列を追加
-                    output.push_back(Map[sub]);
-                    i += len; // マッチした長さ分進める
+                    output.push_back(it->second);
+                    i += len;
                     matched = true;
                     break;
                 }
             }
         }
-
         if (!matched)
-        {
-            // 変換表にない文字はスキップ（必要に応じてエラー処理）
             i++;
-        }
     }
-
     return output;
 }
 
