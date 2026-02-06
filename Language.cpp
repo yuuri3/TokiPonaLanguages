@@ -305,141 +305,13 @@ std::string convertToString(const std::vector<Phonetics> &phoneticses, const std
     return result;
 }
 
-void changeLanguageSound(
-    Language &language,
-    const SoundChange &soundChange,
-    const bool isProhibiteMinimalPair,
-    const bool isSoundDuplication)
-{
-    // 子音と母音の境界（定数化してループ外で定義）
-    constexpr int MAX_CONSONANT_MANNAR = 3;
-
-    // 変更が発生した単語を記録する一時的なマップ（インプレース更新用）
-    std::map<int, Word> updatedWords;
-
-    // 1. 音韻変化の適用と音素重複チェックを同時に行う
-    for (auto &[wordID, word] : language.Words)
-    {
-        bool changed = false;
-        std::vector<Phonetics> nextSounds;
-        nextSounds.reserve(word.Sounds.size()); // メモリ確保を1回に抑制
-
-        for (size_t i = 0; i < word.Sounds.size(); ++i)
-        {
-            const auto &currentPhon = word.Sounds[i];
-
-            // 変化条件の判定
-            bool isMatch = (currentPhon == soundChange.beforePhon);
-            if (isMatch)
-            {
-                if (soundChange.Condition == SoundChangeCondition::Start && i != 0)
-                    isMatch = false;
-                else if (soundChange.Condition == SoundChangeCondition::End && i != word.Sounds.size() - 1)
-                    isMatch = false;
-                else if (soundChange.Condition == SoundChangeCondition::Middle && (i == 0 || i == word.Sounds.size() - 1))
-                    isMatch = false;
-            }
-
-            if (isMatch)
-            {
-                changed = true;
-                if (!soundChange.IsRemove)
-                {
-                    nextSounds.push_back(soundChange.AfterPhone);
-                }
-            }
-            else
-            {
-                nextSounds.push_back(currentPhon);
-            }
-        }
-
-        if (!changed)
-            continue;
-
-        // 子音・母音の重複禁止チェック (isSoundDuplication)
-        if (isSoundDuplication)
-        {
-            bool isInvalid = false;
-            if (nextSounds.empty())
-                isInvalid = true;
-            else if (nextSounds.size() == 1)
-            {
-                if (nextSounds[0].Mannar <= MAX_CONSONANT_MANNAR)
-                    isInvalid = true;
-            }
-            else
-            {
-                // 境界条件のチェック
-                if ((nextSounds[0].Mannar <= MAX_CONSONANT_MANNAR && nextSounds[1].Mannar <= MAX_CONSONANT_MANNAR) ||
-                    (nextSounds.back().Mannar <= MAX_CONSONANT_MANNAR && nextSounds[nextSounds.size() - 2].Mannar <= MAX_CONSONANT_MANNAR))
-                {
-                    isInvalid = true;
-                }
-                else
-                {
-                    // 3連続のチェック
-                    for (size_t j = 0; j + 2 < nextSounds.size(); ++j)
-                    {
-                        bool isConsonant = (nextSounds[j].Mannar <= MAX_CONSONANT_MANNAR &&
-                                            nextSounds[j + 1].Mannar <= MAX_CONSONANT_MANNAR &&
-                                            nextSounds[j + 2].Mannar <= MAX_CONSONANT_MANNAR);
-                        bool isVowel = (nextSounds[j].Mannar > MAX_CONSONANT_MANNAR &&
-                                        nextSounds[j + 1].Mannar > MAX_CONSONANT_MANNAR &&
-                                        nextSounds[j + 2].Mannar > MAX_CONSONANT_MANNAR);
-                        if (isConsonant || isVowel)
-                        {
-                            isInvalid = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (isInvalid)
-                continue; // 違反していればこの単語の変化は破棄
-        }
-
-        // 変化後の単語候補を一時保存
-        Word newWord = word;
-        newWord.Sounds = std::move(nextSounds); // 所有権を移転してコピーを回避
-        updatedWords[wordID] = std::move(newWord);
-    }
-
-    // 2. 同音語（ミニマル・ペア）の禁止チェック (isProhibiteMinimalPair)
-    if (isProhibiteMinimalPair)
-    {
-        // 現在の言語全体の単語分布を把握（変化しなかった単語 + 変化候補）
-        std::map<std::vector<Phonetics>, int> soundCounts;
-        for (const auto &[wordID, word] : language.Words)
-        {
-            auto it = updatedWords.find(wordID);
-            soundCounts[it != updatedWords.end() ? it->second.Sounds : word.Sounds]++;
-        }
-
-        // 重複が発生する変化を差し止める
-        for (auto it = updatedWords.begin(); it != updatedWords.end();)
-        {
-            if (soundCounts[it->second.Sounds] > 1)
-                it = updatedWords.erase(it);
-            else
-                ++it;
-        }
-    }
-
-    // 3. 最終的な反映（一括代入）
-    for (auto &[wordID, newWord] : updatedWords)
-    {
-        language.Words[wordID] = std::move(newWord);
-    }
-}
-
 void LanguageSystem::ChangeLanguageSound(
     const double pSoundChange,
     const double pSoundLoss,
     const bool isProhibitMinimalPair,
     const bool isSoundDuplication)
 {
-    for (auto &[_, language] : LanguageMap)
+    for (auto &[ID, language] : LanguageMap)
     {
         // 音韻変化するかどうか
         if (!getWithProbability(pSoundChange))
@@ -453,9 +325,116 @@ void LanguageSystem::ChangeLanguageSound(
         }
         const auto sound = getRandomSoundFromLanguage(language);
         SoundChange soundChange = makeSoundChangeRandom(sound, PhoneticsMap, pSoundLoss);
-        changeLanguageSound(language, soundChange, isProhibitMinimalPair, isSoundDuplication);
-    }
-}
+        // changeLanguageSound(language, soundChange, isProhibitMinimalPair, isSoundDuplication);
+        {
+            // 子音と母音の境界（定数化してループ外で定義）
+            constexpr int MAX_CONSONANT_MANNAR = 3;
+
+            // 変更が発生した単語を記録する一時的なマップ（インプレース更新用）
+            std::map<int, Word> updatedWords;
+
+            // 1. 音韻変化の適用と音素重複チェックを同時に行う
+            for (auto &[wordID, word] : language.Words)
+            {
+                // 差分
+                const auto dif = LanguageDifference::CreateChangeSound(ID, Section, wordID, soundChange);
+                languageDifference.emplace_back(dif);
+
+                bool changed = false;
+                std::vector<Phonetics> nextSounds;
+                nextSounds.reserve(word.Sounds.size()); // メモリ確保を1回に抑制
+
+                for (size_t i = 0; i < word.Sounds.size(); ++i)
+                {
+                    const auto &currentPhon = word.Sounds[i];
+
+                    // 変化条件の判定
+                    bool isMatch = (currentPhon == soundChange.beforePhon);
+                    if (isMatch)
+                    {
+                        if (soundChange.Condition == SoundChangeCondition::Start && i != 0)
+                            isMatch = false;
+                        else if (soundChange.Condition == SoundChangeCondition::End && i != word.Sounds.size() - 1)
+                            isMatch = false;
+                        else if (soundChange.Condition == SoundChangeCondition::Middle && (i == 0 || i == word.Sounds.size() - 1))
+                            isMatch = false;
+                    }
+
+                    if (isMatch)
+                    {
+                        changed = true;
+                        if (!soundChange.IsRemove)
+                        {
+                            nextSounds.push_back(soundChange.AfterPhone);
+                        }
+                    }
+                    else
+                    {
+                        nextSounds.push_back(currentPhon);
+                    }
+                }
+
+                if (!changed)
+                    continue;
+
+                // 子音・母音の重複禁止チェック (isSoundDuplication)
+                if (isSoundDuplication)
+                {
+                    bool isInvalid = false;
+                    if (nextSounds.empty())
+                        isInvalid = true;
+                    else if (nextSounds.size() == 1)
+                    {
+                        if (nextSounds[0].Mannar <= MAX_CONSONANT_MANNAR)
+                            isInvalid = true;
+                    }
+                    else
+                    {
+                        // 境界条件のチェック
+                        if ((nextSounds[0].Mannar <= MAX_CONSONANT_MANNAR && nextSounds[1].Mannar <= MAX_CONSONANT_MANNAR) ||
+                            (nextSounds.back().Mannar <= MAX_CONSONANT_MANNAR && nextSounds[nextSounds.size() - 2].Mannar <= MAX_CONSONANT_MANNAR))
+                        {
+                            isInvalid = true;
+                        }
+                        else
+                        {
+                            // 3連続のチェック
+                            for (size_t j = 0; j + 2 < nextSounds.size(); ++j)
+                            {
+                                bool isConsonant = (nextSounds[j].Mannar <= MAX_CONSONANT_MANNAR &&
+                                                    nextSounds[j + 1].Mannar <= MAX_CONSONANT_MANNAR &&
+                                                    nextSounds[j + 2].Mannar <= MAX_CONSONANT_MANNAR);
+                                bool isVowel = (nextSounds[j].Mannar > MAX_CONSONANT_MANNAR &&
+                                                nextSounds[j + 1].Mannar > MAX_CONSONANT_MANNAR &&
+                                                nextSounds[j + 2].Mannar > MAX_CONSONANT_MANNAR);
+                                if (isConsonant || isVowel)
+                                {
+                                    isInvalid = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (isInvalid)
+                        continue; // 違反していればこの単語の変化は破棄
+                }
+
+                // 変化後の単語候補を一時保存
+                Word newWord = word;
+                newWord.Sounds = std::move(nextSounds); // 所有権を移転してコピーを回避
+                updatedWords[wordID] = std::move(newWord);
+            }
+
+            // 2. 同音語（ミニマル・ペア）の禁止チェック (isProhibiteMinimalPair)
+            if (isProhibitMinimalPair)
+            {
+                // 現在の言語全体の単語分布を把握（変化しなかった単語 + 変化候補）
+                std::map<std::vector<Phonetics>, int> soundCounts;
+                for (const auto &[wordID, word] : language.Words)
+                {
+                    auto it = updatedWords.find(wordID);
+                    soundCounts[it != updatedWords.end() ? it->second.Sounds : word.Sounds]++;
+                }
 
 void changeLanguageMeaning(
     Language &language,
@@ -464,6 +443,15 @@ void changeLanguageMeaning(
 {
     if (language.Words.empty())
         return;
+                // 重複が発生する変化を差し止める
+                for (auto it = updatedWords.begin(); it != updatedWords.end();)
+                {
+                    if (soundCounts[it->second.Sounds] > 1)
+                        it = updatedWords.erase(it);
+                    else
+                        ++it;
+                }
+            }
 
     // 変更対象の単語をランダムに選択
     // マップの要素にランダムアクセスするため、イテレータを進める
@@ -499,6 +487,11 @@ void changeLanguageMeaning(
         {
             isConflict = true;
             break;
+            // 3. 最終的な反映（一括代入）
+            for (auto &[wordID, newWord] : updatedWords)
+            {
+                language.Words[wordID] = std::move(newWord);
+            }
         }
     }
 
