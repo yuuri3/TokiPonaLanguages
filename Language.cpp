@@ -659,32 +659,30 @@ void changeLanguageStrength(Language &language)
     language.Strength = language.Strength * 0.9 + getRandomDouble(-1.0, 1.0) * 0.1;
 }
 
+// removeWordRandom: mapのerase(index)は誤りのため、イテレータによる削除に修正
 void removeWordRandom(Language &language, const Language &oldLanguage)
 {
-    // 対応する祖語の単語ごとに単語を分ける
-    std::map<std::vector<Phonetics>, std::vector<int>> mapProtoWordToWordIndice;
-    for (int i = 0; i < language.Words.size(); i++)
-    {
-        const auto &word = language.Words[i];
-        mapProtoWordToWordIndice[word.NearestProtoWord].emplace_back(i);
-    }
-    // 同じ祖語の単語に対応する単語がある単語
-    std::vector<int> duplicatedWordIndice;
-    duplicatedWordIndice.reserve(language.Words.size());
-    for (const auto &[key, value] : mapProtoWordToWordIndice)
-    {
-        if (value.size() > 1)
-        {
-            duplicatedWordIndice.insert(duplicatedWordIndice.end(), value.begin(), value.end());
-        }
-    }
-    if (duplicatedWordIndice.empty())
-    {
+    if (language.Words.empty())
         return;
+
+    std::map<std::vector<Phonetics>, std::vector<int>> mapProtoWordToWordIndice;
+    for (const auto &[id, word] : language.Words)
+    {
+        mapProtoWordToWordIndice[word.NearestProtoWord].push_back(id);
     }
 
-    const int index = getRandomInt(0, (int)duplicatedWordIndice.size() - 1);
-    language.Words.erase(index);
+    std::vector<int> duplicatedIds;
+    for (const auto &[key, ids] : mapProtoWordToWordIndice)
+    {
+        if (ids.size() > 1)
+            duplicatedIds.insert(duplicatedIds.end(), ids.begin(), ids.end());
+    }
+
+    if (!duplicatedIds.empty())
+    {
+        int targetId = duplicatedIds[getRandomInt(0, duplicatedIds.size() - 1)];
+        language.Words.erase(targetId); // mapのキー指定削除はO(log N)
+    }
 }
 
 void createWord(Language &language, const Language &oldLanguage)
