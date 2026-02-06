@@ -259,6 +259,13 @@ void LanguageSystem::SetOldLanguageOnMap(
 {
     LanguageMap = setOldLanguageOnMap(getNonEmptyStrings(Map), startPlace, language);
     ProtoLanguage = language;
+
+    // ログ
+    languageDifference.emplace_back(LanguageDifference::CreateChangeStrength(startPlace, Section, language.Strength));
+    for (const auto &[ID, word] : language.Words)
+    {
+        languageDifference.emplace_back(LanguageDifference::CreateAddWord(startPlace, Section, ID, convertToString(word.Sounds, PhoneticsMap)));
+    }
 }
 
 std::string convertToString(const std::vector<Phonetics> &phoneticses, const std::vector<std::vector<std::string>> &table)
