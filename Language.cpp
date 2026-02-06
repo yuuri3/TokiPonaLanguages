@@ -58,11 +58,14 @@ void Meaning::Normalize()
     }
 }
 
+// Word::Add: 音素の連結時の再確保を抑制
 Word Word::Add(const Word &word) const
 {
     Word result;
-    result.Sounds = Sounds;
+    result.Sounds.reserve(Sounds.size() + word.Sounds.size());
+    result.Sounds.insert(result.Sounds.end(), Sounds.begin(), Sounds.end());
     result.Sounds.insert(result.Sounds.end(), word.Sounds.begin(), word.Sounds.end());
+
     result.Meanings = Meanings.Add(word.Meanings);
     result.Meanings.Normalize();
     return result;
