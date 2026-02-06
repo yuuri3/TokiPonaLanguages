@@ -312,6 +312,8 @@ struct PhoneticsConverter
  */
 struct LanguageSystem
 {
+    // 時代
+    int Section = 0;
     // 地理
     std::vector<std::vector<std::string>> Map;
     // 音韻
@@ -320,6 +322,8 @@ struct LanguageSystem
     std::map<std::string, Language> LanguageMap;
     // 祖語
     Language ProtoLanguage;
+    // 祖語からの差分
+    std::vector<LanguageDifference> languageDifference;
     /**
      * 地図データの特定の位置に祖語を配置する
      * @param startPlace 祖語を配置する位置
@@ -400,6 +404,12 @@ struct LanguageSystem
      * @return false
      */
     bool HasAllPlaceLanguage();
+
+    /**
+     * @brief 時代を進める
+     *
+     */
+    void ToNextSection();
 };
 
 /**

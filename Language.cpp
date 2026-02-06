@@ -859,3 +859,8 @@ bool LanguageSystem::HasAllPlaceLanguage()
     }
     return true;
 }
+
+void LanguageSystem::ToNextSection()
+{
+    Section++;
+}
