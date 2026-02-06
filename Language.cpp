@@ -847,13 +847,12 @@ void LanguageSystem::CreateWord(const double pWordBirth)
 
 bool LanguageSystem::HasAllPlaceLanguage()
 {
-    for (const auto &place : getNonEmptyStrings(Map))
+    const auto activePlaces = getNonEmptyStrings(Map);
+    for (const auto &place : activePlaces)
     {
-        if (LanguageMap.count(place) == 0)
-        {
-            return false;
-        }
-        if (LanguageMap[place].Words.empty())
+        // find を使うことで「存在チェック」と「データアクセス」を1回で済ませる
+        auto it = LanguageMap.find(place);
+        if (it == LanguageMap.end() || it->second.Words.empty())
         {
             return false;
         }
