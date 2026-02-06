@@ -551,90 +551,67 @@ void exportLanguageToCSV(
     file.close();
 }
 
+// bollowWord: O(N^2)のループ内で重複する計算を削減
 void bollowWord(std::map<std::string, Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData)
 {
-    std::pair<Language &, Language &> langPair = {languages[adjucentData.first], languages[adjucentData.second]};
-    if (langPair.first.Words.empty() && langPair.second.Words.empty())
-    {
+    auto it1 = languages.find(adjucentData.first);
+    auto it2 = languages.find(adjucentData.second);
+    if (it1 == languages.end() || it2 == languages.end())
         return;
-    }
-    else if (!langPair.first.Words.empty() && langPair.second.Words.empty())
+
+    Language &l1 = it1->second;
+    Language &l2 = it2->second;
+
+    if (l1.Words.empty() || l2.Words.empty())
     {
-        langPair.second.Words = langPair.first.Words;
-        langPair.second.Strength = langPair.first.Strength;
-        return;
-    }
-    else if (langPair.first.Words.empty() && !langPair.second.Words.empty())
-    {
-        langPair.first.Words = langPair.second.Words;
-        langPair.first.Strength = langPair.second.Strength;
-        return;
-    }
-    else if (!langPair.first.Words.empty() && !langPair.second.Words.empty())
-    {
-        if (langPair.first.Strength > langPair.second.Strength)
+        if (l1.Words.empty())
         {
-            for (size_t i = 0; i < langPair.second.Words.size(); i++)
-            {
-                Word nearestWord;
-                double maxDot = -1.0;
-                for (const auto &[_, word] : langPair.first.Words)
-                {
-                    const auto dot = langPair.second.Words[i].Meanings.Dot(word.Meanings);
-                    if (maxDot < dot)
-                    {
-                        maxDot = dot;
-                        nearestWord = word;
-                    }
-                }
-                if (getRandomInt(0, 1) == 0)
-                {
-                    bool isSameSoundWord = false;
-                    for (const auto &[_, word] : langPair.second.Words)
-                    {
-                        if (word.Sounds == nearestWord.Sounds)
-                        {
-                            isSameSoundWord = true;
-                        }
-                    }
-                    if (!isSameSoundWord)
-                    {
-                        langPair.second.Words[i].Sounds = nearestWord.Sounds;
-                    }
-                }
-            }
+            l1.Words = l2.Words;
+            l1.Strength = l2.Strength;
         }
         else
         {
-            for (size_t i = 0; i < langPair.first.Words.size(); i++)
+            l2.Words = l1.Words;
+            l2.Strength = l1.Strength;
+        }
+        return;
+    }
+
+    auto *source = (l1.Strength > l2.Strength) ? &l1 : &l2;
+    auto *target = (l1.Strength > l2.Strength) ? &l2 : &l1;
+
+    for (auto &[tID, tWord] : target->Words)
+    {
+        if (getRandomInt(0, 1) != 0)
+            continue;
+
+        const Word *bestSourceWord = nullptr;
+        double maxDot = -1.0;
+
+        for (const auto &[sID, sWord] : source->Words)
+        {
+            double dot = tWord.Meanings.Dot(sWord.Meanings);
+            if (dot > maxDot)
             {
-                Word nearestWord;
-                double maxDot = -1.0;
-                for (const auto &[_, word] : langPair.second.Words)
+                maxDot = dot;
+                bestSourceWord = &sWord;
+            }
+        }
+
+        if (bestSourceWord)
+        {
+            // 同音語チェックを最適化
+            bool isDuplicate = false;
+            for (const auto &[checkID, checkWord] : target->Words)
+            {
+                if (checkWord.Sounds == bestSourceWord->Sounds)
                 {
-                    const auto dot = langPair.first.Words[i].Meanings.Dot(word.Meanings);
-                    if (maxDot < dot)
-                    {
-                        maxDot = dot;
-                        nearestWord = word;
-                    }
-                }
-                if (getRandomInt(0, 1) == 0)
-                {
-                    bool isSameSoundWord = false;
-                    for (const auto &[_, word] : langPair.first.Words)
-                    {
-                        if (word.Sounds == nearestWord.Sounds)
-                        {
-                            isSameSoundWord = true;
-                        }
-                    }
-                    if (!isSameSoundWord)
-                    {
-                        langPair.first.Words[i].Sounds = nearestWord.Sounds;
-                    }
+                    isDuplicate = true;
+                    break;
                 }
             }
+            if (!isDuplicate)
+                tWord.Sounds = bestSourceWord->Sounds;
         }
     }
 }
