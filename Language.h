@@ -321,6 +321,88 @@ struct PhoneticsConverter
 };
 
 /**
+ * @brief 語族
+ *
+ */
+struct LanguageSystem
+{
+    // 地理
+    std::vector<std::vector<std::string>> Map;
+    // 音韻
+    std::vector<std::vector<std::string>> PhoneticsMap;
+    // 地理と言語の対応
+    std::map<std::string, Language> LanguageMap;
+    // 祖語
+    Language ProtoLanguage;
+    /**
+     * 地図データの特定の位置に祖語を配置する
+     * @param startPlace 祖語を配置する位置
+     * @param language 祖語
+     */
+    void SetOldLanguageOnMap(
+        const std::string &startPlace,
+        const Language &language);
+
+    /**
+     * 音変化
+     * @param pSoundChange 音韻変化確率
+     * @param pSoundLoss 音素脱落確率
+     * @param isProhibitMinimalPair ミニマルペアを禁止するか
+     * @param isSoundDuplication 音素の重複を禁止するか
+     *
+     * @note ある言語の単語を一斉に変化させる。
+     */
+    void ChangeLanguageSound(
+        const double pSoundChange,
+        const double pSoundLoss,
+        const bool isProhibitMinimalPair = true,
+        const bool isSoundDuplication = true);
+
+    /**
+     * @brief 意味変化
+     *
+     * @param pSemanticShift 意味変化確率
+     * @param maxChangeRate 意味変化大きさ
+     *
+     * @note 単語１つの意味を変化させる
+     */
+    void ChangeLanguageMeaning(
+        const double pSemanticShift,
+        const double maxSemanticShiftRate);
+
+    /**
+     * 単語を借用
+     *
+     * @param nBorrow 借用回数
+     * @param pBorrow 借用率
+     *
+     * @note 借用の履歴をlanguageに記録
+     */
+    void BollowWord(const int nBorrow, const double pBorrow);
+
+    /**
+     * @brief 言語の影響度をランダムに変化させる
+     *
+     * @param pChangeStrength 変化率
+     */
+    void ChangeLanguageStrength(const double pChangeStrength);
+
+    /**
+     * @brief 言語からランダムに単語を消去する
+     *
+     * @param pWordLoss 単語消去率
+     */
+    void RemoveWordRandom(const double pWordLoss);
+
+    /**
+     * @brief 言語に単語を追加する
+     *
+     * @param pWordBirth 単語追加律
+     */
+    void createWord(const double pWordBirth);
+};
+
+/**
  * 地図データの特定の位置に祖語を配置する
  * @param mapData 地図データ
  * @param startPlace 祖語を配置する位置

@@ -249,6 +249,14 @@ std::map<std::string, Language> setOldLanguageOnMap(
     return result;
 }
 
+void LanguageSystem::SetOldLanguageOnMap(
+    const std::string &startPlace,
+    const Language &language)
+{
+    LanguageMap = setOldLanguageOnMap(getNonEmptyStrings(Map), startPlace, language);
+    ProtoLanguage = language;
+}
+
 std::string convertToString(const std::vector<Phonetics> &phoneticses, const std::vector<std::vector<std::string>> &table)
 {
     std::string result = "";
@@ -401,6 +409,30 @@ void changeLanguageSound(
     }
 }
 
+void LanguageSystem::ChangeLanguageSound(
+    const double pSoundChange,
+    const double pSoundLoss,
+    const bool isProhibitMinimalPair,
+    const bool isSoundDuplication)
+{
+    for (auto &[_, language] : LanguageMap)
+    {
+        // 音韻変化するかどうか
+        if (!getWithProbability(pSoundChange))
+        {
+            continue;
+        }
+        // 言語があるか
+        if (language.Words.empty())
+        {
+            continue;
+        }
+        const auto sound = getRandomSoundFromLanguage(language);
+        SoundChange soundChange = makeSoundChangeRandom(sound, PhoneticsMap, pSoundLoss);
+        changeLanguageSound(language, soundChange, isProhibitMinimalPair, isSoundDuplication);
+    }
+}
+
 void changeLanguageMeaning(
     Language &language,
     const Language &OldLanguage,
@@ -429,6 +461,20 @@ void changeLanguageMeaning(
     if (language.Words.size() == NewToProtoWordSet.size())
     {
         language = newLanguage;
+    }
+}
+
+void LanguageSystem::ChangeLanguageMeaning(
+    const double pSemanticShift,
+    const double maxSemanticShiftRate)
+{
+    for (auto &[_, language] : LanguageMap)
+    {
+        // 意味変化するかどうか
+        if (getWithProbability(pSemanticShift))
+        {
+            changeLanguageMeaning(language, ProtoLanguage, maxSemanticShiftRate);
+        }
     }
 }
 
@@ -642,6 +688,17 @@ void bollowWord(std::map<std::string, Language> &languages, const int &generatio
     }
 }
 
+void LanguageSystem::BollowWord(const int nBorrow, const double pBorrow)
+{
+    const auto mapAdjacentData = getAdjacencies(Map);
+    for (int i = 0; i < nBorrow; i++)
+    {
+        // 借用率 は現在固定
+        const auto adjucent = mapAdjacentData[getRandomInt(0, mapAdjacentData.size() - 1)];
+        bollowWord(LanguageMap, 0, adjucent);
+    }
+}
+
 Phonetics getRandomSoundFromTable(const std::vector<std::vector<std::string>> &table)
 {
     // 1. 空ではないセルの「座標」をリストに貯める
@@ -685,6 +742,17 @@ void changeLanguageStrength(Language &language)
     language.Strength = language.Strength * 0.9 + getRandomDouble(-1.0, 1.0) * 0.1;
 }
 
+void LanguageSystem::ChangeLanguageStrength(const double pChangeStrength)
+{
+    for (auto &[_, language] : LanguageMap)
+    {
+        if (getWithProbability(pChangeStrength))
+        {
+            changeLanguageStrength(language);
+        }
+    }
+}
+
 // removeWordRandom: mapのerase(index)は誤りのため、イテレータによる削除に修正
 void removeWordRandom(Language &language, const Language &oldLanguage)
 {
@@ -711,6 +779,18 @@ void removeWordRandom(Language &language, const Language &oldLanguage)
     }
 }
 
+void LanguageSystem::RemoveWordRandom(const double pWordLoss)
+{
+    for (auto &[_, language] : LanguageMap)
+    {
+        // 単語が脱落するかどうか
+        if (getWithProbability(pWordLoss))
+        {
+            removeWordRandom(language, ProtoLanguage);
+        }
+    }
+}
+
 void createWord(Language &language, const Language &oldLanguage)
 {
     if (language.Words.empty())
@@ -730,5 +810,17 @@ void createWord(Language &language, const Language &oldLanguage)
     {
         const int newWordId = language.Words.rbegin()->first + 1;
         language.Words[newWordId] = newWord;
+    }
+}
+
+void LanguageSystem::CreateWord(const double pWordBirth)
+{
+    for (auto &[_, language] : LanguageMap)
+    {
+        // 単語を追加するかどうか
+        if (getWithProbability(pWordBirth))
+        {
+            createWord(language, ProtoLanguage);
+        }
     }
 }
