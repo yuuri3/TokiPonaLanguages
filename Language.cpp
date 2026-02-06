@@ -46,12 +46,16 @@ Meaning Meaning::Product(const double scalar) const
 
 void Meaning::Normalize()
 {
-    const double norm = std::sqrt(Dot(*this));
-    if (norm <= TOLERANCE)
+    const double dotSelf = Dot(*this);
+    if (dotSelf <= TOLERANCE * TOLERANCE) // sqrtの前に判定
     {
         return;
     }
-    *this = Product(1.0 / norm);
+    const double invNorm = 1.0 / std::sqrt(dotSelf);
+    for (auto &[key, value] : *this)
+    {
+        value *= invNorm;
+    }
 }
 
 Word Word::Add(const Word &word) const
