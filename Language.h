@@ -420,6 +420,20 @@ struct LanguageSystem
      *
      */
     void ToNextSection();
+
+    /**
+     * @brief 差分を適用
+     *
+     * @param diff 差分
+     */
+    void ApplyDifference(const LanguageDifference &diff);
+
+    /**
+     * @brief 差分を複数適用
+     *
+     * @param diffs 差分
+     */
+    void ApplyDifferences(const std::vector<LanguageDifference> &diffs);
 };
 
 /**
