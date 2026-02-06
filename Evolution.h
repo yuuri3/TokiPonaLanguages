@@ -30,9 +30,11 @@ int evolution(
 
     auto converter = PhoneticsConverter::Create(phoneticsData);
     auto oldTokiPona = converter.convertToLanguage(oldTokiPonaData[0]);
-    const auto mapAdjacentData = getAdjacencies(mapData);
-    const auto placeNameData = getNonEmptyStrings(mapData);
-    auto languageData = setOldLanguageOnMap(placeNameData, "0", oldTokiPona);
+
+    LanguageSystem languageSystem;
+    languageSystem.Map = mapData;
+    languageSystem.PhoneticsMap = phoneticsData;
+    languageSystem.SetOldLanguageOnMap("0", oldTokiPona);
 
     int generation = -1;
     if (N_BORROW == 0)
@@ -47,72 +49,23 @@ int evolution(
     {
         generation++;
         // 言語の影響度を変化させる。
-        for (auto &[_, language] : languageData)
-        {
-            changeLanguageStrength(language);
-        }
+        languageSystem.ChangeLanguageStrength(1.0);
         // 借用
-        for (int i = 0; i < N_BORROW; i++)
-        {
-            const auto adjucent = mapAdjacentData[getRandomInt(0, mapAdjacentData.size() - 1)];
-            bollowWord(languageData, generation, adjucent);
-        }
+        languageSystem.BollowWord(N_BORROW, 0.5);
         // 音韻変化
-        for (auto &[_, language] : languageData)
-        {
-            // 音韻変化するかどうか
-            if (!getWithProbability(P_SOUND_CHANGE))
-            {
-                continue;
-            }
-            // 言語があるか
-            if (language.Words.empty())
-            {
-                continue;
-            }
-            const auto sound = getRandomSoundFromLanguage(language);
-            SoundChange soundChange = makeSoundChangeRandom(sound, phoneticsData, P_SOUND_LOSS);
-            changeLanguageSound(language, soundChange);
-        }
+        languageSystem.ChangeLanguageSound(P_SOUND_CHANGE, P_SOUND_LOSS);
         // 単語の脱落と新語追加
-        for (auto &[_, language] : languageData)
-        {
-            // 単語が脱落するかどうか
-            if (getWithProbability(P_WORD_LOSS))
-            {
-                removeWordRandom(language, oldTokiPona);
-            }
-            // 単語を追加するかどうか
-            if (getWithProbability(P_WORD_BIRTH))
-            {
-                createWord(language, oldTokiPona);
-            }
-        }
+        languageSystem.RemoveWordRandom(P_WORD_LOSS);
+        languageSystem.CreateWord(P_WORD_BIRTH);
         // 単語の意味変化
-        for (auto &[_, language] : languageData)
-        {
-            // 意味変化するかどうか
-            if (getWithProbability(P_SEMANTIC_SHIFT))
-            {
-                changeLanguageMeaning(language, oldTokiPona, MAX_SEMANTIC_SHIFT_RATE);
-            }
-        }
+        languageSystem.ChangeLanguageMeaning(P_SEMANTIC_SHIFT, MAX_SEMANTIC_SHIFT_RATE);
         // 各位置に言語があれば終了
-        bool isThereAllLanguage = true;
-        for (auto &[_, language] : languageData)
-        {
-            if (language.Words.empty())
-            {
-                isThereAllLanguage = false;
-                break;
-            }
-        }
-        if (isThereAllLanguage)
+        if (languageSystem.HasAllPlaceLanguage())
         {
             break;
         }
     }
     // 出力
-    exportLanguageToCSV(oldTokiPona, languageData, phoneticsData, OUTPUT_PATH);
+    languageSystem.ExportLanguageToCSV(OUTPUT_PATH);
     return 0;
 }

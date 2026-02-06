@@ -623,6 +623,11 @@ void exportLanguageToCSV(
     file.close();
 }
 
+void LanguageSystem::ExportLanguageToCSV(const std::wstring &filename)
+{
+    exportLanguageToCSV(ProtoLanguage, LanguageMap, PhoneticsMap, filename);
+}
+
 // bollowWord: O(N^2)のループ内で重複する計算を削減
 void bollowWord(std::map<std::string, Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData)
 {
@@ -823,4 +828,20 @@ void LanguageSystem::CreateWord(const double pWordBirth)
             createWord(language, ProtoLanguage);
         }
     }
+}
+
+bool LanguageSystem::HasAllPlaceLanguage()
+{
+    for (const auto &place : getNonEmptyStrings(Map))
+    {
+        if (LanguageMap.count(place) == 0)
+        {
+            return false;
+        }
+        if (LanguageMap[place].Words.empty())
+        {
+            return false;
+        }
+    }
+    return true;
 }
