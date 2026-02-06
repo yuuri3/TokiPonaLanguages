@@ -85,67 +85,78 @@ void Word::UpdateNearestProtoWord(const Language &language)
     }
 }
 
-LanguageDifference LanguageDifference::CreateChangeStrength(const int ID, const int section, const double strength)
+LanguageDifference LanguageDifference::CreateAddWord(const std::string &ID, const int section, const int wordID, const std::string &wordForm)
+{
+    LanguageDifference result;
+    result.Section = section;
+    result.Type = LanguageDifferenceType::AddWord;
+    result.StringParam.emplace_back(ID);
+    result.IntParam.emplace_back(wordID);
+    result.StringParam.emplace_back(wordForm);
+    return result;
+}
+
+LanguageDifference LanguageDifference::CreateChangeStrength(const std::string &ID, const int section, const double strength)
 {
     LanguageDifference result;
     result.Section = section;
     result.Type = LanguageDifferenceType::ChangeStrength;
-    result.IntParam.emplace_back(ID);
+    result.StringParam.emplace_back(ID);
     result.DoubleParam.emplace_back(strength);
     return result;
 }
 
-LanguageDifference LanguageDifference::CreateChangeSound(const int ID, const int section, const int wordID, const SoundChange soundChange)
+LanguageDifference LanguageDifference::CreateChangeSound(const std::string &ID, const int section, const int wordID, const SoundChange soundChange)
 {
     LanguageDifference result;
     result.Section = section;
     result.Type = LanguageDifferenceType::ChangeSound;
-    result.IntParam.emplace_back(ID);
+    result.StringParam.emplace_back(ID);
     result.IntParam.emplace_back(wordID);
     result.SoundChanges = soundChange;
     return result;
 }
 
-LanguageDifference LanguageDifference::CreateChangeMeaning(const int ID, const int section, const int wordID, const Meaning meaning)
+LanguageDifference LanguageDifference::CreateChangeMeaning(const std::string &ID, const int section, const int wordID, const Meaning meaning)
 {
     LanguageDifference result;
     result.Section = section;
     result.Type = LanguageDifferenceType::ChangeMeaning;
-    result.IntParam.emplace_back(ID);
+    result.StringParam.emplace_back(ID);
     result.IntParam.emplace_back(wordID);
     result.MeaningChange = meaning;
     return result;
 }
 
-LanguageDifference LanguageDifference::CreateBorrowWord(const int ID1, const int ID2, const int section, const int wordID1, const int wordID2)
+LanguageDifference LanguageDifference::CreateBorrowWord(const std::string &ID1, const std::string &ID2, const int section, const int wordID1, const int wordID2)
 {
     LanguageDifference result;
     result.Section = section;
     result.Type = LanguageDifferenceType::BorrowWord;
-    result.IntParam.emplace_back(ID1);
+    result.StringParam.emplace_back(ID1);
     result.IntParam.emplace_back(wordID1);
-    result.IntParam.emplace_back(ID2);
+    result.StringParam.emplace_back(ID2);
     result.IntParam.emplace_back(wordID2);
     return result;
 }
 
-LanguageDifference LanguageDifference::CreateAddCompoundWord(const int ID, const int section, const int wordID, const std::vector<int> wordIDs)
+LanguageDifference LanguageDifference::CreateAddCompoundWord(const std::string &ID, const int section, const int wordID, const std::vector<int> wordIDs)
 {
     LanguageDifference result;
     result.Section = section;
     result.Type = LanguageDifferenceType::AddCompoundWord;
-    result.IntParam.emplace_back(ID);
+    result.StringParam.emplace_back(ID);
     result.IntParam.emplace_back(wordID);
     result.IntParam.insert(result.IntParam.end(), wordIDs.begin(), wordIDs.end());
     return result;
 }
 
-LanguageDifference LanguageDifference::CreateRemoveWord(const int ID, const int section, const int wordID)
+LanguageDifference LanguageDifference::CreateRemoveWord(const std::string &ID, const int section, const int wordID)
 {
     LanguageDifference result;
     result.Section = section;
     result.Type = LanguageDifferenceType::Remove;
-    result.IntParam.emplace_back(ID);
+    result.StringParam.emplace_back(ID);
     result.IntParam.emplace_back(wordID);
     return result;
 }

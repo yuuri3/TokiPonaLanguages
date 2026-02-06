@@ -164,38 +164,38 @@ struct SoundChange
 enum LanguageDifferenceType
 {
     // 単語追加
-    // int 地理ID
+    // string 地理
     // int 単語ID
     // string 語形
     // Meaning 意味
     AddWord,
     // 影響度変化
-    // int 地理ID
+    // string 地理
     // double 影響度
     ChangeStrength,
     // 音韻変化
-    // int 地理ID
+    // string 地理
     // int 単語ID
     // SoundChange 音韻変化
     ChangeSound,
     // 意味変化
-    // int 地理ID
+    // string 地理
     // int 単語ID
     // Meaning 意味変化
     ChangeMeaning,
     // 借用
-    // int 借用元地理ID
+    // string 地理
     // int 借用元単語ID
-    // int 借用先地理ID
+    // string 地理
     // int 借用先単語ID
     BorrowWord,
     // 複合語
-    // int 地理ID
+    // string 地理
     // int 単語ID
     // int... 参照単語ID
     AddCompoundWord,
     // 死語
-    // int 地理ID
+    // string 地理
     // int 単語ID
     Remove
 };
@@ -221,6 +221,16 @@ struct LanguageDifference
     // 意味変化（あとで消す）
     Meaning MeaningChange;
     /**
+     * @brief Create a Add 単語 object
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param wordID 単語ID
+     * @param wordForm 語形
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateAddWord(const std::string &ID, const int section, const int wordID, const std::string &wordForm);
+    /**
      * @brief Change 言語 影響度
      *
      * @param ID 言語ID
@@ -228,7 +238,7 @@ struct LanguageDifference
      * @param strength 影響度
      * @return LanguageDifference
      */
-    static LanguageDifference CreateChangeStrength(const int ID, const int section, const double strength);
+    static LanguageDifference CreateChangeStrength(const std::string &ID, const int section, const double strength);
     /**
      * @brief Change 言語 音韻
      *
@@ -238,7 +248,7 @@ struct LanguageDifference
      * @param soundChange 音韻変化
      * @return LanguageDifference
      */
-    static LanguageDifference CreateChangeSound(const int ID, const int section, const int wordID, const SoundChange soundChange);
+    static LanguageDifference CreateChangeSound(const std::string &ID, const int section, const int wordID, const SoundChange soundChange);
     /**
      * @brief Change 単語の意味
      *
@@ -248,7 +258,7 @@ struct LanguageDifference
      * @param meaning 意味変化
      * @return LanguageDifference
      */
-    static LanguageDifference CreateChangeMeaning(const int ID, const int section, const int wordID, const Meaning meaning);
+    static LanguageDifference CreateChangeMeaning(const std::string &ID, const int section, const int wordID, const Meaning meaning);
     /**
      * @brief 借用
      *
@@ -259,7 +269,7 @@ struct LanguageDifference
      * @param wordID2 借用先単語ID
      * @return LanguageDifference
      */
-    static LanguageDifference CreateBorrowWord(const int ID1, const int ID2, const int section, const int wordID1, const int wordID2);
+    static LanguageDifference CreateBorrowWord(const std::string &ID1, const std::string &ID2, const int section, const int wordID1, const int wordID2);
     /**
      * @brief 複合語
      *
@@ -269,7 +279,7 @@ struct LanguageDifference
      * @param wordIDs 参照単語ID
      * @return LanguageDifference
      */
-    static LanguageDifference CreateAddCompoundWord(const int ID, const int section, const int wordID, const std::vector<int> wordIDs);
+    static LanguageDifference CreateAddCompoundWord(const std::string &ID, const int section, const int wordID, const std::vector<int> wordIDs);
     /**
      * @brief 単語削除
      *
@@ -278,7 +288,7 @@ struct LanguageDifference
      * @param wordID 単語ID
      * @return LanguageDifference
      */
-    static LanguageDifference CreateRemoveWord(const int ID, const int section, const int wordID);
+    static LanguageDifference CreateRemoveWord(const std::string &ID, const int section, const int wordID);
 };
 
 /**
