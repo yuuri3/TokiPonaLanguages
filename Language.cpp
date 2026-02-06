@@ -272,115 +272,125 @@ void changeLanguageSound(
     const bool isProhibiteMinimalPair,
     const bool isSoundDuplication)
 {
-    Language newLanguage;
+    // 子音と母音の境界（定数化してループ外で定義）
+    constexpr int MAX_CONSONANT_MANNAR = 3;
+
+    // 変更が発生した単語を記録する一時的なマップ（インプレース更新用）
+    std::map<int, Word> updatedWords;
+
+    // 1. 音韻変化の適用と音素重複チェックを同時に行う
     for (auto &[wordID, word] : language.Words)
     {
-        Word newWord;
-        newWord.NearestProtoWord = word.NearestProtoWord;
-        newWord.Meanings = word.Meanings;
-        for (size_t i = 0; i < word.Sounds.size(); i += 1)
+        bool changed = false;
+        std::vector<Phonetics> nextSounds;
+        nextSounds.reserve(word.Sounds.size()); // メモリ確保を1回に抑制
+
+        for (size_t i = 0; i < word.Sounds.size(); ++i)
         {
-            if (word.Sounds[i] == soundChange.beforePhon)
+            const auto &currentPhon = word.Sounds[i];
+
+            // 変化条件の判定
+            bool isMatch = (currentPhon == soundChange.beforePhon);
+            if (isMatch)
             {
                 if (soundChange.Condition == SoundChangeCondition::Start && i != 0)
-                {
-                    newWord.Sounds.push_back(word.Sounds[i]);
-                    continue;
-                }
-                if (soundChange.Condition == SoundChangeCondition::End && i != word.Sounds.size() - 1)
-                {
-                    newWord.Sounds.push_back(word.Sounds[i]);
-                    continue;
-                }
-                if (soundChange.Condition == SoundChangeCondition::Middle && (i == 0 || i == word.Sounds.size() - 1))
-                {
-                    newWord.Sounds.push_back(word.Sounds[i]);
-                    continue;
-                }
+                    isMatch = false;
+                else if (soundChange.Condition == SoundChangeCondition::End && i != word.Sounds.size() - 1)
+                    isMatch = false;
+                else if (soundChange.Condition == SoundChangeCondition::Middle && (i == 0 || i == word.Sounds.size() - 1))
+                    isMatch = false;
+            }
+
+            if (isMatch)
+            {
+                changed = true;
                 if (!soundChange.IsRemove)
                 {
-                    newWord.Sounds.push_back(soundChange.AfterPhone);
+                    nextSounds.push_back(soundChange.AfterPhone);
                 }
             }
             else
             {
-                newWord.Sounds.push_back(word.Sounds[i]);
+                nextSounds.push_back(currentPhon);
             }
         }
-        newLanguage.Words[wordID] = newWord;
-    }
-    // 子音、母音の重複を禁止する処理
-    if (isSoundDuplication)
-    {
-        // 子音と母音の境界
-        // 後でファイル入力にする
-        constexpr int MAX_CONSONANT_MANNAR = 3;
 
-        for (size_t i = 0; i < newLanguage.Words.size(); ++i)
+        if (!changed)
+            continue;
+
+        // 子音・母音の重複禁止チェック (isSoundDuplication)
+        if (isSoundDuplication)
         {
-            if (newLanguage.Words[i].Sounds.empty())
+            bool isInvalid = false;
+            if (nextSounds.empty())
+                isInvalid = true;
+            else if (nextSounds.size() == 1)
             {
-                newLanguage.Words[i] = language.Words[i];
-            }
-            if (newLanguage.Words[i].Sounds.size() == 1)
-            {
-                if (newLanguage.Words[i].Sounds[0].Mannar <= MAX_CONSONANT_MANNAR)
-                {
-                    newLanguage.Words[i] = language.Words[i];
-                }
+                if (nextSounds[0].Mannar <= MAX_CONSONANT_MANNAR)
+                    isInvalid = true;
             }
             else
             {
-                bool isDuplicate = false;
-                if (newLanguage.Words[i].Sounds[0].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[1].Mannar <= MAX_CONSONANT_MANNAR)
+                // 境界条件のチェック
+                if ((nextSounds[0].Mannar <= MAX_CONSONANT_MANNAR && nextSounds[1].Mannar <= MAX_CONSONANT_MANNAR) ||
+                    (nextSounds.back().Mannar <= MAX_CONSONANT_MANNAR && nextSounds[nextSounds.size() - 2].Mannar <= MAX_CONSONANT_MANNAR))
                 {
-                    newLanguage.Words[i] = language.Words[i];
-                }
-                if (newLanguage.Words[i].Sounds[newLanguage.Words[i].Sounds.size() - 2].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[newLanguage.Words[i].Sounds.size() - 1].Mannar <= MAX_CONSONANT_MANNAR)
-                {
-                    newLanguage.Words[i] = language.Words[i];
+                    isInvalid = true;
                 }
                 else
                 {
-                    for (size_t j = 0; j < newLanguage.Words[i].Sounds.size() - 2; j += 1)
+                    // 3連続のチェック
+                    for (size_t j = 0; j + 2 < nextSounds.size(); ++j)
                     {
-                        if (newLanguage.Words[i].Sounds[j].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[j + 1].Mannar <= MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[j + 2].Mannar <= MAX_CONSONANT_MANNAR)
+                        bool isConsonant = (nextSounds[j].Mannar <= MAX_CONSONANT_MANNAR &&
+                                            nextSounds[j + 1].Mannar <= MAX_CONSONANT_MANNAR &&
+                                            nextSounds[j + 2].Mannar <= MAX_CONSONANT_MANNAR);
+                        bool isVowel = (nextSounds[j].Mannar > MAX_CONSONANT_MANNAR &&
+                                        nextSounds[j + 1].Mannar > MAX_CONSONANT_MANNAR &&
+                                        nextSounds[j + 2].Mannar > MAX_CONSONANT_MANNAR);
+                        if (isConsonant || isVowel)
                         {
-                            isDuplicate = true;
-                        }
-                        if (newLanguage.Words[i].Sounds[j].Mannar > MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[j + 1].Mannar > MAX_CONSONANT_MANNAR && newLanguage.Words[i].Sounds[j + 2].Mannar > MAX_CONSONANT_MANNAR)
-                        {
-                            isDuplicate = true;
+                            isInvalid = true;
+                            break;
                         }
                     }
                 }
-                if (isDuplicate)
-                {
-                    newLanguage.Words[i] = language.Words[i];
-                }
             }
-        }
-    }
-    // 同音語になる単語は変化させない
-    if (isProhibiteMinimalPair)
-    {
-        // 1. 各要素が全体で何回現れるかをカウントする
-        // 重複を「先出し」で判定するため、一度全件走査が必要
-        std::map<std::vector<Phonetics>, int> counts;
-        for (const auto &[_, item] : newLanguage.Words)
-        {
-            counts[item.Sounds]++;
+            if (isInvalid)
+                continue; // 違反していればこの単語の変化は破棄
         }
 
-        // 2. カウントが1の要素を変更
-        for (size_t i = 0; i < newLanguage.Words.size(); ++i)
+        // 変化後の単語候補を一時保存
+        Word newWord = word;
+        newWord.Sounds = std::move(nextSounds); // 所有権を移転してコピーを回避
+        updatedWords[wordID] = std::move(newWord);
+    }
+
+    // 2. 同音語（ミニマル・ペア）の禁止チェック (isProhibiteMinimalPair)
+    if (isProhibiteMinimalPair)
+    {
+        // 現在の言語全体の単語分布を把握（変化しなかった単語 + 変化候補）
+        std::map<std::vector<Phonetics>, int> soundCounts;
+        for (const auto &[wordID, word] : language.Words)
         {
-            // A[i] という値が全体で2回以上現れているかチェック
-            if (counts[newLanguage.Words[i].Sounds] == 1)
-            {
-                language.Words[i] = newLanguage.Words[i];
-            }
+            auto it = updatedWords.find(wordID);
+            soundCounts[it != updatedWords.end() ? it->second.Sounds : word.Sounds]++;
         }
+
+        // 重複が発生する変化を差し止める
+        for (auto it = updatedWords.begin(); it != updatedWords.end();)
+        {
+            if (soundCounts[it->second.Sounds] > 1)
+                it = updatedWords.erase(it);
+            else
+                ++it;
+        }
+    }
+
+    // 3. 最終的な反映（一括代入）
+    for (auto &[wordID, newWord] : updatedWords)
+    {
+        language.Words[wordID] = std::move(newWord);
     }
 }
 
