@@ -469,80 +469,106 @@ void exportLanguageToCSV(
     if (!file.is_open())
         return;
 
-    // ヘッダー行 (Place)
+    // 1. 文字列変換の結果をキャッシュするマップ (高速化の肝)
+    std::map<std::vector<Phonetics>, std::string> stringCache;
+    auto getCachedString = [&](const std::vector<Phonetics> &s) -> const std::string &
+    {
+        auto it = stringCache.find(s);
+        if (it != stringCache.end())
+            return it->second;
+        return stringCache[s] = convertToString(s, table); //
+    };
+
+    // 2. ヘッダー行 (Place) の出力と、Languageポインタのキャッシュ
     file << ",";
+    std::vector<const Language *> langPtrList;
+    langPtrList.reserve(languages.size());
     for (const auto &[place, language] : languages)
     {
         file << place << ",";
+        langPtrList.push_back(&language); // ループ内でのmap検索を避けるために保持
     }
     file << "\n";
-    // 祖語の単語との対応
-    std::vector<std::map<std::vector<Phonetics>, std::vector<Word>>> mapsOldWordToWord;
-    for (const auto &[place, language] : languages)
+
+    // 3. 祖語の単語との対応マップの作成
+    // mapsOldWordToWord[言語インデックス][祖語の音素列] -> 該当する単語リスト
+    std::vector<std::map<std::vector<Phonetics>, std::vector<const Word *>>> mapsOldWordToWord;
+    mapsOldWordToWord.resize(langPtrList.size());
+    for (size_t i = 0; i < langPtrList.size(); ++i)
     {
-        std::map<std::vector<Phonetics>, std::vector<Word>> map;
-        for (const auto &[_, word] : language.Words)
+        for (const auto &[_, word] : langPtrList[i]->Words)
         {
-            map[word.NearestProtoWord].emplace_back(word);
-        }
-        mapsOldWordToWord.emplace_back(map);
-    }
-    // 言語名（Toki Pona からの変化）
-    file << "Toki Pona" << ",";
-    int indexToki, indexPona;
-    for (size_t i = 0; i < oldLanguage.Words.size(); i++)
-    {
-        const auto word = oldLanguage.Words[i];
-        if (convertToString(word.Sounds, table) == "toki")
-        {
-            indexToki = i;
-        }
-        if (convertToString(word.Sounds, table) == "pona")
-        {
-            indexPona = i;
+            mapsOldWordToWord[i][word.NearestProtoWord].push_back(&word); //
         }
     }
-    for (size_t i = 0; i < languages.size(); ++i)
+
+    // 4. 「Toki Pona」行の出力 (言語名の特定)
+    int indexToki = -1, indexPona = -1;
+    for (const auto &[id, word] : oldLanguage.Words)
     {
-        if (mapsOldWordToWord[i][oldLanguage.Words[indexToki].Sounds].empty() || mapsOldWordToWord[i][oldLanguage.Words[indexPona].Sounds].empty())
-        {
-            file << ",";
-        }
-        else
-        {
-            auto toki = convertToString(mapsOldWordToWord[i][oldLanguage.Words[indexToki].Sounds][0].Sounds, table);
-            auto pona = convertToString(mapsOldWordToWord[i][oldLanguage.Words[indexPona].Sounds][0].Sounds, table);
-            toki[0] = std::toupper(toki[0]);
-            pona[0] = std::toupper(pona[0]);
-            file << toki << " " << pona << ",";
-        }
+        std::string s = getCachedString(word.Sounds);
+        if (s == "toki")
+            indexToki = id;
+        if (s == "pona")
+            indexPona = id;
     }
-    file << "\n";
-    // 単語出力
-    for (const auto &[_, oldWord] : oldLanguage.Words)
+
+    file << "Toki Pona,";
+    if (indexToki != -1 && indexPona != -1)
     {
-        int maxWordNumNearToOldWord = 0;
-        for (size_t i = 0; i < languages.size(); ++i)
+        const auto &tokiSounds = oldLanguage.Words[indexToki].Sounds;
+        const auto &ponaSounds = oldLanguage.Words[indexPona].Sounds;
+
+        for (size_t i = 0; i < langPtrList.size(); ++i)
         {
-            maxWordNumNearToOldWord = std::max(maxWordNumNearToOldWord, (int)mapsOldWordToWord[i][oldWord.Sounds].size());
-        }
-        for (int i = 0; i < maxWordNumNearToOldWord; i++)
-        {
-            if (i == 0)
+            const auto &tokiList = mapsOldWordToWord[i][tokiSounds];
+            const auto &ponaList = mapsOldWordToWord[i][ponaSounds];
+
+            if (tokiList.empty() || ponaList.empty())
             {
-                file << convertToString(oldWord.Sounds, table);
+                file << ",";
             }
-            file << ",";
-            for (size_t j = 0; j < languages.size(); ++j)
+            else
             {
-                if (i < mapsOldWordToWord[j][oldWord.Sounds].size())
+                std::string tokiStr = getCachedString(tokiList[0]->Sounds);
+                std::string ponaStr = getCachedString(ponaList[0]->Sounds);
+                if (!tokiStr.empty())
+                    tokiStr[0] = std::toupper(tokiStr[0]);
+                if (!ponaStr.empty())
+                    ponaStr[0] = std::toupper(ponaStr[0]);
+                file << tokiStr << " " << ponaStr << ",";
+            }
+        }
+    }
+    file << "\n";
+
+    // 5. 各単語の出力
+    for (const auto &[id, oldWord] : oldLanguage.Words)
+    {
+        const auto &protoSounds = oldWord.Sounds;
+
+        // この祖語単語に対して、各地点で最大何個の派生語があるか確認
+        size_t maxRows = 0;
+        for (size_t i = 0; i < langPtrList.size(); ++i)
+        {
+            maxRows = std::max(maxRows, mapsOldWordToWord[i][protoSounds].size());
+        }
+
+        // 派生語の数だけ行を出力
+        for (size_t row = 0; row < maxRows; ++row)
+        {
+            if (row == 0)
+                file << getCachedString(protoSounds); // 最初の行だけ祖語を表示
+            file << ",";
+
+            for (size_t langIdx = 0; langIdx < langPtrList.size(); ++langIdx)
+            {
+                const auto &derivedWords = mapsOldWordToWord[langIdx][protoSounds];
+                if (row < derivedWords.size())
                 {
-                    file << convertToString(mapsOldWordToWord[j][oldWord.Sounds][i].Sounds, table);
+                    file << getCachedString(derivedWords[row]->Sounds);
                 }
-                if (j != languages.size() - 1)
-                {
-                    file << ",";
-                }
+                file << (langIdx == langPtrList.size() - 1 ? "" : ",");
             }
             file << "\n";
         }
