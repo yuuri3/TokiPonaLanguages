@@ -439,28 +439,50 @@ void changeLanguageMeaning(
     const double maxChangeRate)
 {
     if (language.Words.empty())
-    {
         return;
-    }
-    Language newLanguage = language;
-    // 単語の意味変化
-    const auto index = getRandomInt(0, (int)newLanguage.Words.size() - 1);
-    const auto word2 = language.Words[getRandomInt(0, (int)language.Words.size() - 1)];
-    const int changeRate = getRandomDouble(0.0, maxChangeRate);
-    newLanguage.Words[index].Meanings = newLanguage.Words[index].Meanings.Add(word2.Meanings.Product(changeRate));
-    newLanguage.Words[index].Meanings.Normalize();
-    newLanguage.Words[index].UpdateNearestProtoWord(OldLanguage);
 
-    // 祖語と最低１単語の意味が対応するようにする。
-    // newLanguage に対応する単語がある祖語の単語のセット
-    std::set<std::vector<Phonetics>> NewToProtoWordSet;
-    for (const auto &[_, word] : newLanguage.Words)
+    // 変更対象の単語をランダムに選択
+    // マップの要素にランダムアクセスするため、イテレータを進める
+    int targetIdx = getRandomInt(0, (int)language.Words.size() - 1);
+    auto it = language.Words.begin();
+    std::advance(it, targetIdx);
+    Word &targetWord = it->second;
+
+    // 変化の種となる単語をもう一つ選択
+    int seedIdx = getRandomInt(0, (int)language.Words.size() - 1);
+    auto itSeed = language.Words.begin();
+    std::advance(itSeed, seedIdx);
+    const Word &seedWord = itSeed->second;
+
+    // 現在の状態を保存（ロールバック用）
+    Meaning oldMeaning = targetWord.Meanings;
+    std::vector<Phonetics> oldProto = targetWord.NearestProtoWord;
+
+    // 意味の変化を適用
+    double changeRate = getRandomDouble(0.0, maxChangeRate);
+    targetWord.Meanings = targetWord.Meanings.Add(seedWord.Meanings.Product(changeRate));
+    targetWord.Meanings.Normalize();
+    targetWord.UpdateNearestProtoWord(OldLanguage);
+
+    // 整合性チェック：すべての単語が異なる祖語に対応しているか（単射性の維持）
+    // 巨大なセットを作る代わりに、他の単語と衝突していないかだけをチェック
+    bool isConflict = false;
+    for (auto checkIt = language.Words.begin(); checkIt != language.Words.end(); ++checkIt)
     {
-        NewToProtoWordSet.insert(word.NearestProtoWord);
+        if (checkIt == it)
+            continue; // 自分自身はスキップ
+        if (checkIt->second.NearestProtoWord == targetWord.NearestProtoWord)
+        {
+            isConflict = true;
+            break;
+        }
     }
-    if (language.Words.size() == NewToProtoWordSet.size())
+
+    // 衝突が発生した場合は元の状態に戻す
+    if (isConflict)
     {
-        language = newLanguage;
+        targetWord.Meanings = std::move(oldMeaning);
+        targetWord.NearestProtoWord = std::move(oldProto);
     }
 }
 
