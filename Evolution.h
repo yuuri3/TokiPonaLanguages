@@ -67,5 +67,6 @@ int evolution(
     }
     // 出力
     languageSystem.ExportLanguageToCSV(OUTPUT_PATH);
+    languageSystem.ExportDifference(OUTPUT_PATH + L".log");
     return 0;
 }

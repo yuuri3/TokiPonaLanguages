@@ -434,6 +434,12 @@ struct LanguageSystem
      * @param diffs 差分
      */
     void ApplyDifferences(const std::vector<LanguageDifference> &diffs);
+
+    /**
+     * @brief 差分をファイル出力
+     *
+     */
+    void ExportDifference(const std::wstring &filename);
 };
 
 /**

@@ -2,10 +2,23 @@
 #include <fstream>
 #include <cmath>
 #include <set>
+#include <sstream>
 
 namespace
 {
     double TOLERANCE = 1.0e-6;
+
+    // ヘルパー：vectorの中身を文字列に変換
+    template <typename T>
+    std::string joinVector(const std::vector<T> &vec, const std::string &del = " ")
+    {
+        std::stringstream ss;
+        for (size_t i = 0; i < vec.size(); ++i)
+        {
+            ss << vec[i] << (i == vec.size() - 1 ? "" : del);
+        }
+        return ss.str();
+    }
 }
 
 Meaning Meaning::Add(const Meaning &meaning) const
@@ -1025,4 +1038,42 @@ void LanguageSystem::ApplyDifferences(const std::vector<LanguageDifference> &dif
         // ApplyDifference の switch 部をここにインライン展開、
         // または getLang の代わりに idToLang[id] を使用することで劇的に高速化します。
     }
+}
+
+void LanguageSystem::ExportDifference(const std::wstring &filename)
+{
+    std::ofstream file(filename.c_str());
+    if (!file.is_open())
+        return;
+
+    for (const auto &diff : languageDifference)
+    {
+        file << "[Section " << diff.Section << " | Type: " << static_cast<int>(diff.Type) << "]\n";
+
+        if (!diff.IntParam.empty())
+            file << "  Int:    " << joinVector(diff.IntParam) << "\n";
+        if (!diff.DoubleParam.empty())
+            file << "  Double: " << joinVector(diff.DoubleParam) << "\n";
+        if (!diff.StringParam.empty())
+            file << "  String: " << joinVector(diff.StringParam) << "\n";
+
+        if (diff.Type == LanguageDifferenceType::ChangeSound)
+        {
+            file << "  Sound:  " << diff.SoundChanges.beforePhon.Mannar << "," << diff.SoundChanges.beforePhon.Place
+                 << " -> " << (diff.SoundChanges.IsRemove ? "REMOVE" : std::to_string(diff.SoundChanges.AfterPhone.Mannar)) << "\n";
+        }
+
+        if (!diff.MeaningChange.empty())
+        {
+            file << "  Meaning: ";
+            for (const auto &pair : diff.MeaningChange)
+            {
+                file << pair.first << "(" << pair.second << ") ";
+            }
+            file << "\n";
+        }
+        file << "------------------------------------------\n";
+    }
+
+    file.close();
 }
