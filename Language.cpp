@@ -802,40 +802,38 @@ void LanguageSystem::ChangeLanguageStrength(const double pChangeStrength)
     }
 }
 
-// removeWordRandom: mapのerase(index)は誤りのため、イテレータによる削除に修正
-void removeWordRandom(Language &language, const Language &oldLanguage)
-{
-    if (language.Words.empty())
-        return;
-
-    std::map<std::vector<Phonetics>, std::vector<int>> mapProtoWordToWordIndice;
-    for (const auto &[id, word] : language.Words)
-    {
-        mapProtoWordToWordIndice[word.NearestProtoWord].push_back(id);
-    }
-
-    std::vector<int> duplicatedIds;
-    for (const auto &[key, ids] : mapProtoWordToWordIndice)
-    {
-        if (ids.size() > 1)
-            duplicatedIds.insert(duplicatedIds.end(), ids.begin(), ids.end());
-    }
-
-    if (!duplicatedIds.empty())
-    {
-        int targetId = duplicatedIds[getRandomInt(0, duplicatedIds.size() - 1)];
-        language.Words.erase(targetId); // mapのキー指定削除はO(log N)
-    }
-}
-
 void LanguageSystem::RemoveWordRandom(const double pWordLoss)
 {
-    for (auto &[_, language] : LanguageMap)
+    for (auto &[ID, language] : LanguageMap)
     {
         // 単語が脱落するかどうか
         if (getWithProbability(pWordLoss))
         {
-            removeWordRandom(language, ProtoLanguage);
+            if (language.Words.empty())
+                return;
+
+            std::map<std::vector<Phonetics>, std::vector<int>> mapProtoWordToWordIndice;
+            for (const auto &[id, word] : language.Words)
+            {
+                mapProtoWordToWordIndice[word.NearestProtoWord].push_back(id);
+            }
+
+            std::vector<int> duplicatedIds;
+            for (const auto &[key, ids] : mapProtoWordToWordIndice)
+            {
+                if (ids.size() > 1)
+                    duplicatedIds.insert(duplicatedIds.end(), ids.begin(), ids.end());
+            }
+
+            if (!duplicatedIds.empty())
+            {
+                int targetId = duplicatedIds[getRandomInt(0, duplicatedIds.size() - 1)];
+                language.Words.erase(targetId); // mapのキー指定削除はO(log N)
+
+                // ログ
+                const auto dif = LanguageDifference::CreateRemoveWord(ID, Section, targetId);
+                languageDifference.emplace_back(dif);
+            }
         }
     }
 }
