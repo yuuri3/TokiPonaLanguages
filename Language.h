@@ -68,6 +68,8 @@ public:
     void Normalize();
 };
 
+struct Language;
+
 /**
  * @brief 単語
  *
@@ -78,6 +80,9 @@ struct Word
     std::vector<Phonetics> Sounds;
     // 意味
     Meaning Meanings;
+    // 最も意味の近い祖語の単語
+    // 高速化のためメンバ化
+    std::vector<Phonetics> NearestProtoWord;
 
     bool operator==(const Word &other) const
     {
@@ -101,6 +106,13 @@ struct Word
      * @return 複合語
      */
     Word Add(const Word &word) const;
+
+    /**
+     * @brief NearestProtoWordを更新する
+     *
+     * @param language 祖語
+     */
+    void UpdateNearestProtoWord(const Language &language);
 };
 
 /**
@@ -109,14 +121,10 @@ struct Word
  */
 struct Language
 {
-    // 位置
-    std::string Place;
     // 影響度、大きい方から小さいほうへ単語が借用される
     double Strength;
     // 語彙
-    std::vector<Word> Words;
-    // 借用履歴
-    std::vector<std::pair<int, std::string>> BollowHistory;
+    std::map<int, Word> Words;
 };
 
 /**
@@ -150,30 +158,289 @@ struct SoundChange
 };
 
 /**
- * 文字列を変換表に基づいて音素列に変換する
- * @param str 文字列
- * @param table 音素表
+ * @brief 語族差分タイプ
+ *
  */
-std::vector<Phonetics> convertToPhonetics(const std::string &str, const std::vector<std::vector<std::string>> &table);
+enum LanguageDifferenceType
+{
+    // 単語追加
+    // string 地理
+    // int 単語ID
+    // string 語形
+    // Meaning 意味
+    AddWord,
+    // 影響度変化
+    // string 地理
+    // double 影響度
+    ChangeStrength,
+    // 音韻変化
+    // string 地理
+    // int 単語ID
+    // SoundChange 音韻変化
+    ChangeSound,
+    // 意味変化
+    // string 地理
+    // int 単語ID
+    // Meaning 意味変化
+    ChangeMeaning,
+    // 借用
+    // string 地理
+    // int 借用元単語ID
+    // string 地理
+    // int 借用先単語ID
+    BorrowWord,
+    // 複合語
+    // string 地理
+    // int 単語ID
+    // int... 参照単語ID
+    AddCompoundWord,
+    // 死語
+    // string 地理
+    // int 単語ID
+    Remove
+};
 
 /**
- * @brief 文字列の配列を言語に変換する
- * @param strs 文字列の配列
- * @param table 音素表
- * @return 言語
+ * @brief 語族差分
+ *
  */
-Language convertToLanguage(const std::vector<std::string> strs, const std::vector<std::vector<std::string>> &table);
+struct LanguageDifference
+{
+    // タイプ
+    LanguageDifferenceType Type;
+    // 時代
+    int Section;
+    // 整数パラメータ
+    std::vector<int> IntParam;
+    // 実数パラメータ
+    std::vector<double> DoubleParam;
+    // 文字列パラメータ
+    std::vector<std::string> StringParam;
+    // 音韻変化（あとで消す）
+    SoundChange SoundChanges;
+    // 意味変化（あとで消す）
+    Meaning MeaningChange;
+    /**
+     * @brief Create a Add 単語 object
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param wordID 単語ID
+     * @param wordForm 語形
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateAddWord(const std::string &ID, const int section, const int wordID, const std::string &wordForm);
+    /**
+     * @brief Change 言語 影響度
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param strength 影響度
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateChangeStrength(const std::string &ID, const int section, const double strength);
+    /**
+     * @brief Change 言語 音韻
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param wordID 単語ID
+     * @param soundChange 音韻変化
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateChangeSound(const std::string &ID, const int section, const int wordID, const SoundChange soundChange);
+    /**
+     * @brief Change 単語の意味
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param wordID 単語ID
+     * @param meaning 意味変化
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateChangeMeaning(const std::string &ID, const int section, const int wordID, const Meaning meaning);
+    /**
+     * @brief 借用
+     *
+     * @param ID1 借用元言語ID
+     * @param ID2 借用先言語ID
+     * @param section 時代
+     * @param wordID1 借用元単語ID
+     * @param wordID2 借用先単語ID
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateBorrowWord(const std::string &ID1, const std::string &ID2, const int section, const int wordID1, const int wordID2);
+    /**
+     * @brief 複合語
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param wordID 単語ID
+     * @param wordIDs 参照単語ID
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateAddCompoundWord(const std::string &ID, const int section, const int wordID, const std::vector<int> wordIDs);
+    /**
+     * @brief 単語削除
+     *
+     * @param ID 言語ID
+     * @param section 時代
+     * @param wordID 単語ID
+     * @return LanguageDifference
+     */
+    static LanguageDifference CreateRemoveWord(const std::string &ID, const int section, const int wordID);
+};
 
 /**
- * 地図データの特定の位置に祖語を配置する
- * @param mapData 地図データ
- * @param startPlace 祖語を配置する位置
- * @param language 祖語
+ * @brief 音素 <-> 表記変換
+ *
  */
-std::vector<Language> setOldLanguageOnMap(
-    const std::vector<std::string> &mapData,
-    const std::string &startPlace,
-    const Language &language);
+struct PhoneticsConverter
+{
+    std::map<std::string, Phonetics> Map;
+    PhoneticsConverter static Create(const std::vector<std::vector<std::string>> &table);
+
+    /**
+     * 文字列を変換表に基づいて音素列に変換する
+     * @param str 文字列
+     * @param table 音素表
+     */
+    std::vector<Phonetics> convertToPhonetics(const std::string &str);
+
+    /**
+     * @brief 文字列の配列を言語に変換する
+     * @param strs 文字列の配列
+     * @param table 音素表
+     * @return 言語
+     */
+    Language convertToLanguage(const std::vector<std::string> &strs);
+};
+
+/**
+ * @brief 語族
+ *
+ */
+struct LanguageSystem
+{
+    // 時代
+    int Section = 0;
+    // 地理
+    std::vector<std::vector<std::string>> Map;
+    // 音韻
+    std::vector<std::vector<std::string>> PhoneticsMap;
+    // 地理と言語の対応
+    std::map<std::string, Language> LanguageMap;
+    // 祖語
+    Language ProtoLanguage;
+    // 祖語からの差分
+    std::vector<LanguageDifference> languageDifference;
+    /**
+     * 地図データの特定の位置に祖語を配置する
+     * @param startPlace 祖語を配置する位置
+     * @param language 祖語
+     */
+    void SetOldLanguageOnMap(
+        const std::string &startPlace,
+        const Language &language);
+
+    /**
+     * 音変化
+     * @param pSoundChange 音韻変化確率
+     * @param pSoundLoss 音素脱落確率
+     * @param isProhibitMinimalPair ミニマルペアを禁止するか
+     * @param isSoundDuplication 音素の重複を禁止するか
+     *
+     * @note ある言語の単語を一斉に変化させる。
+     */
+    void ChangeLanguageSound(
+        const double pSoundChange,
+        const double pSoundLoss,
+        const bool isProhibitMinimalPair = true,
+        const bool isSoundDuplication = true);
+
+    /**
+     * @brief 意味変化
+     *
+     * @param pSemanticShift 意味変化確率
+     * @param maxChangeRate 意味変化大きさ
+     *
+     * @note 単語１つの意味を変化させる
+     */
+    void ChangeLanguageMeaning(
+        const double pSemanticShift,
+        const double maxSemanticShiftRate);
+
+    /**
+     * 単語を借用
+     *
+     * @param nBorrow 借用回数
+     * @param pBorrow 借用率
+     *
+     * @note 借用の履歴をlanguageに記録
+     */
+    void BollowWord(const int nBorrow, const double pBorrow);
+
+    /**
+     * @brief 言語の影響度をランダムに変化させる
+     *
+     * @param pChangeStrength 変化率
+     */
+    void ChangeLanguageStrength(const double pChangeStrength);
+
+    /**
+     * @brief 言語からランダムに単語を消去する
+     *
+     * @param pWordLoss 単語消去率
+     */
+    void RemoveWordRandom(const double pWordLoss);
+
+    /**
+     * @brief 言語に単語を追加する
+     *
+     * @param pWordBirth 単語追加律
+     */
+    void CreateWord(const double pWordBirth);
+
+    /**
+     * Language構造体のリストをCSVに出力する
+     * @param filename 出力ファイル名
+     */
+    void ExportLanguageToCSV(const std::wstring &filename);
+
+    /**
+     * @brief 各地に言語があるか
+     *
+     * @return true
+     * @return false
+     */
+    bool HasAllPlaceLanguage();
+
+    /**
+     * @brief 時代を進める
+     *
+     */
+    void ToNextSection();
+
+    /**
+     * @brief 差分を適用
+     *
+     * @param diff 差分
+     */
+    void ApplyDifference(const LanguageDifference &diff);
+
+    /**
+     * @brief 差分を複数適用
+     *
+     * @param diffs 差分
+     */
+    void ApplyDifferences(const std::vector<LanguageDifference> &diffs);
+
+    /**
+     * @brief 差分をファイル出力
+     *
+     */
+    void ExportDifference(const std::wstring &filename);
+};
 
 /**
  * 音素列を変換表に基づいて文字列に復元する
@@ -183,35 +450,6 @@ std::vector<Language> setOldLanguageOnMap(
 std::string convertToString(const std::vector<Phonetics> &phoneticses, const std::vector<std::vector<std::string>> &table);
 
 /**
- * 音変化
- * @param language 言語
- * @param soundChange 変化規則
- * @param isProhibitMinimalPair ミニマルペアを禁止するか
- * @param isSoundDuplication 音素の重複を禁止するか
- *
- * @note ある言語の単語を一斉に変化させる。
- */
-void changeLanguageSound(
-    Language &language,
-    const SoundChange &soundChange,
-    const bool isProhibitMinimalPair = true,
-    const bool isSoundDuplication = true);
-
-/**
- * @brief 意味変化
- *
- * @param language 言語
- * @param oldLanguage 祖語
- * @param maxChangeRate 最大変化率
- *
- * @note 単語１つの意味を変化させる
- */
-void changeLanguageMeaning(
-    Language &language,
-    const Language &oldLanguage,
-    const double maxChangeRate);
-
-/**
  * 変化規則をランダムに生成
  * @param beforePlace 変化前音素
  * @param beforeMannar 変化前音素
@@ -219,29 +457,6 @@ void changeLanguageMeaning(
  * @param pRemoveSound 音が脱落する確率
  */
 SoundChange makeSoundChangeRandom(const Phonetics &beforePhon, const std::vector<std::vector<std::string>> &table, const double pRemoveSound);
-
-/**
- * Language構造体のリストをCSVに出力する
- * @param oldLanguage 祖語データ
- * @param languages 言語データ
- * @param table 音素表
- * @param filename 出力ファイル名
- */
-void exportLanguageToCSV(
-    const Language &oldLanguage,
-    const std::vector<struct Language> &languages,
-    const std::vector<std::vector<std::string>> &table,
-    const std::wstring &filename);
-
-/**
- * 単語を借用
- * @param languages 変化前音素
- * @param generation 世代
- * @param adjucentData 変化前音素
- *
- * @note 借用の履歴をlanguageに記録
- */
-void bollowWord(std::vector<Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData);
 
 /**
  * @brief 音素表から、音素をランダムに1つ選択する
@@ -255,24 +470,4 @@ Phonetics getRandomSoundFromTable(const std::vector<std::vector<std::string>> &t
  * @param language 言語
  * @return 音素
  */
-Phonetics getRandomSoundFromLanguage(const Language &language);
-
-/**
- * @brief 言語の影響度をランダムに変化させる
- * @param language 言語
- */
-void changeLanguageStrength(Language &language);
-
-/**
- * @brief 言語からランダムに単語を消去する
- *
- * @param language 言語
- */
-void removeWordRandom(Language &language, const Language &oldLanguage);
-
-/**
- * @brief 言語に単語を追加する
- *
- * @param language 言語
- */
-void createWord(Language &language);
+Phonetics getRandomSoundFromLanguage(Language &language);
