@@ -669,71 +669,6 @@ void LanguageSystem::ExportLanguageToCSV(const std::wstring &filename)
     exportLanguageToCSV(ProtoLanguage, LanguageMap, PhoneticsMap, filename);
 }
 
-// bollowWord: O(N^2)のループ内で重複する計算を削減
-void bollowWord(std::map<std::string, Language> &languages, const int &generation, const std::pair<std::string, std::string> &adjucentData)
-{
-    auto it1 = languages.find(adjucentData.first);
-    auto it2 = languages.find(adjucentData.second);
-    if (it1 == languages.end() || it2 == languages.end())
-        return;
-
-    Language &l1 = it1->second;
-    Language &l2 = it2->second;
-
-    if (l1.Words.empty() || l2.Words.empty())
-    {
-        if (l1.Words.empty())
-        {
-            l1.Words = l2.Words;
-            l1.Strength = l2.Strength;
-        }
-        else
-        {
-            l2.Words = l1.Words;
-            l2.Strength = l1.Strength;
-        }
-        return;
-    }
-
-    auto *source = (l1.Strength > l2.Strength) ? &l1 : &l2;
-    auto *target = (l1.Strength > l2.Strength) ? &l2 : &l1;
-
-    for (auto &[tID, tWord] : target->Words)
-    {
-        if (getRandomInt(0, 1) != 0)
-            continue;
-
-        const Word *bestSourceWord = nullptr;
-        double maxDot = -1.0;
-
-        for (const auto &[sID, sWord] : source->Words)
-        {
-            double dot = tWord.Meanings.Dot(sWord.Meanings);
-            if (dot > maxDot)
-            {
-                maxDot = dot;
-                bestSourceWord = &sWord;
-            }
-        }
-
-        if (bestSourceWord)
-        {
-            // 同音語チェックを最適化
-            bool isDuplicate = false;
-            for (const auto &[checkID, checkWord] : target->Words)
-            {
-                if (checkWord.Sounds == bestSourceWord->Sounds)
-                {
-                    isDuplicate = true;
-                    break;
-                }
-            }
-            if (!isDuplicate)
-                tWord.Sounds = bestSourceWord->Sounds;
-        }
-    }
-}
-
 void LanguageSystem::BollowWord(const int nBorrow, const double pBorrow)
 {
     const auto mapAdjacentData = getAdjacencies(Map);
@@ -741,7 +676,76 @@ void LanguageSystem::BollowWord(const int nBorrow, const double pBorrow)
     {
         // 借用率 は現在固定
         const auto adjucent = mapAdjacentData[getRandomInt(0, mapAdjacentData.size() - 1)];
-        bollowWord(LanguageMap, 0, adjucent);
+        {
+            auto it1 = LanguageMap.find(adjucent.first);
+            auto it2 = LanguageMap.find(adjucent.second);
+            if (it1 == LanguageMap.end() || it2 == LanguageMap.end())
+                return;
+
+            Language &l1 = it1->second;
+            Language &l2 = it2->second;
+
+            if (l1.Words.empty() || l2.Words.empty())
+            {
+                if (l1.Words.empty())
+                {
+                    l1.Words = l2.Words;
+                    l1.Strength = l2.Strength;
+                }
+                else
+                {
+                    l2.Words = l1.Words;
+                    l2.Strength = l1.Strength;
+                }
+                return;
+            }
+
+            auto *source = (l1.Strength > l2.Strength) ? &l1 : &l2;
+            auto *target = (l1.Strength > l2.Strength) ? &l2 : &l1;
+            const auto sID = (l1.Strength > l2.Strength) ? it1->first : it2->first;
+            const auto tID = (l1.Strength > l2.Strength) ? it2->first : it1->first;
+
+            for (auto &[tWordID, tWord] : target->Words)
+            {
+                if (getRandomInt(0, 1) != 0)
+                    continue;
+
+                const Word *bestSourceWord = nullptr;
+                int bestSourceWordID = -1;
+                double maxDot = -1.0;
+
+                for (const auto &[sWordID, sWord] : source->Words)
+                {
+                    double dot = tWord.Meanings.Dot(sWord.Meanings);
+                    if (dot > maxDot)
+                    {
+                        maxDot = dot;
+                        bestSourceWord = &sWord;
+                        bestSourceWordID = sWordID;
+                    }
+                }
+
+                // ログ
+                const auto dif = LanguageDifference::CreateBorrowWord(sID, tID, Section, bestSourceWordID, tWordID);
+                languageDifference.emplace_back(dif);
+
+                if (bestSourceWord)
+                {
+                    // 同音語チェックを最適化
+                    bool isDuplicate = false;
+                    for (const auto &[checkID, checkWord] : target->Words)
+                    {
+                        if (checkWord.Sounds == bestSourceWord->Sounds)
+                        {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+                    if (!isDuplicate)
+                        tWord.Sounds = bestSourceWord->Sounds;
+                }
+            }
+        }
     }
 }
 
