@@ -787,18 +787,17 @@ Phonetics getRandomSoundFromLanguage(Language &language)
     return language.Words[index1].Sounds[index2];
 }
 
-void changeLanguageStrength(Language &language)
-{
-    language.Strength = language.Strength * 0.9 + getRandomDouble(-1.0, 1.0) * 0.1;
-}
-
 void LanguageSystem::ChangeLanguageStrength(const double pChangeStrength)
 {
-    for (auto &[_, language] : LanguageMap)
+    for (auto &[ID, language] : LanguageMap)
     {
         if (getWithProbability(pChangeStrength))
         {
-            changeLanguageStrength(language);
+            language.Strength = language.Strength * 0.9 + getRandomDouble(-1.0, 1.0) * 0.1;
+
+            // ログ
+            const auto dif = LanguageDifference::CreateChangeStrength(ID, Section, language.Strength);
+            languageDifference.emplace_back(dif);
         }
     }
 }
