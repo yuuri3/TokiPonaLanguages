@@ -838,36 +838,31 @@ void LanguageSystem::RemoveWordRandom(const double pWordLoss)
     }
 }
 
-void createWord(Language &language, const Language &oldLanguage)
-{
-    if (language.Words.empty())
-    {
-        return;
-    }
-    const auto word1 = language.Words[getRandomInt(0, (int)language.Words.size() - 1)];
-    const auto word2 = language.Words[getRandomInt(0, (int)language.Words.size() - 1)];
-
-    auto newWord = word1.Add(word2);
-    newWord.UpdateNearestProtoWord(oldLanguage);
-    if (language.Words.empty())
-    {
-        language.Words[0] = newWord;
-    }
-    else
-    {
-        const int newWordId = language.Words.rbegin()->first + 1;
-        language.Words[newWordId] = newWord;
-    }
-}
-
 void LanguageSystem::CreateWord(const double pWordBirth)
 {
-    for (auto &[_, language] : LanguageMap)
+    for (auto &[ID, language] : LanguageMap)
     {
         // 単語を追加するかどうか
         if (getWithProbability(pWordBirth))
         {
-            createWord(language, ProtoLanguage);
+            if (language.Words.empty())
+            {
+                return;
+            }
+            const auto wordID1 = getRandomInt(0, (int)language.Words.size() - 1);
+            const auto word1 = language.Words[wordID1];
+            const auto wordID2 = getRandomInt(0, (int)language.Words.size() - 1);
+            const auto word2 = language.Words[wordID2];
+
+            auto newWord = word1.Add(word2);
+            newWord.UpdateNearestProtoWord(ProtoLanguage);
+
+            const int newWordId = language.Words.rbegin()->first + 1;
+            language.Words[newWordId] = newWord;
+
+            // ログ出力
+            const auto dif = LanguageDifference::CreateAddCompoundWord(ID, Section, newWordId, {wordID1, wordID2});
+            languageDifference.emplace_back(dif);
         }
     }
 }
