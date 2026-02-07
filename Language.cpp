@@ -3,6 +3,7 @@
 #include <cmath>
 #include <set>
 #include <sstream>
+#include <iomanip>
 
 namespace
 {
@@ -17,6 +18,44 @@ namespace
         {
             ss << vec[i] << (i == vec.size() - 1 ? "" : del);
         }
+        return ss.str();
+    }
+
+    // ヘルパー関数：列挙型を文字列に変換（可読性向上）
+    std::string getDiffTypeName(LanguageDifferenceType type)
+    {
+        switch (type)
+        {
+        case LanguageDifferenceType::ChangeStrength:
+            return "ChangeStrength";
+        case LanguageDifferenceType::ChangeSound:
+            return "ChangeSound";
+        case LanguageDifferenceType::ChangeMeaning:
+            return "ChangeMeaning";
+        case LanguageDifferenceType::BorrowWord:
+            return "BorrowWord";
+        case LanguageDifferenceType::AddCompoundWord:
+            return "AddCompoundWord";
+        case LanguageDifferenceType::Remove:
+            return "Remove";
+        default:
+            return "Unknown";
+        }
+    }
+
+    // ヘルパー関数：ベクトルをカンマ区切りのリスト形式にする
+    template <typename T>
+    std::string formatYamlList(const std::vector<T> &vec)
+    {
+        if (vec.empty())
+            return "[]";
+        std::stringstream ss;
+        ss << "[";
+        for (size_t i = 0; i < vec.size(); ++i)
+        {
+            ss << vec[i] << (i == vec.size() - 1 ? "" : ", ");
+        }
+        ss << "]";
         return ss.str();
     }
 }
@@ -1037,33 +1076,42 @@ void LanguageSystem::ExportDifference(const std::wstring &filename)
     if (!file.is_open())
         return;
 
+    file << "LanguageDifferences:\n"; // ルート要素
+
     for (const auto &diff : languageDifference)
     {
-        file << "[Section " << diff.Section << " | Type: " << static_cast<int>(diff.Type) << "]\n";
-
-        if (!diff.IntParam.empty())
-            file << "  Int:    " << joinVector(diff.IntParam) << "\n";
-        if (!diff.DoubleParam.empty())
-            file << "  Double: " << joinVector(diff.DoubleParam) << "\n";
-        if (!diff.StringParam.empty())
-            file << "  String: " << joinVector(diff.StringParam) << "\n";
-
-        if (diff.Type == LanguageDifferenceType::ChangeSound)
+        file << "  - Section: " << diff.Section << "\n";
+        file << "    Type: " << diff.Type << "\n";
+        file << "    IntParam:" << "\n";
+        for (const auto &i : diff.IntParam)
         {
-            file << "  Sound:  " << diff.SoundChanges.beforePhon.Mannar << "," << diff.SoundChanges.beforePhon.Place
-                 << " -> " << (diff.SoundChanges.IsRemove ? "REMOVE" : std::to_string(diff.SoundChanges.AfterPhone.Mannar)) << "\n";
+            file << "     - " << i << "\n";
         }
-
-        if (!diff.MeaningChange.empty())
+        file << "    DoubleParam:" << "\n";
+        for (const auto &d : diff.DoubleParam)
         {
-            file << "  Meaning: ";
-            for (const auto &pair : diff.MeaningChange)
-            {
-                file << pair.first << "(" << pair.second << ") ";
-            }
-            file << "\n";
+            file << "     - " << d << "\n";
         }
-        file << "------------------------------------------\n";
+        file << "    StringParam:" << "\n";
+        for (const auto &s : diff.StringParam)
+        {
+            file << "     - " << s << "\n";
+        }
+        file << "    SoundChange:" << "\n";
+        file << "     - Before:" << "\n";
+        file << "       - Place:" << diff.SoundChanges.beforePhon.Place << "\n";
+        file << "       - Mannar:" << diff.SoundChanges.beforePhon.Mannar << "\n";
+        file << "     - After:" << "\n";
+        file << "       - Place:" << diff.SoundChanges.AfterPhone.Place << "\n";
+        file << "       - Mannar:" << diff.SoundChanges.AfterPhone.Mannar << "\n";
+        file << "     - Condition:" << diff.SoundChanges.Condition << "\n";
+        file << "     - IsRemove:" << diff.SoundChanges.IsRemove << "\n";
+        file << "    MeaningChange:" << "\n";
+        for (const auto &pair : diff.MeaningChange)
+        {
+            file << "     - Key: " << pair.first << "\n";
+            file << "       Value: " << pair.second << "\n";
+        }
     }
 
     file.close();
