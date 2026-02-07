@@ -36,7 +36,6 @@ int evolution(
     languageSystem.PhoneticsMap = phoneticsData;
     languageSystem.SetOldLanguageOnMap("0", oldTokiPona);
 
-    int generation = -1;
     if (N_BORROW == 0)
     {
         return 0;
@@ -47,7 +46,7 @@ int evolution(
     }
     while (true)
     {
-        generation++;
+        languageSystem.ToNextSection();
         // 言語の影響度を変化させる。
         languageSystem.ChangeLanguageStrength(1.0);
         // 借用
