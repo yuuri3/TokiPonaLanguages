@@ -26,7 +26,11 @@ namespace
     // 出力ファイルパス
     std::string output_path = "ignore\\Output.csv";
 
+    // 生成した語族データ
     std::optional<LanguageSystem> language_system;
+
+    // 選択した地域名
+    std::string selected_place;
 }
 
 /**
@@ -41,6 +45,10 @@ enum WindowType
     Simulation,
     // 言語変化シミュレート/実行
     SimulationExecute,
+    // 言語変化シミュレート/結果
+    SimulationDisplay,
+    // 言語変化シミュレート/結果/単語
+    SimulationDisplayWord,
     // 終了
     Quit,
     // エラー
@@ -194,7 +202,7 @@ WindowType DisplayWindow(WindowType type)
             std::cout << "任意のキーを押してください\n";
             std::string input2;
             std::cin >> input2;
-            return WindowType::Simulation;
+            return WindowType::SimulationDisplay;
         }
         else
         {
@@ -203,6 +211,50 @@ WindowType DisplayWindow(WindowType type)
             std::string input2;
             std::cin >> input2;
             return WindowType::Simulation;
+        }
+    }
+    case WindowType::SimulationDisplay:
+    {
+        std::cout << "=============================================\n";
+        std::cout << "> 言語変化シミュレート > 表示\n";
+
+        const auto geometry = getNonEmptyStrings(language_system->Map);
+        for (int i = 0; i < geometry.size(); i++)
+        {
+            std::cout << i << " : " << geometry[i] << "\n";
+        }
+
+        std::cout << "q : 戻る\n";
+        std::string input;
+        std::cin >> input;
+
+        if (input == "q")
+        {
+            return WindowType::Home;
+        }
+        else if (std::stoi(input) < geometry.size())
+        {
+            selected_place = geometry[std::stoi(input)];
+            return WindowType::SimulationDisplayWord;
+        }
+    }
+    case WindowType::SimulationDisplayWord:
+    {
+        std::cout << "=============================================\n";
+        std::cout << "> 言語変化シミュレート > 表示 > 個別言語\n";
+
+        for (const auto &[_, word] : language_system->LanguageMap[selected_place].Words)
+        {
+            std::cout << convertToString(word.Sounds, language_system->PhoneticsMap) << "\n";
+        }
+
+        std::cout << "q : 戻る\n";
+        std::string input;
+        std::cin >> input;
+
+        if (input == "q")
+        {
+            return WindowType::SimulationDisplay;
         }
     }
 
