@@ -589,7 +589,7 @@ void exportLanguageToCSV(
     Language &oldLanguage,
     const std::map<std::string, Language> &languages,
     const std::vector<std::vector<std::string>> &table,
-    const std::wstring &filename)
+    const std::string &filename)
 {
     std::ofstream file(filename.c_str());
     if (!file.is_open())
@@ -703,7 +703,7 @@ void exportLanguageToCSV(
     file.close();
 }
 
-void LanguageSystem::ExportLanguageToCSV(const std::wstring &filename)
+void LanguageSystem::ExportLanguageToCSV(const std::string &filename)
 {
     exportLanguageToCSV(ProtoLanguage, LanguageMap, PhoneticsMap, filename);
 }
@@ -1070,7 +1070,7 @@ void LanguageSystem::ApplyDifferences(const std::vector<LanguageDifference> &dif
     }
 }
 
-void LanguageSystem::ExportDifference(const std::wstring &filename)
+void LanguageSystem::ExportDifference(const std::string &filename)
 {
     std::ofstream file(filename.c_str());
     if (!file.is_open())

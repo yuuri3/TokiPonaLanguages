@@ -12,10 +12,10 @@ int evolution(
     const double MAX_SEMANTIC_SHIFT_RATE,
     const double P_WORD_LOSS,
     const double P_WORD_BIRTH,
-    const std::wstring &PROTO_LANGUAGE_PATH,
-    const std::wstring &PHONEME_TABLE_PATH,
-    const std::wstring &MAP_PATH,
-    const std::wstring &OUTPUT_PATH)
+    const std::string &PROTO_LANGUAGE_PATH,
+    const std::string &PHONEME_TABLE_PATH,
+    const std::string &MAP_PATH,
+    const std::string &OUTPUT_PATH)
 {
     // ファイル読み込み
     const auto oldTokiPonaData = readCSV(PROTO_LANGUAGE_PATH);
@@ -66,6 +66,6 @@ int evolution(
     }
     // 出力
     languageSystem.ExportLanguageToCSV(OUTPUT_PATH);
-    languageSystem.ExportDifference(OUTPUT_PATH + L".log");
+    languageSystem.ExportDifference(OUTPUT_PATH + ".log");
     return 0;
 }

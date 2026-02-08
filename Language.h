@@ -405,7 +405,7 @@ struct LanguageSystem
      * Language構造体のリストをCSVに出力する
      * @param filename 出力ファイル名
      */
-    void ExportLanguageToCSV(const std::wstring &filename);
+    void ExportLanguageToCSV(const std::string &filename);
 
     /**
      * @brief 各地に言語があるか
@@ -439,7 +439,7 @@ struct LanguageSystem
      * @brief 差分をファイル出力
      *
      */
-    void ExportDifference(const std::wstring &filename);
+    void ExportDifference(const std::string &filename);
 };
 
 /**
