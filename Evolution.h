@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-int evolution(
+std::optional<LanguageSystem> evolution(
     const int N_BORROW,
     const double P_SOUND_CHANGE,
     const double P_SOUND_LOSS,
@@ -25,7 +25,7 @@ int evolution(
     // データ準備
     if (oldTokiPonaData.empty() || phoneticsData.empty() || mapData.empty())
     {
-        return 0;
+        return std::nullopt;
     }
 
     auto converter = PhoneticsConverter::Create(phoneticsData);
@@ -38,11 +38,11 @@ int evolution(
 
     if (N_BORROW == 0)
     {
-        return 0;
+        return std::nullopt;
     }
     if (oldTokiPona.Words.empty())
     {
-        return 0;
+        return std::nullopt;
     }
     while (true)
     {
@@ -67,5 +67,5 @@ int evolution(
     // 出力
     languageSystem.ExportLanguageToCSV(OUTPUT_PATH);
     languageSystem.ExportDifference(OUTPUT_PATH + ".log");
-    return 0;
+    return languageSystem;
 }

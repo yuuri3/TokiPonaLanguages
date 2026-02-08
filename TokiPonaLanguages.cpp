@@ -25,6 +25,8 @@ namespace
     std::string map_path = "Map.csv";
     // 出力ファイルパス
     std::string output_path = "ignore\\Output.csv";
+
+    std::optional<LanguageSystem> language_system;
 }
 
 /**
@@ -174,7 +176,7 @@ WindowType DisplayWindow(WindowType type)
     {
         std::cout << "=============================================\n";
         std::cout << "> 言語変化シミュレート > 実行\n";
-        evolution(
+        language_system = evolution(
             n_borrow,
             p_sound_change,
             p_sound_loss,
@@ -186,11 +188,22 @@ WindowType DisplayWindow(WindowType type)
             phoneme_table_path,
             map_path,
             output_path);
-        std::cout << "シミュレート完了\n";
-        std::cout << "任意のキーを押してください\n";
-        std::string input2;
-        std::cin >> input2;
-        return WindowType::Simulation;
+        if (language_system)
+        {
+            std::cout << "シミュレート完了\n";
+            std::cout << "任意のキーを押してください\n";
+            std::string input2;
+            std::cin >> input2;
+            return WindowType::Simulation;
+        }
+        else
+        {
+            std::cout << "シミュレート失敗\n";
+            std::cout << "任意のキーを押してください\n";
+            std::string input2;
+            std::cin >> input2;
+            return WindowType::Simulation;
+        }
     }
 
     default:
