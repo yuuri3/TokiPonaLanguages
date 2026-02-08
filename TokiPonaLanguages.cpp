@@ -1,200 +1,94 @@
-#include <windows.h>
-#include <commdlg.h>
-#include <string>
-#include <vector>
-#include <fstream>
 #include "Evolution.h"
 
-// コントロールID
-enum
+/**
+ * @brief ウィンドウ表示タイプ
+ *
+ */
+enum WindowType
 {
-    ID_BTN_OLD_CSV = 101,
-    ID_BTN_PHON_CSV,
-    ID_BTN_MAP_CSV,
-    ID_BTN_OUT_PATH,
-    ID_BTN_RUN,
-    ID_BTN_END
+    // ホーム
+    Home,
+    // 言語変化シミュレート
+    Simulation,
+    // 終了
+    Quit,
+    // エラー
+    Error,
 };
 
-// 入力欄のハンドルを保持する構造体
-struct AppControls
+/**
+ * @brief ウィンドウ表示
+ *
+ * @param type ウィンドウ表示タイプ
+ * @return 遷移後のタイプ
+ */
+WindowType DisplayWindow(WindowType type)
 {
-    HWND hN_Bollow, hPSound, hPRemoveS, hPMeaning, hMaxMeaning, hPRemoveW, hPCreateW;
-    HWND hOldPath, hPhonPath, hMapPath, hOutPath;
-} ctrl;
-
-// ファイル選択ダイアログを開く
-void SelectFile(HWND owner, HWND targetEdit)
-{
-    wchar_t szFile[260] = {0};
-    OPENFILENAMEW ofn = {sizeof(ofn)};
-    ofn.hwndOwner = owner;
-    ofn.lpstrFile = szFile;
-    ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = L"CSV Files\0*.csv\0All Files\0*.*\0";
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-    if (GetOpenFileNameW(&ofn))
-        SetWindowTextW(targetEdit, szFile);
-}
-
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
-{
-    switch (uMsg)
+    switch (type)
     {
-    case WM_CREATE:
+    case WindowType::Home:
     {
-        int y = 10, h = 25;
-
-        // ラベル、テキストボックス、(任意で)参照ボタンを追加するラムダ関数
-        auto AddRow = [&](const wchar_t *label, const wchar_t *text, HWND &hEdit, int btnId = 0)
+        std::cout << "=============================================\n";
+        std::cout << ">\n";
+        std::cout << "0 : Simulate\n";
+        std::cout << "q : Quit\n";
+        std::string input;
+        std::cin >> input;
+        if (input == "0")
         {
-            // ラベル
-            CreateWindowW(L"STATIC", label, WS_CHILD | WS_VISIBLE, 10, y, 180, h, hwnd, NULL, NULL, NULL);
-
-            // テキストボックス (ファイルパス用に少し幅を調整)
-            hEdit = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", text,
-                                    WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL, 200, y, 200, h, hwnd, NULL, NULL, NULL);
-
-            // btnId が指定されている場合のみ、参照ボタンを作る
-            if (btnId != 0)
-            {
-                CreateWindowW(L"BUTTON", L"...", WS_CHILD | WS_VISIBLE,
-                              405, y, 35, h, hwnd, (HMENU)(INT_PTR)btnId, NULL, NULL);
-            }
-            y += 30; // 次の行へ
-        };
-
-        // パラメータ行（ボタンなし: 第3引数を省略）
-        AddRow(L"N_BORROW", L"4", ctrl.hN_Bollow);
-        AddRow(L"P_SOUND_CHANGE", L"0.3", ctrl.hPSound);
-        AddRow(L"P_SOUND_LOSS", L"0.3", ctrl.hPRemoveS);
-        AddRow(L"P_SEMANTIC_SHIFT", L"0.0", ctrl.hPMeaning);
-        AddRow(L"MAX_SHIFT_RATE", L"0.0", ctrl.hMaxMeaning);
-        AddRow(L"P_WORD_LOSS", L"0.0", ctrl.hPRemoveW);
-        AddRow(L"P_WORD_BIRTH", L"0.0", ctrl.hPCreateW);
-
-        y += 10; // 少し隙間を空ける
-
-        // ファイルパス行（ボタンあり: IDを指定）
-        AddRow(L"PROTO_LANGUAGE_PATH", L"OldTokiPona.csv", ctrl.hOldPath, ID_BTN_OLD_CSV);
-        AddRow(L"PHONEME_TABLE_PATH", L"Phonetics.csv", ctrl.hPhonPath, ID_BTN_PHON_CSV);
-        AddRow(L"MAP_PATH", L"Map.csv", ctrl.hMapPath, ID_BTN_MAP_CSV);
-        AddRow(L"OUTPUT_PATH", L"ignore/Output.csv", ctrl.hOutPath, ID_BTN_OUT_PATH);
-
-        // 実行ボタン
-        CreateWindowW(L"BUTTON", L"START",
-                      WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 70, y + 20, 150, 40, hwnd, (HMENU)ID_BTN_RUN, NULL, NULL);
-        CreateWindowW(L"BUTTON", L"END",
-                      WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 230, y + 20, 150, 40, hwnd, (HMENU)ID_BTN_END, NULL, NULL);
-        break;
-    }
-    case WM_COMMAND:
-    {
-        // ...（ファイル選択ボタンの処理）...
-        int wmId = LOWORD(wp);
-        switch (wmId)
-        {
-        case ID_BTN_OLD_CSV:
-            SelectFile(hwnd, ctrl.hOldPath);
-            break;
-        case ID_BTN_PHON_CSV:
-            SelectFile(hwnd, ctrl.hPhonPath);
-            break;
-        case ID_BTN_MAP_CSV:
-            SelectFile(hwnd, ctrl.hMapPath);
-            break;
-        case ID_BTN_OUT_PATH:
-            SelectFile(hwnd, ctrl.hOutPath);
-            break;
-
-        case ID_BTN_RUN:
-        {
-            // 各エディタコントロールから文字列を取得して書き込む関数
-            auto ConvertToInt = [&](HWND hEdit)
-            {
-                wchar_t buffer[1024];
-                GetWindowTextW(hEdit, buffer, sizeof(buffer));
-                return std::stoi(buffer);
-            };
-
-            auto ConvertToDouble = [&](HWND hEdit)
-            {
-                wchar_t buffer[1024];
-                GetWindowTextW(hEdit, buffer, sizeof(buffer));
-                return std::stod(buffer);
-            };
-
-            auto ConvertToStr = [&](HWND hEdit) -> std::wstring
-            {
-                const int BUF_SIZE = 1024;
-                wchar_t buffer[BUF_SIZE] = {0};
-
-                int length = GetWindowTextW(hEdit, buffer, BUF_SIZE);
-
-                if (length <= 0)
-                    return L"";
-
-                for (int i = 0; i < length; ++i)
-                {
-                    if (buffer[i] == L'\\')
-                    {
-                        buffer[i] = L'/';
-                    }
-                }
-
-                return std::wstring(buffer, length);
-            };
-
-            MessageBoxW(hwnd, L"start simulation", L"Success", MB_OK);
-
-            evolution(
-                ConvertToInt(ctrl.hN_Bollow),
-                ConvertToDouble(ctrl.hPSound),
-                ConvertToDouble(ctrl.hPRemoveS),
-                ConvertToDouble(ctrl.hPMeaning),
-                ConvertToDouble(ctrl.hMaxMeaning),
-                ConvertToDouble(ctrl.hPRemoveW),
-                ConvertToDouble(ctrl.hPCreateW),
-                ConvertToStr(ctrl.hOldPath),
-                ConvertToStr(ctrl.hPhonPath),
-                ConvertToStr(ctrl.hMapPath),
-                ConvertToStr(ctrl.hOutPath));
-
-            MessageBoxW(hwnd, L"simulation complete", L"", MB_OK);
-
-            break;
+            return WindowType::Simulation;
         }
-        case ID_BTN_END:
-            PostQuitMessage(0);
-            break;
+        else if (input == "q")
+        {
+            return WindowType::Quit;
         }
-        break;
+        else
+        {
+            return WindowType::Home;
+        }
     }
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
+
+    case WindowType::Simulation:
+    {
+        std::cout << "=============================================\n";
+        std::cout << "> Simulate\n";
+        std::cout << "N_BORROW                = 4\n";
+        std::cout << "P_SOUND_CHANGE          = 0.3\n";
+        std::cout << "P_SOUND_LOSS            = 0.3\n";
+        std::cout << "P_SEMANTIC_SHIFT        = 0\n";
+        std::cout << "MAX_SEMANTIC_SHIFT_RATE = 0\n";
+        std::cout << "P_WORD_LOSS             = 0\n";
+        std::cout << "P_WORD_BIRTH            = 0\n";
+        std::cout << "PROTO_LANGUAGE_PATH     = OldTokiPona.csv\n";
+        std::cout << "PHONEME_TABLE_PATH      = Phonetics.csv\n";
+        std::cout << "MAP_PATH                = Map.csv\n";
+        std::cout << "OUTPUT_PATH             = ignore\\Output.csv\n";
+        evolution(4, 0.3, 0.3, 0, 0, 0, 0, L"OldTokiPona.csv", L"Phonetics.csv", L"Map.csv", L"ignore\\Output.csv");
+        std::cout << "Simulation Complete\n";
+        std::cout << "Press Any Button\n";
+        std::string input;
+        std::cin >> input;
+        return WindowType::Home;
+    }
+
     default:
-        return DefWindowProcW(hwnd, uMsg, wp, lp);
+        return WindowType::Error;
     }
-    return 0;
+    return WindowType::Error;
 }
 
-int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nShow)
+int main()
 {
-    WNDCLASSW wc = {0};
-    wc.lpfnWndProc = WindowProc;
-    wc.hInstance = hInst;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
-    wc.lpszClassName = L"ParamWin";
-    RegisterClassW(&wc);
-    HWND hwnd = CreateWindowW(L"ParamWin", L"TokiPonaLanguages", WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 100, 100, 480, 480, NULL, NULL, hInst, NULL);
-    ShowWindow(hwnd, nShow);
-    MSG msg;
-    while (GetMessageW(&msg, NULL, 0, 0))
+    // 起動時ウィンドウ
+    WindowType type = WindowType::Home;
+    for (int i = 0; i < 100; i++)
     {
-        TranslateMessage(&msg);
-        DispatchMessageW(&msg);
+        type = DisplayWindow(type);
+        if (type == WindowType::Quit || type == WindowType::Error)
+        {
+            break;
+        }
     }
+
     return 0;
 }

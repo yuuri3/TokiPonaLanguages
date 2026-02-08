@@ -2,8 +2,7 @@
 setlocal
 
 pushd "%~dp0"
-g++ -o ignore/a Utility.cpp Random.cpp Language.cpp TokiPonaLanguages.cpp -std=c++2a -mwindows -lcomdlg32
-start ignore/a.exe input.csv
+g++ -o ignore/a Utility.cpp Random.cpp Language.cpp TokiPonaLanguages.cpp -std=c++2a -lcomdlg32
 popd
 
 pause
