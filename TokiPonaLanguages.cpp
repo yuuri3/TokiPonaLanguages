@@ -3,7 +3,10 @@
 
 namespace
 {
-    // 世代あたりの系全体での借用回
+    // ウィンドウ幅
+    constexpr int window_width = 96;
+
+    // 世代あたりの系全体での借用回数
     int n_borrow = 4;
     // 1世代である言語が音韻変化を起こす確率
     double p_sound_change = 0.3;
@@ -68,6 +71,35 @@ std::string InputParameter(std::string paramName)
     std::string input;
     std::cin >> input;
     return input;
+}
+
+/**
+ * @brief 複数列表示
+ *
+ * @param strs 表示文字列
+ */
+void DisplayMulti(std::vector<std::string> strs)
+{
+    size_t width = 0;
+    for (const auto str : strs)
+    {
+        width = std::max(width, str.size());
+    }
+    width += 8;
+    int nColumn = window_width / width;
+    for (int i = 0; i < strs.size(); i++)
+    {
+        std::cout << i << " : " << strs[i];
+        for (int j = 0; j < width - strs[i].length() - std::to_string(i).length() - 3; j++)
+        {
+            std::cout << " ";
+        }
+        if ((i + 1) % nColumn == 0)
+        {
+            std::cout << "\n";
+        }
+    }
+    std::cout << "\n";
 }
 
 /**
@@ -219,10 +251,7 @@ WindowType DisplayWindow(WindowType type)
         std::cout << "> 言語変化シミュレート > 表示\n";
 
         const auto geometry = getNonEmptyStrings(language_system->Map);
-        for (int i = 0; i < geometry.size(); i++)
-        {
-            std::cout << i << " : " << geometry[i] << "\n";
-        }
+        DisplayMulti(geometry);
 
         std::cout << "q : 戻る\n";
         std::string input;
@@ -243,10 +272,8 @@ WindowType DisplayWindow(WindowType type)
         std::cout << "=============================================\n";
         std::cout << "> 言語変化シミュレート > 表示 > 個別言語\n";
 
-        for (const auto &[_, word] : language_system->LanguageMap[selected_place].Words)
-        {
-            std::cout << convertToString(word.Sounds, language_system->PhoneticsMap) << "\n";
-        }
+        const auto words = language_system->GetWords(selected_place);
+        DisplayMulti(words);
 
         std::cout << "q : 戻る\n";
         std::string input;

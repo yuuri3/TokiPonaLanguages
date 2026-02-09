@@ -344,6 +344,14 @@ struct LanguageSystem
         const Language &language);
 
     /**
+     * @brief Get the 単語 object
+     *
+     * @param place 位置
+     * @return std::vector<std::string>
+     */
+    std::vector<std::string> GetWords(std::string place);
+
+    /**
      * 音変化
      * @param pSoundChange 音韻変化確率
      * @param pSoundLoss 音素脱落確率

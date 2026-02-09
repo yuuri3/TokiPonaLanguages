@@ -320,6 +320,21 @@ void LanguageSystem::SetOldLanguageOnMap(
     }
 }
 
+std::vector<std::string> LanguageSystem::GetWords(std::string place)
+{
+    if (LanguageMap.count(place) == 0)
+    {
+        return {};
+    }
+    const auto language = LanguageMap[place];
+    std::vector<std::string> result;
+    for (const auto &[_, word] : language.Words)
+    {
+        result.emplace_back(convertToString(word.Sounds, PhoneticsMap));
+    }
+    return result;
+}
+
 std::string convertToString(const std::vector<Phonetics> &phoneticses, const std::vector<std::vector<std::string>> &table)
 {
     std::string result = "";
