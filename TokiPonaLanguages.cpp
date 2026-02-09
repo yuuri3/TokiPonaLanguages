@@ -1,200 +1,311 @@
-#include <windows.h>
-#include <commdlg.h>
-#include <string>
-#include <vector>
-#include <fstream>
 #include "Evolution.h"
+#include <windows.h>
 
-// コントロールID
-enum
+namespace
 {
-    ID_BTN_OLD_CSV = 101,
-    ID_BTN_PHON_CSV,
-    ID_BTN_MAP_CSV,
-    ID_BTN_OUT_PATH,
-    ID_BTN_RUN,
-    ID_BTN_END
+    // ウィンドウ幅
+    constexpr int window_width = 96;
+
+    // 世代あたりの系全体での借用回数
+    int n_borrow = 4;
+    // 1世代である言語が音韻変化を起こす確率
+    double p_sound_change = 0.3;
+    // 音韻変化を起こしたときに音素の脱落が起こる確率
+    double p_sound_loss = 0.3;
+    // 1世代である言語が意味変化を起こす確率
+    int p_semantic_shift = 0;
+    // 意味の最大変化率
+    int max_semantic_shift_rate = 0;
+    // 1世代である言語の単語が脱落する確率
+    int p_word_loss = 0;
+    // 1世代である言語の単語が生成される確率
+    int p_word_birth = 0;
+    // 祖語ファイルパス
+    std::string proto_language_path = "OldTokiPona.csv";
+    // 音素表ファイルパス
+    std::string phoneme_table_path = "Phonetics.csv";
+    // 地理データファイルパス
+    std::string map_path = "Map.csv";
+    // 出力ファイルパス
+    std::string output_path = "ignore\\Output.csv";
+
+    // 生成した語族データ
+    std::optional<LanguageSystem> language_system;
+
+    // 選択した地域名
+    std::string selected_place;
+}
+
+/**
+ * @brief ウィンドウ表示タイプ
+ *
+ */
+enum WindowType
+{
+    // ホーム
+    Home,
+    // 言語変化シミュレート
+    Simulation,
+    // 言語変化シミュレート/実行
+    SimulationExecute,
+    // 言語変化シミュレート/結果
+    SimulationDisplay,
+    // 言語変化シミュレート/結果/単語
+    SimulationDisplayWord,
+    // 終了
+    Quit,
+    // エラー
+    Error,
 };
 
-// 入力欄のハンドルを保持する構造体
-struct AppControls
+/**
+ * @brief パラメータ設定
+ *
+ * @param paramName パラメータ名
+ * @return std::string 入力
+ */
+std::string InputParameter(std::string paramName)
 {
-    HWND hN_Bollow, hPSound, hPRemoveS, hPMeaning, hMaxMeaning, hPRemoveW, hPCreateW;
-    HWND hOldPath, hPhonPath, hMapPath, hOutPath;
-} ctrl;
-
-// ファイル選択ダイアログを開く
-void SelectFile(HWND owner, HWND targetEdit)
-{
-    wchar_t szFile[260] = {0};
-    OPENFILENAMEW ofn = {sizeof(ofn)};
-    ofn.hwndOwner = owner;
-    ofn.lpstrFile = szFile;
-    ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = L"CSV Files\0*.csv\0All Files\0*.*\0";
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-    if (GetOpenFileNameW(&ofn))
-        SetWindowTextW(targetEdit, szFile);
+    std::cout << "=============================================\n";
+    std::cout << paramName << " を入力してください\n";
+    std::string input;
+    std::cin >> input;
+    return input;
 }
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wp, LPARAM lp)
+/**
+ * @brief 複数列表示
+ *
+ * @param strs 表示文字列
+ */
+void DisplayMulti(std::vector<std::string> strs)
 {
-    switch (uMsg)
+    size_t width = 0;
+    for (const auto str : strs)
     {
-    case WM_CREATE:
+        width = std::max(width, str.size());
+    }
+    width += 8;
+    int nColumn = window_width / width;
+    for (int i = 0; i < strs.size(); i++)
     {
-        int y = 10, h = 25;
-
-        // ラベル、テキストボックス、(任意で)参照ボタンを追加するラムダ関数
-        auto AddRow = [&](const wchar_t *label, const wchar_t *text, HWND &hEdit, int btnId = 0)
+        std::cout << i << " : " << strs[i];
+        for (int j = 0; j < width - strs[i].length() - std::to_string(i).length() - 3; j++)
         {
-            // ラベル
-            CreateWindowW(L"STATIC", label, WS_CHILD | WS_VISIBLE, 10, y, 180, h, hwnd, NULL, NULL, NULL);
+            std::cout << " ";
+        }
+        if ((i + 1) % nColumn == 0)
+        {
+            std::cout << "\n";
+        }
+    }
+    std::cout << "\n";
+}
 
-            // テキストボックス (ファイルパス用に少し幅を調整)
-            hEdit = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", text,
-                                    WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL, 200, y, 200, h, hwnd, NULL, NULL, NULL);
+/**
+ * @brief ウィンドウ表示
+ *
+ * @param type ウィンドウ表示タイプ
+ * @return 遷移後のタイプ
+ */
+WindowType DisplayWindow(WindowType type)
+{
+    switch (type)
+    {
+    case WindowType::Home:
+    {
+        std::cout << "=============================================\n";
+        std::cout << ">\n";
+        std::cout << "0 : 言語変化シミュレート\n";
+        std::cout << "q : Quit\n";
+        std::string input;
+        std::cin >> input;
+        if (input == "0")
+        {
+            return WindowType::Simulation;
+        }
+        else if (input == "q")
+        {
+            return WindowType::Quit;
+        }
+        else
+        {
+            return WindowType::Home;
+        }
+    }
 
-            // btnId が指定されている場合のみ、参照ボタンを作る
-            if (btnId != 0)
+    case WindowType::Simulation:
+    {
+        while (true)
+        {
+            std::cout << "=============================================\n";
+            std::cout << "> 言語変化シミュレート\n";
+            std::cout << "0 : N_BORROW                =" << n_borrow << "\n";
+            std::cout << "1 : P_SOUND_CHANGE          =" << p_sound_change << "\n";
+            std::cout << "2 : P_SOUND_LOSS            =" << p_sound_loss << "\n";
+            std::cout << "3 : P_SEMANTIC_SHIFT        =" << p_semantic_shift << "\n";
+            std::cout << "4 : MAX_SEMANTIC_SHIFT_RATE =" << max_semantic_shift_rate << "\n";
+            std::cout << "5 : P_WORD_LOSS             =" << p_word_loss << "\n";
+            std::cout << "6 : P_WORD_BIRTH            =" << p_word_birth << "\n";
+            std::cout << "7 : PROTO_LANGUAGE_PATH     =" << proto_language_path << "\n";
+            std::cout << "8 : PHONEME_TABLE_PATH      =" << phoneme_table_path << "\n";
+            std::cout << "9 : MAP_PATH                =" << map_path << "\n";
+            std::cout << "10 : OUTPUT_PATH            =" << output_path << "\n";
+            std::cout << "e : 実行\n";
+            std::cout << "q : 戻る\n";
+
+            std::string input;
+            std::cin >> input;
+
+            if (input == "0")
             {
-                CreateWindowW(L"BUTTON", L"...", WS_CHILD | WS_VISIBLE,
-                              405, y, 35, h, hwnd, (HMENU)(INT_PTR)btnId, NULL, NULL);
+                n_borrow = std::stoi(InputParameter("N_BORROW"));
             }
-            y += 30; // 次の行へ
-        };
-
-        // パラメータ行（ボタンなし: 第3引数を省略）
-        AddRow(L"N_BORROW", L"4", ctrl.hN_Bollow);
-        AddRow(L"P_SOUND_CHANGE", L"0.3", ctrl.hPSound);
-        AddRow(L"P_SOUND_LOSS", L"0.3", ctrl.hPRemoveS);
-        AddRow(L"P_SEMANTIC_SHIFT", L"0.0", ctrl.hPMeaning);
-        AddRow(L"MAX_SHIFT_RATE", L"0.0", ctrl.hMaxMeaning);
-        AddRow(L"P_WORD_LOSS", L"0.0", ctrl.hPRemoveW);
-        AddRow(L"P_WORD_BIRTH", L"0.0", ctrl.hPCreateW);
-
-        y += 10; // 少し隙間を空ける
-
-        // ファイルパス行（ボタンあり: IDを指定）
-        AddRow(L"PROTO_LANGUAGE_PATH", L"OldTokiPona.csv", ctrl.hOldPath, ID_BTN_OLD_CSV);
-        AddRow(L"PHONEME_TABLE_PATH", L"Phonetics.csv", ctrl.hPhonPath, ID_BTN_PHON_CSV);
-        AddRow(L"MAP_PATH", L"Map.csv", ctrl.hMapPath, ID_BTN_MAP_CSV);
-        AddRow(L"OUTPUT_PATH", L"ignore/Output.csv", ctrl.hOutPath, ID_BTN_OUT_PATH);
-
-        // 実行ボタン
-        CreateWindowW(L"BUTTON", L"START",
-                      WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 70, y + 20, 150, 40, hwnd, (HMENU)ID_BTN_RUN, NULL, NULL);
-        CreateWindowW(L"BUTTON", L"END",
-                      WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 230, y + 20, 150, 40, hwnd, (HMENU)ID_BTN_END, NULL, NULL);
-        break;
+            else if (input == "1")
+            {
+                p_sound_change = std::stod(InputParameter("P_SOUND_CHANGE"));
+            }
+            else if (input == "2")
+            {
+                p_sound_loss = std::stod(InputParameter("P_SOUND_LOSS"));
+            }
+            else if (input == "3")
+            {
+                p_semantic_shift = std::stod(InputParameter("P_SEMANTIC_SHIFT"));
+            }
+            else if (input == "4")
+            {
+                max_semantic_shift_rate = std::stod(InputParameter("MAX_SEMANTIC_SHIFT_RATE"));
+            }
+            else if (input == "5")
+            {
+                p_word_loss = std::stod(InputParameter("P_WORD_LOSS"));
+            }
+            else if (input == "6")
+            {
+                p_word_birth = std::stod(InputParameter("P_WORD_BIRTH"));
+            }
+            else if (input == "7")
+            {
+                proto_language_path = InputParameter("PROTO_LANGUAGE_PATH");
+            }
+            else if (input == "8")
+            {
+                phoneme_table_path = InputParameter("PHONEME_TABLE_PATH");
+            }
+            else if (input == "9")
+            {
+                map_path = InputParameter("MAP_PATH");
+            }
+            else if (input == "10")
+            {
+                output_path = InputParameter("OUTPUT_PATH");
+            }
+            else if (input == "e")
+            {
+                return WindowType::SimulationExecute;
+            }
+            else if (input == "q")
+            {
+                return WindowType::Home;
+            }
+        }
+        return WindowType::Home;
     }
-    case WM_COMMAND:
+    case WindowType::SimulationExecute:
     {
-        // ...（ファイル選択ボタンの処理）...
-        int wmId = LOWORD(wp);
-        switch (wmId)
+        std::cout << "=============================================\n";
+        std::cout << "> 言語変化シミュレート > 実行\n";
+        language_system = evolution(
+            n_borrow,
+            p_sound_change,
+            p_sound_loss,
+            p_semantic_shift,
+            max_semantic_shift_rate,
+            p_word_loss,
+            p_word_birth,
+            proto_language_path,
+            phoneme_table_path,
+            map_path,
+            output_path);
+        if (language_system)
         {
-        case ID_BTN_OLD_CSV:
-            SelectFile(hwnd, ctrl.hOldPath);
-            break;
-        case ID_BTN_PHON_CSV:
-            SelectFile(hwnd, ctrl.hPhonPath);
-            break;
-        case ID_BTN_MAP_CSV:
-            SelectFile(hwnd, ctrl.hMapPath);
-            break;
-        case ID_BTN_OUT_PATH:
-            SelectFile(hwnd, ctrl.hOutPath);
-            break;
-
-        case ID_BTN_RUN:
+            std::cout << "シミュレート完了\n";
+            std::cout << "任意のキーを押してください\n";
+            std::string input2;
+            std::cin >> input2;
+            return WindowType::SimulationDisplay;
+        }
+        else
         {
-            // 各エディタコントロールから文字列を取得して書き込む関数
-            auto ConvertToInt = [&](HWND hEdit)
-            {
-                wchar_t buffer[1024];
-                GetWindowTextW(hEdit, buffer, sizeof(buffer));
-                return std::stoi(buffer);
-            };
-
-            auto ConvertToDouble = [&](HWND hEdit)
-            {
-                wchar_t buffer[1024];
-                GetWindowTextW(hEdit, buffer, sizeof(buffer));
-                return std::stod(buffer);
-            };
-
-            auto ConvertToStr = [&](HWND hEdit) -> std::wstring
-            {
-                const int BUF_SIZE = 1024;
-                wchar_t buffer[BUF_SIZE] = {0};
-
-                int length = GetWindowTextW(hEdit, buffer, BUF_SIZE);
-
-                if (length <= 0)
-                    return L"";
-
-                for (int i = 0; i < length; ++i)
-                {
-                    if (buffer[i] == L'\\')
-                    {
-                        buffer[i] = L'/';
-                    }
-                }
-
-                return std::wstring(buffer, length);
-            };
-
-            MessageBoxW(hwnd, L"start simulation", L"Success", MB_OK);
-
-            evolution(
-                ConvertToInt(ctrl.hN_Bollow),
-                ConvertToDouble(ctrl.hPSound),
-                ConvertToDouble(ctrl.hPRemoveS),
-                ConvertToDouble(ctrl.hPMeaning),
-                ConvertToDouble(ctrl.hMaxMeaning),
-                ConvertToDouble(ctrl.hPRemoveW),
-                ConvertToDouble(ctrl.hPCreateW),
-                ConvertToStr(ctrl.hOldPath),
-                ConvertToStr(ctrl.hPhonPath),
-                ConvertToStr(ctrl.hMapPath),
-                ConvertToStr(ctrl.hOutPath));
-
-            MessageBoxW(hwnd, L"simulation complete", L"", MB_OK);
-
-            break;
+            std::cout << "シミュレート失敗\n";
+            std::cout << "任意のキーを押してください\n";
+            std::string input2;
+            std::cin >> input2;
+            return WindowType::Simulation;
         }
-        case ID_BTN_END:
-            PostQuitMessage(0);
-            break;
-        }
-        break;
     }
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
+    case WindowType::SimulationDisplay:
+    {
+        std::cout << "=============================================\n";
+        std::cout << "> 言語変化シミュレート > 表示\n";
+
+        const auto geometry = getNonEmptyStrings(language_system->Map);
+        DisplayMulti(geometry);
+
+        std::cout << "q : 戻る\n";
+        std::string input;
+        std::cin >> input;
+
+        if (input == "q")
+        {
+            return WindowType::Home;
+        }
+        else if (std::stoi(input) < geometry.size())
+        {
+            selected_place = geometry[std::stoi(input)];
+            return WindowType::SimulationDisplayWord;
+        }
+    }
+    case WindowType::SimulationDisplayWord:
+    {
+        std::cout << "=============================================\n";
+        std::cout << "> 言語変化シミュレート > 表示 > 個別言語\n";
+
+        const auto words = language_system->GetWords(selected_place);
+        DisplayMulti(words);
+
+        std::cout << "q : 戻る\n";
+        std::string input;
+        std::cin >> input;
+
+        if (input == "q")
+        {
+            return WindowType::SimulationDisplay;
+        }
+    }
+
     default:
-        return DefWindowProcW(hwnd, uMsg, wp, lp);
+        return WindowType::Error;
     }
-    return 0;
+    return WindowType::Error;
 }
 
-int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nShow)
+int main()
 {
-    WNDCLASSW wc = {0};
-    wc.lpfnWndProc = WindowProc;
-    wc.hInstance = hInst;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
-    wc.lpszClassName = L"ParamWin";
-    RegisterClassW(&wc);
-    HWND hwnd = CreateWindowW(L"ParamWin", L"TokiPonaLanguages", WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 100, 100, 480, 480, NULL, NULL, hInst, NULL);
-    ShowWindow(hwnd, nShow);
-    MSG msg;
-    while (GetMessageW(&msg, NULL, 0, 0))
+    // コンソールの文字コードを UTF-8 (65001) に設定
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001); // 入力側も UTF-8 に設定
+    // 起動時ウィンドウ
+    WindowType type = WindowType::Home;
+    for (int i = 0; i < 100; i++)
     {
-        TranslateMessage(&msg);
-        DispatchMessageW(&msg);
+        type = DisplayWindow(type);
+        if (type == WindowType::Quit || type == WindowType::Error)
+        {
+            break;
+        }
     }
+
     return 0;
 }

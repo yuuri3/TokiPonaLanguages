@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-int evolution(
+std::optional<LanguageSystem> evolution(
     const int N_BORROW,
     const double P_SOUND_CHANGE,
     const double P_SOUND_LOSS,
@@ -12,10 +12,10 @@ int evolution(
     const double MAX_SEMANTIC_SHIFT_RATE,
     const double P_WORD_LOSS,
     const double P_WORD_BIRTH,
-    const std::wstring &PROTO_LANGUAGE_PATH,
-    const std::wstring &PHONEME_TABLE_PATH,
-    const std::wstring &MAP_PATH,
-    const std::wstring &OUTPUT_PATH)
+    const std::string &PROTO_LANGUAGE_PATH,
+    const std::string &PHONEME_TABLE_PATH,
+    const std::string &MAP_PATH,
+    const std::string &OUTPUT_PATH)
 {
     // ファイル読み込み
     const auto oldTokiPonaData = readCSV(PROTO_LANGUAGE_PATH);
@@ -25,7 +25,7 @@ int evolution(
     // データ準備
     if (oldTokiPonaData.empty() || phoneticsData.empty() || mapData.empty())
     {
-        return 0;
+        return std::nullopt;
     }
 
     auto converter = PhoneticsConverter::Create(phoneticsData);
@@ -38,11 +38,11 @@ int evolution(
 
     if (N_BORROW == 0)
     {
-        return 0;
+        return std::nullopt;
     }
     if (oldTokiPona.Words.empty())
     {
-        return 0;
+        return std::nullopt;
     }
     while (true)
     {
@@ -66,6 +66,6 @@ int evolution(
     }
     // 出力
     languageSystem.ExportLanguageToCSV(OUTPUT_PATH);
-    languageSystem.ExportDifference(OUTPUT_PATH + L".log");
-    return 0;
+    languageSystem.ExportDifference(OUTPUT_PATH + ".log");
+    return languageSystem;
 }

@@ -3,14 +3,14 @@
 #include <fstream>
 #include <sstream>
 
-std::vector<std::vector<std::string>> readCSV(const std::wstring &filename)
+std::vector<std::vector<std::string>> readCSV(const std::string &filename)
 {
     std::vector<std::vector<std::string>> data;
     std::ifstream file(filename.c_str());
 
     if (!file.is_open())
     {
-        std::wcerr << "Error: ファイルを開けませんでした: " << filename << std::endl;
+        std::cerr << "Error: ファイルを開けませんでした: " << filename << std::endl;
         return data;
     }
 
@@ -38,13 +38,13 @@ std::vector<std::vector<std::string>> readCSV(const std::wstring &filename)
     return data;
 }
 
-bool writeCSV(const std::wstring &filename, const std::vector<std::vector<std::string>> &data)
+bool writeCSV(const std::string &filename, const std::vector<std::vector<std::string>> &data)
 {
     std::ofstream file(filename.c_str());
 
     if (!file.is_open())
     {
-        std::wcerr << "Error: ファイルを開けませんでした: " << filename << std::endl;
+        std::cerr << "Error: ファイルを開けませんでした: " << filename << std::endl;
         return false;
     }
 

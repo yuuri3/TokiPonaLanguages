@@ -320,6 +320,21 @@ void LanguageSystem::SetOldLanguageOnMap(
     }
 }
 
+std::vector<std::string> LanguageSystem::GetWords(std::string place)
+{
+    if (LanguageMap.count(place) == 0)
+    {
+        return {};
+    }
+    const auto language = LanguageMap[place];
+    std::vector<std::string> result;
+    for (const auto &[_, word] : language.Words)
+    {
+        result.emplace_back(convertToString(word.Sounds, PhoneticsMap));
+    }
+    return result;
+}
+
 std::string convertToString(const std::vector<Phonetics> &phoneticses, const std::vector<std::vector<std::string>> &table)
 {
     std::string result = "";
@@ -589,7 +604,7 @@ void exportLanguageToCSV(
     Language &oldLanguage,
     const std::map<std::string, Language> &languages,
     const std::vector<std::vector<std::string>> &table,
-    const std::wstring &filename)
+    const std::string &filename)
 {
     std::ofstream file(filename.c_str());
     if (!file.is_open())
@@ -703,7 +718,7 @@ void exportLanguageToCSV(
     file.close();
 }
 
-void LanguageSystem::ExportLanguageToCSV(const std::wstring &filename)
+void LanguageSystem::ExportLanguageToCSV(const std::string &filename)
 {
     exportLanguageToCSV(ProtoLanguage, LanguageMap, PhoneticsMap, filename);
 }
@@ -1070,7 +1085,7 @@ void LanguageSystem::ApplyDifferences(const std::vector<LanguageDifference> &dif
     }
 }
 
-void LanguageSystem::ExportDifference(const std::wstring &filename)
+void LanguageSystem::ExportDifference(const std::string &filename)
 {
     std::ofstream file(filename.c_str());
     if (!file.is_open())
