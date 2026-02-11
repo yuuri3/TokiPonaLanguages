@@ -11,10 +11,10 @@ int main()
         0.0,
         0.0,
         0.0,
-        L"",
-        L"Phonetics.csv",
-        L"Map.csv",
-        L"ignore/test_data/NoOldLanguage.csv");
+        "",
+        "Phonetics.csv",
+        "Map.csv",
+        "ignore/test_data/NoOldLanguage.csv");
 
     // 音韻データなし
     evolution(
@@ -25,10 +25,10 @@ int main()
         0.0,
         0.0,
         0.0,
-        L"OldTokiPona.csv",
-        L"",
-        L"Map.csv",
-        L"ignore/test_data/NoPhonetics.csv");
+        "OldTokiPona.csv",
+        "",
+        "Map.csv",
+        "ignore/test_data/NoPhonetics.csv");
 
     // 地図データなし
     evolution(
@@ -39,10 +39,10 @@ int main()
         0.0,
         0.0,
         0.0,
-        L"OldTokiPona.csv",
-        L"Phonetics.csv",
-        L"",
-        L"ignore/test_data/NoMap.csv");
+        "OldTokiPona.csv",
+        "Phonetics.csv",
+        "",
+        "ignore/test_data/NoMap.csv");
 
     // 基準
     evolution(
@@ -53,10 +53,10 @@ int main()
         0.0,
         0.0,
         0.0,
-        L"OldTokiPona.csv",
-        L"Phonetics.csv",
-        L"Map.csv",
-        L"ignore/test_data/Output.csv");
+        "OldTokiPona.csv",
+        "Phonetics.csv",
+        "Map.csv",
+        "ignore/test_data/Output.csv");
 
     // 音韻変化
     evolution(
@@ -67,10 +67,10 @@ int main()
         0.0,
         0.0,
         0.0,
-        L"OldTokiPona.csv",
-        L"Phonetics.csv",
-        L"Map.csv",
-        L"ignore/test_data/ChangeSound.csv");
+        "OldTokiPona.csv",
+        "Phonetics.csv",
+        "Map.csv",
+        "ignore/test_data/ChangeSound.csv");
 
     // 音韻変化（音脱落なし）
     evolution(
@@ -81,10 +81,10 @@ int main()
         0.0,
         0.0,
         0.0,
-        L"OldTokiPona.csv",
-        L"Phonetics.csv",
-        L"Map.csv",
-        L"ignore/test_data/ChangeSoundNoRemove.csv");
+        "OldTokiPona.csv",
+        "Phonetics.csv",
+        "Map.csv",
+        "ignore/test_data/ChangeSoundNoRemove.csv");
 
     // 音韻変化（音脱落のみ）
     evolution(
@@ -95,10 +95,10 @@ int main()
         0.0,
         0.0,
         0.0,
-        L"OldTokiPona.csv",
-        L"Phonetics.csv",
-        L"Map.csv",
-        L"ignore/test_data/ChangeSoundRemove.csv");
+        "OldTokiPona.csv",
+        "Phonetics.csv",
+        "Map.csv",
+        "ignore/test_data/ChangeSoundRemove.csv");
 
     // 意味変化
     evolution(
@@ -109,10 +109,10 @@ int main()
         0.1,
         0.0,
         0.0,
-        L"OldTokiPona.csv",
-        L"Phonetics.csv",
-        L"Map.csv",
-        L"ignore/test_data/ChangeMeaning.csv");
+        "OldTokiPona.csv",
+        "Phonetics.csv",
+        "Map.csv",
+        "ignore/test_data/ChangeMeaning.csv");
 
     // 単語削除
     evolution(
@@ -123,10 +123,10 @@ int main()
         0.0,
         0.1,
         0.0,
-        L"OldTokiPona.csv",
-        L"Phonetics.csv",
-        L"Map.csv",
-        L"ignore/test_data/RemoveWord.csv");
+        "OldTokiPona.csv",
+        "Phonetics.csv",
+        "Map.csv",
+        "ignore/test_data/RemoveWord.csv");
 
     // 新語追加
     evolution(
@@ -137,10 +137,10 @@ int main()
         0.0,
         0.0,
         0.1,
-        L"OldTokiPona.csv",
-        L"Phonetics.csv",
-        L"Map.csv",
-        L"ignore/test_data/CreateWord.csv");
+        "OldTokiPona.csv",
+        "Phonetics.csv",
+        "Map.csv",
+        "ignore/test_data/CreateWord.csv");
 
     // 意味変化 + 単語削除 + 新語追加
     evolution(
@@ -151,9 +151,9 @@ int main()
         0.1,
         0.1,
         0.1,
-        L"OldTokiPona.csv",
-        L"Phonetics.csv",
-        L"Map.csv",
-        L"ignore/test_data/ChangeMeaningAndWordNum.csv");
+        "OldTokiPona.csv",
+        "Phonetics.csv",
+        "Map.csv",
+        "ignore/test_data/ChangeMeaningAndWordNum.csv");
     return 0;
 }
