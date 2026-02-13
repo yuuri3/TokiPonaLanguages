@@ -1085,25 +1085,73 @@ void LanguageSystem::ApplyDifferences(const std::vector<LanguageDifference> &dif
     }
 }
 
-void LanguageSystem::ExportDifference(const std::string &filename)
+void LanguageSystem::Export(const std::string &filename)
 {
-    std::ofstream file(filename.c_str());
+    std::ofstream file(filename);
     if (!file.is_open())
         return;
 
-    file << "LanguageDifferences:\n"; // ルート要素
+    // 2. Map
+    file << "Map:\n";
+    for (const auto &row : Map)
+    {
+        file << "  - [";
+        for (size_t i = 0; i < row.size(); ++i)
+        {
+            file << row[i] << (i == row.size() - 1 ? "" : ", ");
+        }
+        file << "]\n";
+    }
 
+    // 3. PhoneticsMap
+    file << "PhoneticsMap:\n";
+    for (const auto &row : PhoneticsMap)
+    {
+        file << "  - [";
+        for (size_t i = 0; i < row.size(); ++i)
+        {
+            file << row[i] << (i == row.size() - 1 ? "" : ", ");
+        }
+        file << "]\n";
+    }
+
+    // 4. LanguageDifferences
+    file << "LanguageDifferences:\n";
     for (const auto &diff : languageDifference)
     {
         file << "  - Section: " << diff.Section << "\n";
-        file << "    Type: " << diff.Type << "\n";
-        file << "    IntParam:" << "\n";
+        file << "    Type: " << static_cast<int>(diff.Type) << "\n";
+
+        file << "    IntParam:\n";
         for (const auto &i : diff.IntParam)
-        {
-            file << "     - " << i << "\n";
-        }
-        file << "    DoubleParam:" << "\n";
+            file << "      - " << i << "\n";
+
+        file << "    DoubleParam:\n";
         for (const auto &d : diff.DoubleParam)
+            file << "      - " << d << "\n";
+
+        file << "    StringParam:\n";
+        for (const auto &s : diff.StringParam)
+            file << "      - " << s << "\n";
+
+        file << "    SoundChange:\n";
+        file << "      Before:\n";
+        file << "        Place: " << diff.SoundChanges.beforePhon.Place << "\n";
+        file << "        Mannar: " << diff.SoundChanges.beforePhon.Mannar << "\n";
+        file << "      After:\n";
+        file << "        Place: " << diff.SoundChanges.AfterPhone.Place << "\n";
+        file << "        Mannar: " << diff.SoundChanges.AfterPhone.Mannar << "\n";
+        file << "      Condition: " << static_cast<int>(diff.SoundChanges.Condition) << "\n";
+        file << "      IsRemove: " << diff.SoundChanges.IsRemove << "\n";
+
+        file << "    MeaningChange:\n";
+        for (const auto &pair : diff.MeaningChange)
+        {
+            file << "      - Key: " << pair.first << "\n";
+            file << "        Value: " << pair.second << "\n";
+        }
+    }
+}
         {
             file << "     - " << d << "\n";
         }

@@ -447,7 +447,7 @@ struct LanguageSystem
      * @brief 差分をファイル出力
      *
      */
-    void ExportDifference(const std::string &filename);
+    void Export(const std::string &filename);
 };
 
 /**
