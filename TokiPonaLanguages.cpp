@@ -52,6 +52,12 @@ enum WindowType
     SimulationDisplay,
     // 言語変化シミュレート/結果/単語
     SimulationDisplayWord,
+    // ファイル選択
+    SellectFile,
+    // ファイル選択/結果
+    SellectFileDisplay,
+    // ファイル選択/結果/単語
+    SellectFileDisplayWord,
     // 終了
     Quit,
     // エラー
@@ -117,12 +123,17 @@ WindowType DisplayWindow(WindowType type)
         std::cout << "=============================================\n";
         std::cout << ">\n";
         std::cout << "0 : 言語変化シミュレート\n";
-        std::cout << "q : Quit\n";
+        std::cout << "1 : ファイル選択\n";
+        std::cout << "q : 終了\n";
         std::string input;
         std::cin >> input;
         if (input == "0")
         {
             return WindowType::Simulation;
+        }
+        if (input == "1")
+        {
+            return WindowType::SellectFile;
         }
         else if (input == "q")
         {
@@ -282,6 +293,73 @@ WindowType DisplayWindow(WindowType type)
         if (input == "q")
         {
             return WindowType::SimulationDisplay;
+        }
+    }
+    case WindowType::SellectFile:
+    {
+        std::cout << "=============================================\n";
+        std::cout << "> ファイル選択\n";
+        std::cout << "表示するファイルパスを入力してください。\n";
+
+        std::string input;
+        std::cin >> input;
+
+        language_system = LanguageSystem();
+        language_system->Import(input);
+        language_system->ApplyDifferences(language_system->languageDifference);
+
+        language_system->Export("ignore/test.log");
+
+        if (language_system)
+        {
+            return WindowType::SellectFileDisplay;
+        }
+        else
+        {
+            std::cout << "ファイル読み込み失敗\n";
+            std::cout << "任意のキーを押してください\n";
+            std::string input2;
+            std::cin >> input2;
+            return WindowType::Simulation;
+        }
+    }
+    case WindowType::SellectFileDisplay:
+    {
+        std::cout << "=============================================\n";
+        std::cout << "> ファイル選択 > 結果\n";
+
+        const auto geometry = getNonEmptyStrings(language_system->Map);
+        DisplayMulti(geometry);
+
+        std::cout << "q : 戻る\n";
+        std::string input;
+        std::cin >> input;
+
+        if (input == "q")
+        {
+            return WindowType::Home;
+        }
+        else if (std::stoi(input) < geometry.size())
+        {
+            selected_place = geometry[std::stoi(input)];
+            return WindowType::SellectFileDisplayWord;
+        }
+    }
+    case WindowType::SellectFileDisplayWord:
+    {
+        std::cout << "=============================================\n";
+        std::cout << "> 言語変化シミュレート > 表示 > 個別言語\n";
+
+        const auto words = language_system->GetWords(selected_place);
+        DisplayMulti(words);
+
+        std::cout << "q : 戻る\n";
+        std::string input;
+        std::cin >> input;
+
+        if (input == "q")
+        {
+            return WindowType::SellectFileDisplay;
         }
     }
 

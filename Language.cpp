@@ -58,6 +58,60 @@ namespace
         ss << "]";
         return ss.str();
     }
+
+    // YAMLの [a, b, c] 形式を vector<string> に変換する
+    std::vector<std::string> parseYamlList(const std::string &line)
+    {
+        std::vector<std::string> result;
+        size_t start = line.find('[');
+        size_t end = line.find(']');
+        if (start == std::string::npos || end == std::string::npos)
+            return result;
+
+        std::string content = line.substr(start + 1, end - start - 1);
+        std::stringstream ss(content);
+        std::string item;
+        while (std::getline(ss, item, ','))
+        {
+            size_t first = item.find_first_not_of(" ");
+            size_t last = item.find_last_not_of(" ");
+            if (first != std::string::npos)
+                result.push_back(item.substr(first, (last - first + 1)));
+        }
+        return result;
+    }
+
+    /**
+     * @brief 文字列を':'で前後2つに分割する
+     * @return {前部分, 後部分}。コロンがない場合は {元の文字列, ""}
+     */
+    std::pair<std::string, std::string> splitByColon(const std::string &line)
+    {
+        size_t pos = line.find(':');
+        if (pos == std::string::npos)
+        {
+            return {line, ""};
+        }
+
+        std::string first = line.substr(0, pos);
+        std::string second = line.substr(pos + 1);
+
+        // 必要に応じて前後の空白を削除（トリミング）
+        auto trim = [](std::string &s)
+        {
+            size_t f = s.find_first_not_of(" ");
+            size_t l = s.find_last_not_of(" \r\n\t");
+            if (f == std::string::npos)
+                s = "";
+            else
+                s = s.substr(f, l - f + 1);
+        };
+
+        trim(first);
+        trim(second);
+
+        return {first, second};
+    }
 }
 
 Meaning Meaning::Add(const Meaning &meaning) const
@@ -390,10 +444,6 @@ void LanguageSystem::ChangeLanguageSound(
             // 1. 音韻変化の適用と音素重複チェックを同時に行う
             for (auto &[wordID, word] : language.Words)
             {
-                // 差分
-                const auto dif = LanguageDifference::CreateChangeSound(ID, Section, wordID, soundChange);
-                languageDifference.emplace_back(dif);
-
                 bool changed = false;
                 std::vector<Phonetics> nextSounds;
                 nextSounds.reserve(word.Sounds.size()); // メモリ確保を1回に抑制
@@ -504,6 +554,10 @@ void LanguageSystem::ChangeLanguageSound(
             for (auto &[wordID, newWord] : updatedWords)
             {
                 language.Words[wordID] = std::move(newWord);
+
+                // ログ
+                const auto dif = LanguageDifference::CreateChangeSound(ID, Section, wordID, soundChange);
+                languageDifference.emplace_back(dif);
             }
         }
     }
@@ -535,10 +589,6 @@ void LanguageSystem::ChangeLanguageMeaning(
             std::advance(itSeed, seedIdx);
             const Word &seedWord = itSeed->second;
 
-            // ログ
-            const auto dif = LanguageDifference::CreateChangeMeaning(ID, Section, wordID, seedWord.Meanings);
-            languageDifference.emplace_back(dif);
-
             // 現在の状態を保存（ロールバック用）
             Meaning oldMeaning = targetWord.Meanings;
             std::vector<Phonetics> oldProto = targetWord.NearestProtoWord;
@@ -568,6 +618,12 @@ void LanguageSystem::ChangeLanguageMeaning(
             {
                 targetWord.Meanings = std::move(oldMeaning);
                 targetWord.NearestProtoWord = std::move(oldProto);
+            }
+            else
+            {
+                // ログ
+                const auto dif = LanguageDifference::CreateChangeMeaning(ID, Section, wordID, seedWord.Meanings);
+                languageDifference.emplace_back(dif);
             }
         }
     }
@@ -779,10 +835,6 @@ void LanguageSystem::BollowWord(const int nBorrow, const double pBorrow)
                     }
                 }
 
-                // ログ
-                const auto dif = LanguageDifference::CreateBorrowWord(sID, tID, Section, bestSourceWordID, tWordID);
-                languageDifference.emplace_back(dif);
-
                 if (bestSourceWord)
                 {
                     // 同音語チェックを最適化
@@ -796,7 +848,13 @@ void LanguageSystem::BollowWord(const int nBorrow, const double pBorrow)
                         }
                     }
                     if (!isDuplicate)
+                    {
                         tWord.Sounds = bestSourceWord->Sounds;
+
+                        // ログ
+                        const auto dif = LanguageDifference::CreateBorrowWord(sID, tID, Section, bestSourceWordID, tWordID);
+                        languageDifference.emplace_back(dif);
+                    }
                 }
             }
         }
@@ -945,189 +1003,351 @@ void LanguageSystem::ToNextSection()
 void LanguageSystem::ApplyDifference(const LanguageDifference &diff)
 {
     const auto places = getNonEmptyStrings(Map);
-
-    // IDから言語オブジェクトへのポインタを取得するヘルパー
-    auto getLang = [&](int id) -> Language *
-    {
-        if (id < 0 || id >= (int)places.size())
-            return nullptr;
-        auto it = LanguageMap.find(places[id]);
-        return (it != LanguageMap.end()) ? &(it->second) : nullptr;
-    };
+    PhoneticsConverter converter = PhoneticsConverter::Create(PhoneticsMap);
 
     switch (diff.Type)
     {
-    case LanguageDifferenceType::ChangeStrength:
-        if (auto *lang = getLang(diff.IntParam[0]))
-        {
-            lang->Strength = diff.DoubleParam[0];
-        }
+    case LanguageDifferenceType::AddWord:
+    {
+        LanguageMap[diff.StringParam[0]].Words[diff.IntParam[0]].Sounds = converter.convertToPhonetics(diff.StringParam[1]);
+        LanguageMap[diff.StringParam[0]].Words[diff.IntParam[0]].Meanings = diff.MeaningChange;
         break;
+    }
+
+    case LanguageDifferenceType::ChangeStrength:
+    {
+        LanguageMap[diff.StringParam[0]].Strength = diff.DoubleParam[0];
+        break;
+    }
 
     case LanguageDifferenceType::ChangeSound:
-        if (auto *lang = getLang(diff.IntParam[0]))
-        {
-            auto itWord = lang->Words.find(diff.IntParam[1]);
-            if (itWord != lang->Words.end())
-            {
-                // 音韻変化を適用（インプレース更新）
-                const auto &sc = diff.SoundChanges;
-                std::vector<Phonetics> nextSounds;
-                nextSounds.reserve(itWord->second.Sounds.size());
-
-                for (size_t i = 0; i < itWord->second.Sounds.size(); ++i)
-                {
-                    bool isMatch = (itWord->second.Sounds[i] == sc.beforePhon);
-                    if (isMatch)
-                    {
-                        if (sc.Condition == SoundChangeCondition::Start && i != 0)
-                            isMatch = false;
-                        else if (sc.Condition == SoundChangeCondition::End && i != itWord->second.Sounds.size() - 1)
-                            isMatch = false;
-                        else if (sc.Condition == SoundChangeCondition::Middle && (i == 0 || i == itWord->second.Sounds.size() - 1))
-                            isMatch = false;
-                    }
-                    if (isMatch)
-                    {
-                        if (!sc.IsRemove)
-                            nextSounds.push_back(sc.AfterPhone);
-                    }
-                    else
-                    {
-                        nextSounds.push_back(itWord->second.Sounds[i]);
-                    }
-                }
-                itWord->second.Sounds = std::move(nextSounds);
-            }
-        }
-        break;
-
-    case LanguageDifferenceType::ChangeMeaning:
-        if (auto *lang = getLang(diff.IntParam[0]))
-        {
-            auto itWord = lang->Words.find(diff.IntParam[1]);
-            if (itWord != lang->Words.end())
-            {
-                itWord->second.Meanings = diff.MeaningChange;
-                itWord->second.UpdateNearestProtoWord(ProtoLanguage);
-            }
-        }
-        break;
-
-    case LanguageDifferenceType::BorrowWord:
     {
-        auto *srcLang = getLang(diff.IntParam[0]);
-        auto *dstLang = getLang(diff.IntParam[2]);
-        if (srcLang && dstLang)
+        auto itWord = LanguageMap[diff.StringParam[0]].Words.find(diff.IntParam[0]);
+        if (itWord != LanguageMap[diff.StringParam[0]].Words.end())
         {
-            auto itSrc = srcLang->Words.find(diff.IntParam[1]);
-            auto itDst = dstLang->Words.find(diff.IntParam[3]);
-            if (itSrc != srcLang->Words.end() && itDst != dstLang->Words.end())
+            // 音韻変化を適用（インプレース更新）
+            const auto &sc = diff.SoundChanges;
+            std::vector<Phonetics> nextSounds;
+            nextSounds.reserve(itWord->second.Sounds.size());
+
+            for (size_t i = 0; i < itWord->second.Sounds.size(); ++i)
             {
-                // 借用：音素列をコピー
-                itDst->second.Sounds = itSrc->second.Sounds;
+                bool isMatch = (itWord->second.Sounds[i] == sc.beforePhon);
+                if (isMatch)
+                {
+                    if (sc.Condition == SoundChangeCondition::Start && i != 0)
+                        isMatch = false;
+                    else if (sc.Condition == SoundChangeCondition::End && i != itWord->second.Sounds.size() - 1)
+                        isMatch = false;
+                    else if (sc.Condition == SoundChangeCondition::Middle && (i == 0 || i == itWord->second.Sounds.size() - 1))
+                        isMatch = false;
+                }
+                if (isMatch)
+                {
+                    if (!sc.IsRemove)
+                        nextSounds.push_back(sc.AfterPhone);
+                }
+                else
+                {
+                    nextSounds.push_back(itWord->second.Sounds[i]);
+                }
             }
+            itWord->second.Sounds = std::move(nextSounds);
         }
         break;
     }
 
-    case LanguageDifferenceType::AddCompoundWord:
-        if (auto *lang = getLang(diff.IntParam[0]))
+    case LanguageDifferenceType::ChangeMeaning:
+    {
+        auto itWord = LanguageMap[diff.StringParam[0]].Words.find(diff.IntParam[0]);
+        if (itWord != LanguageMap[diff.StringParam[0]].Words.end())
         {
-            Word newWord;
-            bool first = true;
-            // IntParam[2]以降に合成元の単語IDリストが格納されている
-            for (size_t i = 2; i < diff.IntParam.size(); ++i)
-            {
-                auto itPart = lang->Words.find(diff.IntParam[i]);
-                if (itPart != lang->Words.end())
-                {
-                    if (first)
-                    {
-                        newWord = itPart->second;
-                        first = false;
-                    }
-                    else
-                        newWord = newWord.Add(itPart->second);
-                }
-            }
-            newWord.UpdateNearestProtoWord(ProtoLanguage);
-            lang->Words[diff.IntParam[1]] = std::move(newWord);
+            itWord->second.Meanings = diff.MeaningChange;
+            itWord->second.UpdateNearestProtoWord(ProtoLanguage);
         }
         break;
+    }
+
+    case LanguageDifferenceType::BorrowWord:
+    {
+        {
+            auto itSrc = LanguageMap[diff.StringParam[0]].Words.find(diff.IntParam[0]);
+            auto itDst = LanguageMap[diff.StringParam[1]].Words.find(diff.IntParam[1]);
+            if (itSrc != LanguageMap[diff.StringParam[0]].Words.end() && itDst != LanguageMap[diff.StringParam[1]].Words.end())
+            {
+                // 借用：音素列をコピー
+                itDst->second.Sounds = itSrc->second.Sounds;
+            }
+            break;
+        }
+    }
+
+    case LanguageDifferenceType::AddCompoundWord:
+    {
+        Word newWord;
+        bool first = true;
+        // IntParam[2]以降に合成元の単語IDリストが格納されている
+        for (size_t i = 1; i < diff.IntParam.size(); ++i)
+        {
+            auto itPart = LanguageMap[diff.StringParam[0]].Words.find(diff.IntParam[i]);
+            if (itPart != LanguageMap[diff.StringParam[0]].Words.end())
+            {
+                if (first)
+                {
+                    newWord = itPart->second;
+                    first = false;
+                }
+                else
+                    newWord = newWord.Add(itPart->second);
+            }
+        }
+        newWord.UpdateNearestProtoWord(ProtoLanguage);
+        LanguageMap[diff.StringParam[0]].Words[diff.IntParam[0]] = std::move(newWord);
+        break;
+    }
 
     case LanguageDifferenceType::Remove:
-        if (auto *lang = getLang(diff.IntParam[0]))
-        {
-            lang->Words.erase(diff.IntParam[1]);
-        }
+    {
+        LanguageMap[diff.StringParam[0]].Words.erase(diff.IntParam[0]);
         break;
+    }
     }
 }
 
 // 大量の差分を高速に適用する（IDマッピングをキャッシュ）
 void LanguageSystem::ApplyDifferences(const std::vector<LanguageDifference> &diffs)
 {
-    const auto places = getNonEmptyStrings(Map);
-    // IDからポインタへの変換を事前計算
-    std::vector<Language *> idToLang(places.size(), nullptr);
-    for (size_t i = 0; i < places.size(); ++i)
-    {
-        auto it = LanguageMap.find(places[i]);
-        if (it != LanguageMap.end())
-            idToLang[i] = &(it->second);
-    }
-
     for (const auto &diff : diffs)
     {
-        // ApplyDifference の switch 部をここにインライン展開、
-        // または getLang の代わりに idToLang[id] を使用することで劇的に高速化します。
+        ApplyDifference(diff);
     }
 }
 
-void LanguageSystem::ExportDifference(const std::string &filename)
+void LanguageSystem::Export(const std::string &filename)
 {
-    std::ofstream file(filename.c_str());
+    std::ofstream file(filename);
     if (!file.is_open())
         return;
 
-    file << "LanguageDifferences:\n"; // ルート要素
+    // 2. Map
+    file << "Map:\n";
+    for (const auto &row : Map)
+    {
+        file << "  - [";
+        for (size_t i = 0; i < row.size(); ++i)
+        {
+            file << row[i] << (i == row.size() - 1 ? "" : ", ");
+        }
+        file << "]\n";
+    }
 
+    // 3. PhoneticsMap
+    file << "PhoneticsMap:\n";
+    for (const auto &row : PhoneticsMap)
+    {
+        file << "  - [";
+        for (size_t i = 0; i < row.size(); ++i)
+        {
+            file << row[i] << (i == row.size() - 1 ? "" : ", ");
+        }
+        file << "]\n";
+    }
+
+    // 4. LanguageDifferences
+    file << "LanguageDifferences:\n";
     for (const auto &diff : languageDifference)
     {
         file << "  - Section: " << diff.Section << "\n";
-        file << "    Type: " << diff.Type << "\n";
-        file << "    IntParam:" << "\n";
+        file << "    Type: " << static_cast<int>(diff.Type) << "\n";
+
+        file << "    IntParam:\n";
         for (const auto &i : diff.IntParam)
-        {
-            file << "     - " << i << "\n";
-        }
-        file << "    DoubleParam:" << "\n";
+            file << "      - " << i << "\n";
+
+        file << "    DoubleParam:\n";
         for (const auto &d : diff.DoubleParam)
-        {
-            file << "     - " << d << "\n";
-        }
-        file << "    StringParam:" << "\n";
+            file << "      - " << d << "\n";
+
+        file << "    StringParam:\n";
         for (const auto &s : diff.StringParam)
-        {
-            file << "     - " << s << "\n";
-        }
-        file << "    SoundChange:" << "\n";
-        file << "     - Before:" << "\n";
-        file << "       - Place:" << diff.SoundChanges.beforePhon.Place << "\n";
-        file << "       - Mannar:" << diff.SoundChanges.beforePhon.Mannar << "\n";
-        file << "     - After:" << "\n";
-        file << "       - Place:" << diff.SoundChanges.AfterPhone.Place << "\n";
-        file << "       - Mannar:" << diff.SoundChanges.AfterPhone.Mannar << "\n";
-        file << "     - Condition:" << diff.SoundChanges.Condition << "\n";
-        file << "     - IsRemove:" << diff.SoundChanges.IsRemove << "\n";
-        file << "    MeaningChange:" << "\n";
+            file << "      - " << s << "\n";
+
+        file << "    SoundChange:\n";
+        file << "      Before:\n";
+        file << "        Place: " << diff.SoundChanges.beforePhon.Place << "\n";
+        file << "        Mannar: " << diff.SoundChanges.beforePhon.Mannar << "\n";
+        file << "      After:\n";
+        file << "        Place: " << diff.SoundChanges.AfterPhone.Place << "\n";
+        file << "        Mannar: " << diff.SoundChanges.AfterPhone.Mannar << "\n";
+        file << "      Condition: " << static_cast<int>(diff.SoundChanges.Condition) << "\n";
+        file << "      IsRemove: " << diff.SoundChanges.IsRemove << "\n";
+
+        file << "    MeaningChange:\n";
         for (const auto &pair : diff.MeaningChange)
         {
-            file << "     - Key: " << pair.first << "\n";
-            file << "       Value: " << pair.second << "\n";
+            file << "      - Key: " << pair.first << "\n";
+            file << "        Value: " << pair.second << "\n";
         }
     }
+}
 
-    file.close();
+void LanguageSystem::Import(const std::string &filename)
+{
+    std::ifstream file(filename);
+    if (!file.is_open())
+        return;
+
+    enum Mode
+    {
+        Map_,
+        PhoneticsMap_,
+        LanguageDifferences_,
+    };
+
+    enum SubMode
+    {
+        Type_,
+        Section_,
+        IntParam_,
+        DoubleParam_,
+        StringParam_,
+        SoundChanges_,
+        MeaningChange_,
+    };
+
+    Mode mode;
+    SubMode subMode;
+    LanguageDifference dif;
+    bool b = false;
+
+    std::string line;
+    while (std::getline(file, line))
+    {
+        if (line == "Map:")
+        {
+            mode = Mode::Map_;
+            Map.clear();
+            continue;
+        }
+        else if (line == "PhoneticsMap:")
+        {
+            mode = Mode::PhoneticsMap_;
+            PhoneticsMap.clear();
+            continue;
+        }
+        else if (line == "LanguageDifferences:")
+        {
+            mode = Mode::LanguageDifferences_;
+            languageDifference.clear();
+            continue;
+        }
+
+        if (mode == Mode::Map_)
+        {
+            Map.emplace_back(parseYamlList(line));
+        }
+        else if (mode == Mode::PhoneticsMap_)
+        {
+            PhoneticsMap.emplace_back(parseYamlList(line));
+        }
+        else if (mode == Mode::LanguageDifferences_)
+        {
+            auto [key, value] = splitByColon(line);
+            if (key == "- Section")
+            {
+                if (b)
+                {
+                    languageDifference.emplace_back(dif);
+                    dif = LanguageDifference();
+                }
+                else
+                {
+                    b = true;
+                }
+                dif.Section = std::stoi(value);
+                continue;
+            }
+            else if (key == "Type")
+            {
+                dif.Type = static_cast<LanguageDifferenceType>(std::stoi(value));
+                continue;
+            }
+            else if (line == "    IntParam:")
+            {
+                subMode = SubMode::IntParam_;
+                continue;
+            }
+            else if (line == "    DoubleParam:")
+            {
+                subMode = SubMode::DoubleParam_;
+                continue;
+            }
+            else if (line == "    StringParam:")
+            {
+                subMode = SubMode::StringParam_;
+                continue;
+            }
+            else if (line == "    SoundChange:")
+            {
+                std::getline(file, line); // Before:
+                std::getline(file, line); // Place:
+                std::tie(key, value) = splitByColon(line);
+                const int beforePlace = std::stoi(value);
+                std::getline(file, line); // Mannar:
+                std::tie(key, value) = splitByColon(line);
+                const int beforeMannar = std::stoi(value);
+
+                std::getline(file, line); // After:
+                std::getline(file, line); // Place:
+                std::tie(key, value) = splitByColon(line);
+                const int afterPlace = std::stoi(value);
+                std::getline(file, line); // Mannar:
+                std::tie(key, value) = splitByColon(line);
+                const int afterMannar = std::stoi(value);
+
+                std::getline(file, line); // Condition:
+                std::tie(key, value) = splitByColon(line);
+                const auto condition = static_cast<SoundChangeCondition>(std::stoi(value));
+
+                std::getline(file, line); // IsRemove:
+                std::tie(key, value) = splitByColon(line);
+                const bool isRemove = static_cast<bool>(std::stoi(value));
+
+                dif.SoundChanges.beforePhon.Place = beforePlace;
+                dif.SoundChanges.beforePhon.Mannar = beforeMannar;
+                dif.SoundChanges.AfterPhone.Place = afterPlace;
+                dif.SoundChanges.AfterPhone.Mannar = afterMannar;
+                dif.SoundChanges.Condition = condition;
+                dif.SoundChanges.IsRemove = isRemove;
+                continue;
+            }
+            else if (line == "    MeaningChange:")
+            {
+                subMode = SubMode::MeaningChange_;
+                continue;
+            }
+
+            if (subMode == SubMode::IntParam_)
+            {
+                dif.IntParam.emplace_back(std::stoi(line.substr(8)));
+            }
+            else if (subMode == SubMode::DoubleParam_)
+            {
+                dif.DoubleParam.emplace_back(std::stod(line.substr(8)));
+            }
+            else if (subMode == SubMode::StringParam_)
+            {
+                dif.StringParam.emplace_back(line.substr(8));
+            }
+            else if (subMode == SubMode::MeaningChange_)
+            {
+                std::getline(file, line);
+                const auto [_1, key2] = splitByColon(line);
+                std::getline(file, line);
+                const auto [_2, value2] = splitByColon(line);
+                dif.MeaningChange[key2] = std::stod(value2);
+            }
+        }
+    }
+    languageDifference.emplace_back(dif);
 }

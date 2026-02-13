@@ -66,6 +66,6 @@ std::optional<LanguageSystem> evolution(
     }
     // 出力
     languageSystem.ExportLanguageToCSV(OUTPUT_PATH);
-    languageSystem.ExportDifference(OUTPUT_PATH + ".log");
+    languageSystem.Export(OUTPUT_PATH + ".log");
     return languageSystem;
 }
