@@ -348,7 +348,7 @@ WindowType DisplayWindow(WindowType type)
     case WindowType::SellectFileDisplayWord:
     {
         std::cout << "=============================================\n";
-        std::cout << "> 言語変化シミュレート > 表示 > 個別言語\n";
+        std::cout << "> ファイル選択 > 結果 > 個別言語\n";
 
         const auto words = language_system->GetWords(selected_place);
         DisplayMulti(words);
