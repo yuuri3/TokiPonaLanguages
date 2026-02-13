@@ -444,10 +444,6 @@ void LanguageSystem::ChangeLanguageSound(
             // 1. 音韻変化の適用と音素重複チェックを同時に行う
             for (auto &[wordID, word] : language.Words)
             {
-                // 差分
-                const auto dif = LanguageDifference::CreateChangeSound(ID, Section, wordID, soundChange);
-                languageDifference.emplace_back(dif);
-
                 bool changed = false;
                 std::vector<Phonetics> nextSounds;
                 nextSounds.reserve(word.Sounds.size()); // メモリ確保を1回に抑制
@@ -558,6 +554,10 @@ void LanguageSystem::ChangeLanguageSound(
             for (auto &[wordID, newWord] : updatedWords)
             {
                 language.Words[wordID] = std::move(newWord);
+
+                // ログ
+                const auto dif = LanguageDifference::CreateChangeSound(ID, Section, wordID, soundChange);
+                languageDifference.emplace_back(dif);
             }
         }
     }
@@ -589,10 +589,6 @@ void LanguageSystem::ChangeLanguageMeaning(
             std::advance(itSeed, seedIdx);
             const Word &seedWord = itSeed->second;
 
-            // ログ
-            const auto dif = LanguageDifference::CreateChangeMeaning(ID, Section, wordID, seedWord.Meanings);
-            languageDifference.emplace_back(dif);
-
             // 現在の状態を保存（ロールバック用）
             Meaning oldMeaning = targetWord.Meanings;
             std::vector<Phonetics> oldProto = targetWord.NearestProtoWord;
@@ -622,6 +618,12 @@ void LanguageSystem::ChangeLanguageMeaning(
             {
                 targetWord.Meanings = std::move(oldMeaning);
                 targetWord.NearestProtoWord = std::move(oldProto);
+            }
+            else
+            {
+                // ログ
+                const auto dif = LanguageDifference::CreateChangeMeaning(ID, Section, wordID, seedWord.Meanings);
+                languageDifference.emplace_back(dif);
             }
         }
     }
@@ -833,10 +835,6 @@ void LanguageSystem::BollowWord(const int nBorrow, const double pBorrow)
                     }
                 }
 
-                // ログ
-                const auto dif = LanguageDifference::CreateBorrowWord(sID, tID, Section, bestSourceWordID, tWordID);
-                languageDifference.emplace_back(dif);
-
                 if (bestSourceWord)
                 {
                     // 同音語チェックを最適化
@@ -850,7 +848,13 @@ void LanguageSystem::BollowWord(const int nBorrow, const double pBorrow)
                         }
                     }
                     if (!isDuplicate)
+                    {
                         tWord.Sounds = bestSourceWord->Sounds;
+
+                        // ログ
+                        const auto dif = LanguageDifference::CreateBorrowWord(sID, tID, Section, bestSourceWordID, tWordID);
+                        languageDifference.emplace_back(dif);
+                    }
                 }
             }
         }
