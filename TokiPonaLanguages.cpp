@@ -124,7 +124,7 @@ WindowType DisplayWindow(WindowType type)
         std::cout << ">\n";
         std::cout << "0 : 言語変化シミュレート\n";
         std::cout << "1 : ファイル選択\n";
-        std::cout << "q : Quit\n";
+        std::cout << "q : 終了\n";
         std::string input;
         std::cin >> input;
         if (input == "0")
