@@ -999,143 +999,123 @@ void LanguageSystem::ToNextSection()
 void LanguageSystem::ApplyDifference(const LanguageDifference &diff)
 {
     const auto places = getNonEmptyStrings(Map);
-
-    // IDから言語オブジェクトへのポインタを取得するヘルパー
-    auto getLang = [&](int id) -> Language *
-    {
-        if (id < 0 || id >= (int)places.size())
-            return nullptr;
-        auto it = LanguageMap.find(places[id]);
-        return (it != LanguageMap.end()) ? &(it->second) : nullptr;
-    };
+    PhoneticsConverter converter = PhoneticsConverter::Create(PhoneticsMap);
 
     switch (diff.Type)
     {
-    case LanguageDifferenceType::ChangeStrength:
-        if (auto *lang = getLang(diff.IntParam[0]))
-        {
-            lang->Strength = diff.DoubleParam[0];
-        }
+    case LanguageDifferenceType::AddWord:
+    {
+        LanguageMap[diff.StringParam[0]].Words[diff.IntParam[0]].Sounds = converter.convertToPhonetics(diff.StringParam[1]);
+        LanguageMap[diff.StringParam[0]].Words[diff.IntParam[0]].Meanings = diff.MeaningChange;
         break;
+    }
+
+    case LanguageDifferenceType::ChangeStrength:
+    {
+        LanguageMap[diff.StringParam[0]].Strength = diff.DoubleParam[0];
+        break;
+    }
 
     case LanguageDifferenceType::ChangeSound:
-        if (auto *lang = getLang(diff.IntParam[0]))
-        {
-            auto itWord = lang->Words.find(diff.IntParam[1]);
-            if (itWord != lang->Words.end())
-            {
-                // 音韻変化を適用（インプレース更新）
-                const auto &sc = diff.SoundChanges;
-                std::vector<Phonetics> nextSounds;
-                nextSounds.reserve(itWord->second.Sounds.size());
-
-                for (size_t i = 0; i < itWord->second.Sounds.size(); ++i)
-                {
-                    bool isMatch = (itWord->second.Sounds[i] == sc.beforePhon);
-                    if (isMatch)
-                    {
-                        if (sc.Condition == SoundChangeCondition::Start && i != 0)
-                            isMatch = false;
-                        else if (sc.Condition == SoundChangeCondition::End && i != itWord->second.Sounds.size() - 1)
-                            isMatch = false;
-                        else if (sc.Condition == SoundChangeCondition::Middle && (i == 0 || i == itWord->second.Sounds.size() - 1))
-                            isMatch = false;
-                    }
-                    if (isMatch)
-                    {
-                        if (!sc.IsRemove)
-                            nextSounds.push_back(sc.AfterPhone);
-                    }
-                    else
-                    {
-                        nextSounds.push_back(itWord->second.Sounds[i]);
-                    }
-                }
-                itWord->second.Sounds = std::move(nextSounds);
-            }
-        }
-        break;
-
-    case LanguageDifferenceType::ChangeMeaning:
-        if (auto *lang = getLang(diff.IntParam[0]))
-        {
-            auto itWord = lang->Words.find(diff.IntParam[1]);
-            if (itWord != lang->Words.end())
-            {
-                itWord->second.Meanings = diff.MeaningChange;
-                itWord->second.UpdateNearestProtoWord(ProtoLanguage);
-            }
-        }
-        break;
-
-    case LanguageDifferenceType::BorrowWord:
     {
-        auto *srcLang = getLang(diff.IntParam[0]);
-        auto *dstLang = getLang(diff.IntParam[2]);
-        if (srcLang && dstLang)
+        auto itWord = LanguageMap[diff.StringParam[0]].Words.find(diff.IntParam[0]);
+        if (itWord != LanguageMap[diff.StringParam[0]].Words.end())
         {
-            auto itSrc = srcLang->Words.find(diff.IntParam[1]);
-            auto itDst = dstLang->Words.find(diff.IntParam[3]);
-            if (itSrc != srcLang->Words.end() && itDst != dstLang->Words.end())
+            // 音韻変化を適用（インプレース更新）
+            const auto &sc = diff.SoundChanges;
+            std::vector<Phonetics> nextSounds;
+            nextSounds.reserve(itWord->second.Sounds.size());
+
+            for (size_t i = 0; i < itWord->second.Sounds.size(); ++i)
             {
-                // 借用：音素列をコピー
-                itDst->second.Sounds = itSrc->second.Sounds;
+                bool isMatch = (itWord->second.Sounds[i] == sc.beforePhon);
+                if (isMatch)
+                {
+                    if (sc.Condition == SoundChangeCondition::Start && i != 0)
+                        isMatch = false;
+                    else if (sc.Condition == SoundChangeCondition::End && i != itWord->second.Sounds.size() - 1)
+                        isMatch = false;
+                    else if (sc.Condition == SoundChangeCondition::Middle && (i == 0 || i == itWord->second.Sounds.size() - 1))
+                        isMatch = false;
+                }
+                if (isMatch)
+                {
+                    if (!sc.IsRemove)
+                        nextSounds.push_back(sc.AfterPhone);
+                }
+                else
+                {
+                    nextSounds.push_back(itWord->second.Sounds[i]);
+                }
             }
+            itWord->second.Sounds = std::move(nextSounds);
         }
         break;
     }
 
-    case LanguageDifferenceType::AddCompoundWord:
-        if (auto *lang = getLang(diff.IntParam[0]))
+    case LanguageDifferenceType::ChangeMeaning:
+    {
+        auto itWord = LanguageMap[diff.StringParam[0]].Words.find(diff.IntParam[0]);
+        if (itWord != LanguageMap[diff.StringParam[0]].Words.end())
         {
-            Word newWord;
-            bool first = true;
-            // IntParam[2]以降に合成元の単語IDリストが格納されている
-            for (size_t i = 2; i < diff.IntParam.size(); ++i)
-            {
-                auto itPart = lang->Words.find(diff.IntParam[i]);
-                if (itPart != lang->Words.end())
-                {
-                    if (first)
-                    {
-                        newWord = itPart->second;
-                        first = false;
-                    }
-                    else
-                        newWord = newWord.Add(itPart->second);
-                }
-            }
-            newWord.UpdateNearestProtoWord(ProtoLanguage);
-            lang->Words[diff.IntParam[1]] = std::move(newWord);
+            itWord->second.Meanings = diff.MeaningChange;
+            itWord->second.UpdateNearestProtoWord(ProtoLanguage);
         }
         break;
+    }
+
+    case LanguageDifferenceType::BorrowWord:
+    {
+        {
+            auto itSrc = LanguageMap[diff.StringParam[0]].Words.find(diff.IntParam[0]);
+            auto itDst = LanguageMap[diff.StringParam[1]].Words.find(diff.IntParam[1]);
+            if (itSrc != LanguageMap[diff.StringParam[0]].Words.end() && itDst != LanguageMap[diff.StringParam[1]].Words.end())
+            {
+                // 借用：音素列をコピー
+                itDst->second.Sounds = itSrc->second.Sounds;
+            }
+            break;
+        }
+    }
+
+    case LanguageDifferenceType::AddCompoundWord:
+    {
+        Word newWord;
+        bool first = true;
+        // IntParam[2]以降に合成元の単語IDリストが格納されている
+        for (size_t i = 1; i < diff.IntParam.size(); ++i)
+        {
+            auto itPart = LanguageMap[diff.StringParam[0]].Words.find(diff.IntParam[i]);
+            if (itPart != LanguageMap[diff.StringParam[0]].Words.end())
+            {
+                if (first)
+                {
+                    newWord = itPart->second;
+                    first = false;
+                }
+                else
+                    newWord = newWord.Add(itPart->second);
+            }
+        }
+        newWord.UpdateNearestProtoWord(ProtoLanguage);
+        LanguageMap[diff.StringParam[0]].Words[diff.IntParam[0]] = std::move(newWord);
+        break;
+    }
 
     case LanguageDifferenceType::Remove:
-        if (auto *lang = getLang(diff.IntParam[0]))
-        {
-            lang->Words.erase(diff.IntParam[1]);
-        }
+    {
+        LanguageMap[diff.StringParam[0]].Words.erase(diff.IntParam[0]);
         break;
+    }
     }
 }
 
 // 大量の差分を高速に適用する（IDマッピングをキャッシュ）
 void LanguageSystem::ApplyDifferences(const std::vector<LanguageDifference> &diffs)
 {
-    const auto places = getNonEmptyStrings(Map);
-    // IDからポインタへの変換を事前計算
-    std::vector<Language *> idToLang(places.size(), nullptr);
-    for (size_t i = 0; i < places.size(); ++i)
-    {
-        auto it = LanguageMap.find(places[i]);
-        if (it != LanguageMap.end())
-            idToLang[i] = &(it->second);
-    }
-
     for (const auto &diff : diffs)
     {
-        // ApplyDifference の switch 部をここにインライン展開、
-        // または getLang の代わりに idToLang[id] を使用することで劇的に高速化します。
+        ApplyDifference(diff);
     }
 }
 
