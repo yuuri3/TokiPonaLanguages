@@ -58,6 +58,60 @@ namespace
         ss << "]";
         return ss.str();
     }
+
+    // YAMLの [a, b, c] 形式を vector<string> に変換する
+    std::vector<std::string> parseYamlList(const std::string &line)
+    {
+        std::vector<std::string> result;
+        size_t start = line.find('[');
+        size_t end = line.find(']');
+        if (start == std::string::npos || end == std::string::npos)
+            return result;
+
+        std::string content = line.substr(start + 1, end - start - 1);
+        std::stringstream ss(content);
+        std::string item;
+        while (std::getline(ss, item, ','))
+        {
+            size_t first = item.find_first_not_of(" ");
+            size_t last = item.find_last_not_of(" ");
+            if (first != std::string::npos)
+                result.push_back(item.substr(first, (last - first + 1)));
+        }
+        return result;
+    }
+
+    /**
+     * @brief 文字列を':'で前後2つに分割する
+     * @return {前部分, 後部分}。コロンがない場合は {元の文字列, ""}
+     */
+    std::pair<std::string, std::string> splitByColon(const std::string &line)
+    {
+        size_t pos = line.find(':');
+        if (pos == std::string::npos)
+        {
+            return {line, ""};
+        }
+
+        std::string first = line.substr(0, pos);
+        std::string second = line.substr(pos + 1);
+
+        // 必要に応じて前後の空白を削除（トリミング）
+        auto trim = [](std::string &s)
+        {
+            size_t f = s.find_first_not_of(" ");
+            size_t l = s.find_last_not_of(" \r\n\t");
+            if (f == std::string::npos)
+                s = "";
+            else
+                s = s.substr(f, l - f + 1);
+        };
+
+        trim(first);
+        trim(second);
+
+        return {first, second};
+    }
 }
 
 Meaning Meaning::Add(const Meaning &meaning) const
@@ -1152,30 +1206,164 @@ void LanguageSystem::Export(const std::string &filename)
         }
     }
 }
+
+void LanguageSystem::Import(const std::string &filename)
+{
+    std::ifstream file(filename);
+    if (!file.is_open())
+        return;
+
+    enum Mode
+    {
+        Map_,
+        PhoneticsMap_,
+        LanguageDifferences_,
+    };
+
+    enum SubMode
+    {
+        Type_,
+        Section_,
+        IntParam_,
+        DoubleParam_,
+        StringParam_,
+        SoundChanges_,
+        MeaningChange_,
+    };
+
+    Mode mode;
+    SubMode subMode;
+    LanguageDifference dif;
+    bool b = false;
+
+    std::string line;
+    while (std::getline(file, line))
+    {
+        if (line == "Map:")
         {
-            file << "     - " << d << "\n";
+            mode = Mode::Map_;
+            Map.clear();
+            continue;
         }
-        file << "    StringParam:" << "\n";
-        for (const auto &s : diff.StringParam)
+        else if (line == "PhoneticsMap:")
         {
-            file << "     - " << s << "\n";
+            mode = Mode::PhoneticsMap_;
+            PhoneticsMap.clear();
+            continue;
         }
-        file << "    SoundChange:" << "\n";
-        file << "     - Before:" << "\n";
-        file << "       - Place:" << diff.SoundChanges.beforePhon.Place << "\n";
-        file << "       - Mannar:" << diff.SoundChanges.beforePhon.Mannar << "\n";
-        file << "     - After:" << "\n";
-        file << "       - Place:" << diff.SoundChanges.AfterPhone.Place << "\n";
-        file << "       - Mannar:" << diff.SoundChanges.AfterPhone.Mannar << "\n";
-        file << "     - Condition:" << diff.SoundChanges.Condition << "\n";
-        file << "     - IsRemove:" << diff.SoundChanges.IsRemove << "\n";
-        file << "    MeaningChange:" << "\n";
-        for (const auto &pair : diff.MeaningChange)
+        else if (line == "LanguageDifferences:")
         {
-            file << "     - Key: " << pair.first << "\n";
-            file << "       Value: " << pair.second << "\n";
+            mode = Mode::LanguageDifferences_;
+            languageDifference.clear();
+            continue;
+        }
+
+        if (mode == Mode::Map_)
+        {
+            Map.emplace_back(parseYamlList(line));
+        }
+        else if (mode == Mode::PhoneticsMap_)
+        {
+            PhoneticsMap.emplace_back(parseYamlList(line));
+        }
+        else if (mode == Mode::LanguageDifferences_)
+        {
+            auto [key, value] = splitByColon(line);
+            if (key == "- Section")
+            {
+                if (b)
+                {
+                    languageDifference.emplace_back(dif);
+                    dif = LanguageDifference();
+                }
+                else
+                {
+                    b = true;
+                }
+                dif.Section = std::stoi(value);
+                continue;
+            }
+            else if (key == "Type")
+            {
+                dif.Type = static_cast<LanguageDifferenceType>(std::stoi(value));
+                continue;
+            }
+            else if (line == "    IntParam:")
+            {
+                subMode = SubMode::IntParam_;
+                continue;
+            }
+            else if (line == "    DoubleParam:")
+            {
+                subMode = SubMode::DoubleParam_;
+                continue;
+            }
+            else if (line == "    StringParam:")
+            {
+                subMode = SubMode::StringParam_;
+                continue;
+            }
+            else if (line == "    SoundChange:")
+            {
+                std::getline(file, line); // Before:
+                std::getline(file, line); // Place:
+                std::tie(key, value) = splitByColon(line);
+                const int beforePlace = std::stoi(value);
+                std::getline(file, line); // Mannar:
+                std::tie(key, value) = splitByColon(line);
+                const int beforeMannar = std::stoi(value);
+
+                std::getline(file, line); // After:
+                std::getline(file, line); // Place:
+                std::tie(key, value) = splitByColon(line);
+                const int afterPlace = std::stoi(value);
+                std::getline(file, line); // Mannar:
+                std::tie(key, value) = splitByColon(line);
+                const int afterMannar = std::stoi(value);
+
+                std::getline(file, line); // Condition:
+                std::tie(key, value) = splitByColon(line);
+                const auto condition = static_cast<SoundChangeCondition>(std::stoi(value));
+
+                std::getline(file, line); // IsRemove:
+                std::tie(key, value) = splitByColon(line);
+                const bool isRemove = static_cast<bool>(std::stoi(value));
+
+                dif.SoundChanges.beforePhon.Place = beforePlace;
+                dif.SoundChanges.beforePhon.Mannar = beforeMannar;
+                dif.SoundChanges.AfterPhone.Place = afterPlace;
+                dif.SoundChanges.AfterPhone.Mannar = afterMannar;
+                dif.SoundChanges.Condition = condition;
+                dif.SoundChanges.IsRemove = isRemove;
+                continue;
+            }
+            else if (line == "    MeaningChange:")
+            {
+                subMode = SubMode::MeaningChange_;
+                continue;
+            }
+
+            if (subMode == SubMode::IntParam_)
+            {
+                dif.IntParam.emplace_back(std::stoi(line.substr(8)));
+            }
+            else if (subMode == SubMode::DoubleParam_)
+            {
+                dif.DoubleParam.emplace_back(std::stod(line.substr(8)));
+            }
+            else if (subMode == SubMode::StringParam_)
+            {
+                dif.StringParam.emplace_back(line.substr(8));
+            }
+            else if (subMode == SubMode::MeaningChange_)
+            {
+                std::getline(file, line);
+                const auto [_1, key2] = splitByColon(line);
+                std::getline(file, line);
+                const auto [_2, value2] = splitByColon(line);
+                dif.MeaningChange[key2] = std::stod(value2);
+            }
         }
     }
-
-    file.close();
+    languageDifference.emplace_back(dif);
 }

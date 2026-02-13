@@ -448,6 +448,13 @@ struct LanguageSystem
      *
      */
     void Export(const std::string &filename);
+
+    /**
+     * @brief ファイル読み込み
+     *
+     * @param filename ファイルパス
+     */
+    void Import(const std::string &filename);
 };
 
 /**
