@@ -4,8 +4,8 @@
 
 #include <iostream>
 
-std::optional<LanguageSystem> evolution(
-    const int N_BORROW,
+std::optional<LanguageFamily> evolution(
+    const int N_LOANWORD,
     const double P_SOUND_CHANGE,
     const double P_SOUND_LOSS,
     const double P_SEMANTIC_SHIFT,
@@ -14,58 +14,58 @@ std::optional<LanguageSystem> evolution(
     const double P_WORD_BIRTH,
     const std::string &PROTO_LANGUAGE_PATH,
     const std::string &PHONEME_TABLE_PATH,
-    const std::string &MAP_PATH,
+    const std::string &GEOGRAPHY_PATH,
     const std::string &OUTPUT_PATH)
 {
     // ファイル読み込み
-    const auto oldTokiPonaData = readCSV(PROTO_LANGUAGE_PATH);
-    const auto phoneticsData = readCSV(PHONEME_TABLE_PATH);
-    const auto mapData = readCSV(MAP_PATH);
+    const auto protoLanguageData = readCSV(PROTO_LANGUAGE_PATH);
+    const auto phonemeTableData = readCSV(PHONEME_TABLE_PATH);
+    const auto geographyData = readCSV(GEOGRAPHY_PATH);
 
     // データ準備
-    if (oldTokiPonaData.empty() || phoneticsData.empty() || mapData.empty())
+    if (protoLanguageData.empty() || phonemeTableData.empty() || geographyData.empty())
     {
         return std::nullopt;
     }
 
-    auto converter = PhoneticsConverter::Create(phoneticsData);
-    auto oldTokiPona = converter.convertToLanguage(oldTokiPonaData[0]);
+    auto converter = PhonemeConverter::Create(phonemeTableData);
+    auto protoLanguage = converter.convertToLanguage(protoLanguageData[0]);
 
-    LanguageSystem languageSystem;
-    languageSystem.Map = mapData;
-    languageSystem.PhoneticsMap = phoneticsData;
-    languageSystem.SetOldLanguageOnMap("0", oldTokiPona);
+    LanguageFamily languageFamily;
+    languageFamily.Geography = geographyData;
+    languageFamily.PhonemeTable = phonemeTableData;
+    languageFamily.SetProtoLanguageOnGeography("0", protoLanguage);
 
-    if (N_BORROW == 0)
+    if (N_LOANWORD == 0)
     {
         return std::nullopt;
     }
-    if (oldTokiPona.Words.empty())
+    if (protoLanguage.Words.empty())
     {
         return std::nullopt;
     }
     while (true)
     {
-        languageSystem.ToNextSection();
+        languageFamily.ToNextPeriod();
         // 言語の影響度を変化させる。
-        languageSystem.ChangeLanguageStrength(1.0);
+        languageFamily.ChangeLanguageStrengthRandom(1.0);
         // 借用
-        languageSystem.BollowWord(N_BORROW, 0.5);
+        languageFamily.LoanwordRandom(N_LOANWORD, 0.5);
         // 音韻変化
-        languageSystem.ChangeLanguageSound(P_SOUND_CHANGE, P_SOUND_LOSS);
+        languageFamily.PhonologicalChangeRandom(P_SOUND_CHANGE, P_SOUND_LOSS);
         // 単語の脱落と新語追加
-        languageSystem.RemoveWordRandom(P_WORD_LOSS);
-        languageSystem.CreateWord(P_WORD_BIRTH);
+        languageFamily.ObsoleteWordRandom(P_WORD_LOSS);
+        languageFamily.MakeCompoundRandom(P_WORD_BIRTH);
         // 単語の意味変化
-        languageSystem.ChangeLanguageMeaning(P_SEMANTIC_SHIFT, MAX_SEMANTIC_SHIFT_RATE);
+        languageFamily.SemanticChangeRandom(P_SEMANTIC_SHIFT, MAX_SEMANTIC_SHIFT_RATE);
         // 各位置に言語があれば終了
-        if (languageSystem.HasAllPlaceLanguage())
+        if (languageFamily.HasAllPlaceLanguage())
         {
             break;
         }
     }
     // 出力
-    languageSystem.ExportLanguageToCSV(OUTPUT_PATH);
-    languageSystem.Export(OUTPUT_PATH + ".log");
-    return languageSystem;
+    languageFamily.ExportLanguageToCSV(OUTPUT_PATH);
+    languageFamily.Export(OUTPUT_PATH + ".log");
+    return languageFamily;
 }

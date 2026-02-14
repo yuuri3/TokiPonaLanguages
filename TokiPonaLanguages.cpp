@@ -7,30 +7,30 @@ namespace
     constexpr int window_width = 96;
 
     // 世代あたりの系全体での借用回数
-    int n_borrow = 4;
+    int n_loanword = 4;
     // 1世代である言語が音韻変化を起こす確率
-    double p_sound_change = 0.3;
+    double p_phonological_change = 0.3;
     // 音韻変化を起こしたときに音素の脱落が起こる確率
-    double p_sound_loss = 0.3;
+    double p_phonological_change_loss = 0.3;
     // 1世代である言語が意味変化を起こす確率
     int p_semantic_shift = 0;
     // 意味の最大変化率
     int max_semantic_shift_rate = 0;
     // 1世代である言語の単語が脱落する確率
-    int p_word_loss = 0;
+    int p_obsolete_word = 0;
     // 1世代である言語の単語が生成される確率
-    int p_word_birth = 0;
+    int p_compound = 0;
     // 祖語ファイルパス
     std::string proto_language_path = "OldTokiPona.csv";
     // 音素表ファイルパス
     std::string phoneme_table_path = "Phonetics.csv";
     // 地理データファイルパス
-    std::string map_path = "Map.csv";
+    std::string geometry_path = "Map.csv";
     // 出力ファイルパス
     std::string output_path = "ignore\\Output.csv";
 
     // 生成した語族データ
-    std::optional<LanguageSystem> language_system;
+    std::optional<LanguageFamily> language_system;
 
     // 選択した地域名
     std::string selected_place;
@@ -151,16 +151,16 @@ WindowType DisplayWindow(WindowType type)
         {
             std::cout << "=============================================\n";
             std::cout << "> 言語変化シミュレート\n";
-            std::cout << "0 : N_BORROW                =" << n_borrow << "\n";
-            std::cout << "1 : P_SOUND_CHANGE          =" << p_sound_change << "\n";
-            std::cout << "2 : P_SOUND_LOSS            =" << p_sound_loss << "\n";
+            std::cout << "0 : N_LOANWORD              =" << n_loanword << "\n";
+            std::cout << "1 : P_PHONOLOGICAL_CHANGE   =" << p_phonological_change << "\n";
+            std::cout << "2 : P_PHONOLOGICAL_LOSS     =" << p_phonological_change_loss << "\n";
             std::cout << "3 : P_SEMANTIC_SHIFT        =" << p_semantic_shift << "\n";
             std::cout << "4 : MAX_SEMANTIC_SHIFT_RATE =" << max_semantic_shift_rate << "\n";
-            std::cout << "5 : P_WORD_LOSS             =" << p_word_loss << "\n";
-            std::cout << "6 : P_WORD_BIRTH            =" << p_word_birth << "\n";
+            std::cout << "5 : P_OBSOLETE_WORD         =" << p_obsolete_word << "\n";
+            std::cout << "6 : P_COMPOUND              =" << p_compound << "\n";
             std::cout << "7 : PROTO_LANGUAGE_PATH     =" << proto_language_path << "\n";
             std::cout << "8 : PHONEME_TABLE_PATH      =" << phoneme_table_path << "\n";
-            std::cout << "9 : MAP_PATH                =" << map_path << "\n";
+            std::cout << "9 : GEOMETRY_PATH           =" << geometry_path << "\n";
             std::cout << "10 : OUTPUT_PATH            =" << output_path << "\n";
             std::cout << "e : 実行\n";
             std::cout << "q : 戻る\n";
@@ -170,15 +170,15 @@ WindowType DisplayWindow(WindowType type)
 
             if (input == "0")
             {
-                n_borrow = std::stoi(InputParameter("N_BORROW"));
+                n_loanword = std::stoi(InputParameter("N_LOANWORD"));
             }
             else if (input == "1")
             {
-                p_sound_change = std::stod(InputParameter("P_SOUND_CHANGE"));
+                p_phonological_change = std::stod(InputParameter("P_PHONOLOGICAL_CHANGE"));
             }
             else if (input == "2")
             {
-                p_sound_loss = std::stod(InputParameter("P_SOUND_LOSS"));
+                p_phonological_change_loss = std::stod(InputParameter("P_PHONOLOGICAL_LOSS"));
             }
             else if (input == "3")
             {
@@ -190,11 +190,11 @@ WindowType DisplayWindow(WindowType type)
             }
             else if (input == "5")
             {
-                p_word_loss = std::stod(InputParameter("P_WORD_LOSS"));
+                p_obsolete_word = std::stod(InputParameter("P_OBSOLETE_WORD"));
             }
             else if (input == "6")
             {
-                p_word_birth = std::stod(InputParameter("P_WORD_BIRTH"));
+                p_compound = std::stod(InputParameter("P_COMPOUND"));
             }
             else if (input == "7")
             {
@@ -206,7 +206,7 @@ WindowType DisplayWindow(WindowType type)
             }
             else if (input == "9")
             {
-                map_path = InputParameter("MAP_PATH");
+                geometry_path = InputParameter("GEOMETRY_PATH");
             }
             else if (input == "10")
             {
@@ -228,16 +228,16 @@ WindowType DisplayWindow(WindowType type)
         std::cout << "=============================================\n";
         std::cout << "> 言語変化シミュレート > 実行\n";
         language_system = evolution(
-            n_borrow,
-            p_sound_change,
-            p_sound_loss,
+            n_loanword,
+            p_phonological_change,
+            p_phonological_change_loss,
             p_semantic_shift,
             max_semantic_shift_rate,
-            p_word_loss,
-            p_word_birth,
+            p_obsolete_word,
+            p_compound,
             proto_language_path,
             phoneme_table_path,
-            map_path,
+            geometry_path,
             output_path);
         if (language_system)
         {
@@ -261,7 +261,7 @@ WindowType DisplayWindow(WindowType type)
         std::cout << "=============================================\n";
         std::cout << "> 言語変化シミュレート > 表示\n";
 
-        const auto geometry = getNonEmptyStrings(language_system->Map);
+        const auto geometry = getNonEmptyStrings(language_system->Geography);
         DisplayMulti(geometry);
 
         std::cout << "q : 戻る\n";
@@ -304,7 +304,7 @@ WindowType DisplayWindow(WindowType type)
         std::string input;
         std::cin >> input;
 
-        language_system = LanguageSystem();
+        language_system = LanguageFamily();
         language_system->Import(input);
         language_system->ApplyDifferences(language_system->languageDifference);
 
@@ -328,7 +328,7 @@ WindowType DisplayWindow(WindowType type)
         std::cout << "=============================================\n";
         std::cout << "> ファイル選択 > 結果\n";
 
-        const auto geometry = getNonEmptyStrings(language_system->Map);
+        const auto geometry = getNonEmptyStrings(language_system->Geography);
         DisplayMulti(geometry);
 
         std::cout << "q : 戻る\n";
