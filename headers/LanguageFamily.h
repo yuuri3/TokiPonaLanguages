@@ -3,24 +3,8 @@
 #include "Utility.h"
 #include "Random.h"
 #include "Language.h"
-#include "PhoneticEnvironment.h"
+#include "PhonologicalChange.h"
 #include <string>
-
-/**
- * @brief 音韻変化
- *
- */
-struct PhonologicalChange
-{
-    // 変化前の音韻
-    Phomene BeforePhoneme;
-    // 条件
-    PhoneticEnvironment PhoneticEnvironment;
-    // 音韻が消えるか
-    bool IsRemove;
-    // 変化前の音韻
-    Phomene AfterPhoneme;
-};
 
 /**
  * @brief 語族差分タイプ
