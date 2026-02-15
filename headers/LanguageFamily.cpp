@@ -639,11 +639,25 @@ void LanguageFamily::LoanwordRandom(const int nLoanword, const double pLoanword)
                 {
                     l1.Words = l2.Words;
                     l1.Strength = l2.Strength;
+
+                    // ログ
+                    for (const auto &[wordID, word] : l2.Words)
+                    {
+                        const auto dif = LanguageDifference::CreateLoanword(it2->first, it1->first, Period, wordID, wordID);
+                        languageDifference.emplace_back(dif);
+                    }
                 }
                 else
                 {
                     l2.Words = l1.Words;
                     l2.Strength = l1.Strength;
+
+                    // ログ
+                    for (const auto &[wordID, word] : l1.Words)
+                    {
+                        const auto dif = LanguageDifference::CreateLoanword(it1->first, it2->first, Period, wordID, wordID);
+                        languageDifference.emplace_back(dif);
+                    }
                 }
                 return;
             }
@@ -947,15 +961,14 @@ void LanguageFamily::ApplyDifference(const LanguageDifference &diff)
 
     case LanguageDifferenceType::Loanword:
     {
+        if (Languages.count(diff.StringParam[0]) == 1)
         {
-            auto itSrc = Languages[diff.StringParam[0]].Words.find(diff.IntParam[0]);
-            auto itDst = Languages[diff.StringParam[1]].Words.find(diff.IntParam[1]);
-            if (itSrc != Languages[diff.StringParam[0]].Words.end() && itDst != Languages[diff.StringParam[1]].Words.end())
+            const auto referenceLanguage = Languages.at(diff.StringParam[0]);
+            if (referenceLanguage.Words.count(diff.IntParam[0]) == 1)
             {
-                // 借用：音素列をコピー
-                itDst->second.Form = itSrc->second.Form;
+                const auto referenceWord = referenceLanguage.Words.at(diff.IntParam[0]);
+                Languages[diff.StringParam[1]].Words[diff.IntParam[1]] = referenceWord;
             }
-            break;
         }
     }
 
