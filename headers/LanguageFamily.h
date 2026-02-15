@@ -2,20 +2,8 @@
 
 #include "Utility.h"
 #include "Random.h"
-#include "Word.h"
+#include "Language.h"
 #include <string>
-
-/**
- * @brief 言語
- *
- */
-struct Language
-{
-    // 影響度、大きい方から小さいほうへ単語が借用される
-    double Strength;
-    // 語彙
-    std::map<int, Word> Words;
-};
 
 /**
  * @brief 音韻変化の条件
