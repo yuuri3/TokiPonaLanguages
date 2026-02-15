@@ -14,26 +14,5 @@ Word Word::Add(const Word &word) const
     result.Form.insert(result.Form.end(), Form.begin(), Form.end());
     result.Form.insert(result.Form.end(), word.Form.begin(), word.Form.end());
 
-    result.Meanings = Meanings.Add(word.Meanings);
-    result.Meanings.Normalize();
     return result;
-}
-
-/**
- * @brief reconstructedWordを更新する
- *
- * @param protoLanguage 祖語
- */
-void Word::UpdateReconstructedWord(const Language &protoLanguage)
-{
-    double maxDot = -1.0;
-    for (const auto &[_, word] : protoLanguage.Words)
-    {
-        const double dot = Meanings.Dot(word.Meanings);
-        if (dot > maxDot)
-        {
-            maxDot = dot;
-            ReconstructedWord = word.Form;
-        }
-    }
 }

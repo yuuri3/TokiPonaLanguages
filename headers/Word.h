@@ -14,10 +14,6 @@ struct Word
 {
     // 発音
     std::vector<Phomene> Form;
-    // 意味
-    Meaning Meanings;
-    // 意味が対応する祖語の単語
-    std::vector<Phomene> ReconstructedWord;
 
     bool operator==(const Word &other) const
     {
@@ -35,5 +31,4 @@ struct Word
     }
 
     Word Add(const Word &word) const;
-    void UpdateReconstructedWord(const Language &protoLanguage);
 };

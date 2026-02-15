@@ -249,7 +249,7 @@ void LanguageFamily::PhonologicalChangeRandom(
             constexpr int MAX_CONSONANT_MANNER = 3;
 
             // 変更が発生した単語を記録する一時的なマップ（インプレース更新用）
-            std::map<int, Word> updatedWords;
+            std::map<int, WordForSimulation> updatedWords;
 
             // 1. 音韻変化の適用と音素重複チェックを同時に行う
             for (auto &[wordID, word] : language.Words)
@@ -334,7 +334,7 @@ void LanguageFamily::PhonologicalChangeRandom(
                 }
 
                 // 変化後の単語候補を一時保存
-                Word newWord = word;
+                WordForSimulation newWord = word;
                 newWord.Form = std::move(nextSounds); // 所有権を移転してコピーを回避
                 updatedWords[wordID] = std::move(newWord);
             }
@@ -399,13 +399,13 @@ void LanguageFamily::SemanticChangeRandom(
             auto it = language.Words.begin();
             std::advance(it, targetIdx);
             const auto wordID = it->first;
-            Word &targetWord = it->second;
+            WordForSimulation &targetWord = it->second;
 
             // 変化の種となる単語をもう一つ選択
             int seedIdx = getRandomInt(0, (int)language.Words.size() - 1);
             auto itSeed = language.Words.begin();
             std::advance(itSeed, seedIdx);
-            const Word &seedWord = itSeed->second;
+            const WordForSimulation &seedWord = itSeed->second;
 
             // 現在の状態を保存（ロールバック用）
             Meaning oldMeaning = targetWord.Meanings;
@@ -515,7 +515,7 @@ void exportLanguageToCSV(
 
     // 3. 祖語の単語との対応マップの作成
     // mapsReconstructedWordToWord[言語インデックス][祖語の音素列] -> 該当する単語リスト
-    std::vector<std::map<std::vector<Phomene>, std::vector<const Word *>>> mapsReconstructedWordToWord;
+    std::vector<std::map<std::vector<Phomene>, std::vector<const WordForSimulation *>>> mapsReconstructedWordToWord;
     mapsReconstructedWordToWord.resize(langPtrList.size());
     for (size_t i = 0; i < langPtrList.size(); ++i)
     {
@@ -672,7 +672,7 @@ void LanguageFamily::LoanwordRandom(const int nLoanword, const double pLoanword)
                 if (getRandomInt(0, 1) != 0)
                     continue;
 
-                const Word *bestSourceWord = nullptr;
+                const WordForSimulation *bestSourceWord = nullptr;
                 int bestSourceWordID = -1;
                 double maxDot = -1.0;
 
@@ -974,7 +974,7 @@ void LanguageFamily::ApplyDifference(const LanguageDifference &diff)
 
     case LanguageDifferenceType::AddCompound:
     {
-        Word newWord;
+        WordForSimulation newWord;
         bool first = true;
         // IntParam[2]以降に合成元の単語IDリストが格納されている
         for (size_t i = 1; i < diff.IntParam.size(); ++i)
