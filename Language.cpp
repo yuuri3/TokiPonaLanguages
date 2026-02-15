@@ -114,6 +114,11 @@ namespace
     }
 }
 
+/**
+ * @brief 意味ベクトルの加算
+ *
+ * @param mean 可算する意味ベクトル
+ */
 Meaning Meaning::Add(const Meaning &meaning) const
 {
     Meaning result = *this;
@@ -124,6 +129,11 @@ Meaning Meaning::Add(const Meaning &meaning) const
     return result;
 }
 
+/**
+ * @brief 意味ベクトルの内積
+ *
+ * @param meaning 掛ける意味ベクトル
+ */
 double Meaning::Dot(const Meaning &meaning) const
 {
     double result = 0.0;
@@ -140,6 +150,11 @@ double Meaning::Dot(const Meaning &meaning) const
     return result;
 }
 
+/**
+ * @brief 実数倍
+ *
+ * @param scalar 掛ける実数
+ */
 Meaning Meaning::Product(const double scalar) const
 {
     Meaning result = *this;
@@ -150,6 +165,10 @@ Meaning Meaning::Product(const double scalar) const
     return result;
 }
 
+/**
+ * @brief 正規化
+ *
+ */
 void Meaning::Normalize()
 {
     const double dotSelf = Dot(*this);
@@ -164,7 +183,12 @@ void Meaning::Normalize()
     }
 }
 
-// Word::Add: 音素の連結時の再確保を抑制
+/**
+ * @brief 複合語を生成
+ *
+ * @param word 単語
+ * @return 複合語
+ */
 Word Word::Add(const Word &word) const
 {
     Word result;
@@ -177,6 +201,11 @@ Word Word::Add(const Word &word) const
     return result;
 }
 
+/**
+ * @brief reconstructedWordを更新する
+ *
+ * @param protoLanguage 祖語
+ */
 void Word::UpdateReconstructedWord(const Language &protoLanguage)
 {
     double maxDot = -1.0;
@@ -191,6 +220,15 @@ void Word::UpdateReconstructedWord(const Language &protoLanguage)
     }
 }
 
+/**
+ * @brief Create a Add 単語 object
+ *
+ * @param ID 言語ID
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param wordForm 語形
+ * @return LanguageDifference
+ */
 LanguageDifference LanguageDifference::CreateAddWord(const std::string &ID, const int period, const int wordID, const std::string &wordForm)
 {
     LanguageDifference result;
@@ -202,6 +240,14 @@ LanguageDifference LanguageDifference::CreateAddWord(const std::string &ID, cons
     return result;
 }
 
+/**
+ * @brief Change 言語 影響度
+ *
+ * @param ID 言語ID
+ * @param period 時代
+ * @param strength 影響度
+ * @return LanguageDifference
+ */
 LanguageDifference LanguageDifference::CreateChangeStrength(const std::string &ID, const int period, const double strength)
 {
     LanguageDifference result;
@@ -212,6 +258,15 @@ LanguageDifference LanguageDifference::CreateChangeStrength(const std::string &I
     return result;
 }
 
+/**
+ * @brief Change 言語 音韻
+ *
+ * @param ID 言語ID
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param phonologicalChange 音韻変化
+ * @return LanguageDifference
+ */
 LanguageDifference LanguageDifference::CreatePhonologicalChange(const std::string &ID, const int period, const int wordID, const PhonologicalChange phonologicalChange)
 {
     LanguageDifference result;
@@ -223,6 +278,15 @@ LanguageDifference LanguageDifference::CreatePhonologicalChange(const std::strin
     return result;
 }
 
+/**
+ * @brief Change 単語の意味
+ *
+ * @param ID 言語ID
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param meaning 意味変化
+ * @return LanguageDifference
+ */
 LanguageDifference LanguageDifference::CreateSemanticChange(const std::string &ID, const int period, const int wordID, const Meaning meaning)
 {
     LanguageDifference result;
@@ -234,6 +298,16 @@ LanguageDifference LanguageDifference::CreateSemanticChange(const std::string &I
     return result;
 }
 
+/**
+ * @brief 借用
+ *
+ * @param ID1 借用元言語ID
+ * @param ID2 借用先言語ID
+ * @param period 時代
+ * @param wordID1 借用元単語ID
+ * @param wordID2 借用先単語ID
+ * @return LanguageDifference
+ */
 LanguageDifference LanguageDifference::CreateLoanword(const std::string &ID1, const std::string &ID2, const int period, const int wordID1, const int wordID2)
 {
     LanguageDifference result;
@@ -246,6 +320,15 @@ LanguageDifference LanguageDifference::CreateLoanword(const std::string &ID1, co
     return result;
 }
 
+/**
+ * @brief 複合語
+ *
+ * @param ID 言語ID
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param wordIDs 参照単語ID
+ * @return LanguageDifference
+ */
 LanguageDifference LanguageDifference::CreateAddCompound(const std::string &ID, const int period, const int wordID, const std::vector<int> wordIDs)
 {
     LanguageDifference result;
@@ -257,6 +340,14 @@ LanguageDifference LanguageDifference::CreateAddCompound(const std::string &ID, 
     return result;
 }
 
+/**
+ * @brief 単語削除
+ *
+ * @param ID 言語ID
+ * @param period 時代
+ * @param wordID 単語ID
+ * @return LanguageDifference
+ */
 LanguageDifference LanguageDifference::CreateObsoleteWord(const std::string &ID, const int period, const int wordID)
 {
     LanguageDifference result;
@@ -285,6 +376,11 @@ PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::str
     return result;
 }
 
+/**
+ * 文字列を変換表に基づいて音素列に変換する
+ * @param str 文字列
+ * @param table 音素表
+ */
 std::vector<Phomene> PhonemeConverter::ConvertToPhoneme(const std::string &str)
 {
     std::vector<Phomene> output;
@@ -315,6 +411,12 @@ std::vector<Phomene> PhonemeConverter::ConvertToPhoneme(const std::string &str)
     return output;
 }
 
+/**
+ * @brief 文字列の配列を言語に変換する
+ * @param strs 文字列の配列
+ * @param table 音素表
+ * @return 言語
+ */
 Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &strs)
 {
     Language result;
@@ -359,6 +461,11 @@ std::map<std::string, Language> setProtoLanguageOnMap(
     return result;
 }
 
+/**
+ * 地図データの特定の位置に祖語を配置する
+ * @param startPlace 祖語を配置する位置
+ * @param protoLanguage 祖語
+ */
 void LanguageFamily::SetProtoLanguageOnGeography(
     const std::string &startPlace,
     const Language &protoLanguage)
@@ -374,6 +481,12 @@ void LanguageFamily::SetProtoLanguageOnGeography(
     }
 }
 
+/**
+ * @brief Get the 単語 object
+ *
+ * @param place 位置
+ * @return std::vector<std::string>
+ */
 std::vector<std::string> LanguageFamily::GetWords(std::string place)
 {
     if (Languages.count(place) == 0)
@@ -389,6 +502,11 @@ std::vector<std::string> LanguageFamily::GetWords(std::string place)
     return result;
 }
 
+/**
+ * 音素列を変換表に基づいて文字列に復元する
+ * @param Phonemes 音素列
+ * @param table 音素表
+ */
 std::string convertToString(const std::vector<Phomene> &phonemes, const std::vector<std::vector<std::string>> &table)
 {
     std::string result = "";
@@ -413,6 +531,15 @@ std::string convertToString(const std::vector<Phomene> &phonemes, const std::vec
     return result;
 }
 
+/**
+ * 音変化
+ * @param pPhonologicalChange 音韻変化確率
+ * @param pSoundLoss 音素脱落確率
+ * @param isProhibitMinimalPair ミニマルペアを禁止するか
+ * @param isSoundDuplication 音素の重複を禁止するか
+ *
+ * @note ある言語の単語を一斉に変化させる。
+ */
 void LanguageFamily::PhonologicalChangeRandom(
     const double pPhonologicalChange,
     const double pSoundLoss,
@@ -563,6 +690,14 @@ void LanguageFamily::PhonologicalChangeRandom(
     }
 }
 
+/**
+ * @brief 意味変化
+ *
+ * @param pSemanticShift 意味変化確率
+ * @param maxChangeRate 意味変化大きさ
+ *
+ * @note 単語１つの意味を変化させる
+ */
 void LanguageFamily::SemanticChangeRandom(
     const double pSemanticShift,
     const double maxSemanticShiftRate)
@@ -629,6 +764,13 @@ void LanguageFamily::SemanticChangeRandom(
     }
 }
 
+/**
+ * 変化規則をランダムに生成
+ * @param beforePlace 変化前音素
+ * @param beforeMannar 変化前音素
+ * @param table 音素表
+ * @param pRemovePhoneme 音が脱落する確率
+ */
 PhonologicalChange makepPhonologicalChangeRandom(const Phomene &beforePhon, const std::vector<std::vector<std::string>> &table, const double pRemoveSound)
 {
     int position = getRandomInt(0, 2);
@@ -774,11 +916,23 @@ void exportLanguageToCSV(
     file.close();
 }
 
+/**
+ * Language構造体のリストをCSVに出力する
+ * @param filename 出力ファイル名
+ */
 void LanguageFamily::ExportLanguageToCSV(const std::string &filename)
 {
     exportLanguageToCSV(ProtoLanguage, Languages, PhonemeTable, filename);
 }
 
+/**
+ * 単語を借用
+ *
+ * @param nLoanword 借用回数
+ * @param pLoanword 借用率
+ *
+ * @note 借用の履歴をlanguageに記録
+ */
 void LanguageFamily::LoanwordRandom(const int nLoanword, const double pLoanword)
 {
     const auto mapAdjacentData = getAdjacencies(Geography);
@@ -861,6 +1015,11 @@ void LanguageFamily::LoanwordRandom(const int nLoanword, const double pLoanword)
     }
 }
 
+/**
+ * @brief 音素表から、音素をランダムに1つ選択する
+ * @param table 音素表
+ * @return 音素
+ */
 Phomene getRandomSoundFromTable(const std::vector<std::vector<std::string>> &table)
 {
     // 1. 空ではないセルの「座標」をリストに貯める
@@ -888,6 +1047,11 @@ Phomene getRandomSoundFromTable(const std::vector<std::vector<std::string>> &tab
     return pool[getRandomInt(0, pool.size() - 1)];
 }
 
+/**
+ * @brief 言語から、音素をランダムに1つ選択する
+ * @param language 言語
+ * @return 音素
+ */
 Phomene getRandomSoundFromLanguage(Language &language)
 {
     if (language.Words.empty())
@@ -899,6 +1063,11 @@ Phomene getRandomSoundFromLanguage(Language &language)
     return language.Words[index1].Form[index2];
 }
 
+/**
+ * @brief 言語の影響度をランダムに変化させる
+ *
+ * @param pChangeStrength 変化率
+ */
 void LanguageFamily::ChangeLanguageStrengthRandom(const double pChangeStrength)
 {
     for (auto &[ID, language] : Languages)
@@ -914,6 +1083,11 @@ void LanguageFamily::ChangeLanguageStrengthRandom(const double pChangeStrength)
     }
 }
 
+/**
+ * @brief 言語からランダムに単語を消去する
+ *
+ * @param pWordLoss 単語消去率
+ */
 void LanguageFamily::ObsoleteWordRandom(const double pWordLoss)
 {
     for (auto &[ID, language] : Languages)
@@ -950,6 +1124,11 @@ void LanguageFamily::ObsoleteWordRandom(const double pWordLoss)
     }
 }
 
+/**
+ * @brief 言語に単語を追加する
+ *
+ * @param pWordBirth 単語追加律
+ */
 void LanguageFamily::MakeCompoundRandom(const double pWordBirth)
 {
     for (auto &[ID, language] : Languages)
@@ -979,6 +1158,12 @@ void LanguageFamily::MakeCompoundRandom(const double pWordBirth)
     }
 }
 
+/**
+ * @brief 各地に言語があるか
+ *
+ * @return true
+ * @return false
+ */
 bool LanguageFamily::HasAllPlaceLanguage()
 {
     const auto activePlaces = getNonEmptyStrings(Geography);
@@ -994,12 +1179,20 @@ bool LanguageFamily::HasAllPlaceLanguage()
     return true;
 }
 
+/**
+ * @brief 時代を進める
+ *
+ */
 void LanguageFamily::ToNextPeriod()
 {
     Period++;
 }
 
-// 単一の差分を適用する
+/**
+ * @brief 差分を適用
+ *
+ * @param diff 差分
+ */
 void LanguageFamily::ApplyDifference(const LanguageDifference &diff)
 {
     const auto places = getNonEmptyStrings(Geography);
@@ -1114,7 +1307,11 @@ void LanguageFamily::ApplyDifference(const LanguageDifference &diff)
     }
 }
 
-// 大量の差分を高速に適用する（IDマッピングをキャッシュ）
+/**
+ * @brief 差分を複数適用
+ *
+ * @param diffs 差分
+ */
 void LanguageFamily::ApplyDifferences(const std::vector<LanguageDifference> &diffs)
 {
     for (const auto &diff : diffs)
@@ -1123,6 +1320,10 @@ void LanguageFamily::ApplyDifferences(const std::vector<LanguageDifference> &dif
     }
 }
 
+/**
+ * @brief 差分をファイル出力
+ *
+ */
 void LanguageFamily::Export(const std::string &filename)
 {
     std::ofstream file(filename);
@@ -1191,6 +1392,11 @@ void LanguageFamily::Export(const std::string &filename)
     }
 }
 
+/**
+ * @brief ファイル読み込み
+ *
+ * @param filename ファイルパス
+ */
 void LanguageFamily::Import(const std::string &filename)
 {
     std::ifstream file(filename);
