@@ -3,21 +3,8 @@
 #include "Utility.h"
 #include "Random.h"
 #include "Language.h"
+#include "PhoneticEnvironment.h"
 #include <string>
-
-/**
- * @brief 音韻変化の条件
- *
- */
-enum PhoneticEnvironment
-{
-    // 語頭
-    Start,
-    // 語中
-    Middle,
-    // 語尾
-    End
-};
 
 /**
  * @brief 音韻変化
