@@ -31,7 +31,27 @@ void WordForSimulation::UpdateReconstructedWord(const Language &protoLanguage)
         if (dot > maxDot)
         {
             maxDot = dot;
-            ReconstructedWord = word.Form;
+            ReconstructedWord = word.Word_.Form;
         }
     }
+}
+
+/**
+ * @brief Form を返す
+ *
+ * @return std::vector<Phomene>& Form
+ */
+std::vector<Phomene> &WordForSimulation::GetForm()
+{
+    return Word_.Form;
+}
+
+/**
+ * @brief Form を返す
+ *
+ * @return std::vector<Phomene>& Form
+ */
+std::vector<Phomene> WordForSimulation::GetForm() const
+{
+    return Word_.Form;
 }
