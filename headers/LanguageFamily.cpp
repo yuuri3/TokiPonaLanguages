@@ -57,6 +57,18 @@ namespace
         return ss.str();
     }
 
+    // 前後のスペースを除去。 スペースのみのセルは空文字列とする。
+    std::string EraseSpace(std::string str)
+    {
+        size_t first = str.find_first_not_of(" ");
+        size_t last = str.find_last_not_of(" ");
+
+        if (first != std::string::npos)
+            return str.substr(first, (last - first + 1));
+        else
+            return "";
+    }
+
     // YAMLの [a, b, c] 形式を vector<string> に変換する
     std::vector<std::string> parseYamlList(const std::string &line)
     {
@@ -71,10 +83,7 @@ namespace
         std::string item;
         while (std::getline(ss, item, ','))
         {
-            size_t first = item.find_first_not_of(" ");
-            size_t last = item.find_last_not_of(" ");
-            if (first != std::string::npos)
-                result.push_back(item.substr(first, (last - first + 1)));
+            result.push_back(EraseSpace(item));
         }
         return result;
     }
