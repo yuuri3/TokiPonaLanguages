@@ -47,3 +47,28 @@ TokiPonaLanguages.cpp ファイルのコンパイルと実行を行う。
 
 ## test.bat
 テスト用.batファイル
+
+## 用語
+| 用語             | 英訳                 | 補足              |
+| ---------------- | -------------------- | ----------------- |
+| 音素             | phoneme              |                   |
+| 音韻変化         | phonological change  |                   |
+| 調音方法         | manner               |                   |
+| 調音部位         | place                |                   |
+| 単語             | word                 |                   |
+| 語形             | form                 | OTM-JSON 形式対応 |
+| 意味             | translation          | OTM-JSON 形式対応 |
+| 祖語             | proto language       |                   |
+| 祖形             | reconstructed word   |                   |
+| 言語             | language             |                   |
+| 影響度           | strength             |                   |
+| 音環境           | phonetic environment |                   |
+| 差分             | difference           |                   |
+| 意味変化         | semantic change      |                   |
+| 借用語           | loanword             |                   |
+| 複合語           | compound             |                   |
+| 死語             | obsolete word        |                   |
+| 時代             | period               |                   |
+| 地理             | geography            |                   |
+| 語族             | language family      |                   |
+| シミュレーション | simulation           |                   |
