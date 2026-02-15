@@ -152,10 +152,11 @@ void LanguageFamily::SetProtoLanguageOnGeography(
     ProtoLanguage = protoLanguage;
 
     // ログ
+    PhonemeConverter converter = PhonemeConverter::Create(PhonemeTable);
     languageDifference.emplace_back(LanguageDifference::CreateChangeStrength(startPlace, Period, protoLanguage.Strength));
     for (const auto &[ID, word] : protoLanguage.Words)
     {
-        languageDifference.emplace_back(LanguageDifference::CreateAddWord(startPlace, Period, ID, convertToString(word.Form, PhonemeTable)));
+        languageDifference.emplace_back(LanguageDifference::CreateAddWord(startPlace, Period, ID, converter.ConvertToString(word.Form)));
     }
 }
 
@@ -173,9 +174,10 @@ std::vector<std::string> LanguageFamily::GetWords(std::string place)
     }
     const auto language = Languages[place];
     std::vector<std::string> result;
+    PhonemeConverter converter = PhonemeConverter::Create(PhonemeTable);
     for (const auto &[_, word] : language.Words)
     {
-        result.emplace_back(convertToString(word.Form, PhonemeTable));
+        result.emplace_back(converter.ConvertToString(word.Form));
     }
     return result;
 }
@@ -185,23 +187,17 @@ std::vector<std::string> LanguageFamily::GetWords(std::string place)
  * @param Phonemes 音素列
  * @param table 音素表
  */
-std::string convertToString(const std::vector<Phomene> &phonemes, const std::vector<std::vector<std::string>> &table)
+std::string PhonemeConverter::ConvertToString(const std::vector<Phomene> &phonemes)
 {
     std::string result = "";
 
-    // 数列は {行, 列} のペアなので、2ステップずつ進める
-    for (size_t i = 0; i < phonemes.size(); i++)
+    for (const auto &phoneme : phonemes)
     {
-        int row = phonemes[i].Manner;
-        int col = phonemes[i].Place;
-
-        // 範囲外アクセスを防ぐためのチェック
-        if (row >= 0 && row < (int)table.size())
+        for (const auto &[keyString, valuePhoneme] : Map)
         {
-            if (col >= 0 && col < (int)table[row].size())
+            if (phoneme == valuePhoneme)
             {
-                // 変換表から該当する文字列を取得して連結
-                result += table[row][col];
+                result += keyString;
             }
         }
     }
@@ -493,7 +489,8 @@ void exportLanguageToCSV(
         auto it = stringCache.find(s);
         if (it != stringCache.end())
             return it->second;
-        return stringCache[s] = convertToString(s, table); //
+        PhonemeConverter converter = PhonemeConverter::Create(table);
+        return stringCache[s] = converter.ConvertToString(s); //
     };
 
     // 2. ヘッダー行 (Place) の出力と、Languageポインタのキャッシュ

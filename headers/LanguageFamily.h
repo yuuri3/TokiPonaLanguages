@@ -49,7 +49,6 @@ struct LanguageFamily
     void Import(const std::string &filename);
 };
 
-std::string convertToString(const std::vector<Phomene> &Phonemes, const std::vector<std::vector<std::string>> &table);
 PhonologicalChange makepPhonologicalChangeRandom(const Phomene &beforePhoneme, const std::vector<std::vector<std::string>> &table, const double pRemovePhoneme);
 Phomene getRandomSoundFromTable(const std::vector<std::vector<std::string>> &table);
 Phomene getRandomSoundFromLanguage(Language &language);

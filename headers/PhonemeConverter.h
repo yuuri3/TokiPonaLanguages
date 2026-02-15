@@ -12,5 +12,6 @@ struct PhonemeConverter
     PhonemeConverter static Create(const std::vector<std::vector<std::string>> &table);
 
     std::vector<Phomene> ConvertToPhoneme(const std::string &str);
+    std::string ConvertToString(const std::vector<Phomene> &Phonemes);
     Language convertToLanguage(const std::vector<std::string> &strs);
 };
