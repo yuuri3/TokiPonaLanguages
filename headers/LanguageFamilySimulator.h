@@ -1,0 +1,52 @@
+#pragma once
+
+#include "Utility.h"
+#include "Random.h"
+#include "PhonemeConverter.h"
+#include "LanguageDifference.h"
+#include "LanguageFamily.h"
+
+/**
+ * @brief 語族の時間発展をシミュレート
+ *
+ */
+struct LanguageFamilySimulator
+{
+    // 語族
+    LanguageFamily LanguageFamily_;
+    // 時代
+    int Period = 0;
+    // 地理と言語の対応（シミュレーション用）
+    std::map<std::string, Language> Languages;
+    // 祖語（シミュレーション用）
+    Language ProtoLanguage;
+
+    void SetProtoLanguageOnGeography(
+        const std::string &startPlace,
+        const Language &protoLanguage);
+    std::vector<std::string> GetWords(std::string place);
+    void PhonologicalChangeRandom(
+        const double pPhonologicalChange,
+        const double pSoundLoss,
+        const bool isProhibitMinimalPair = true,
+        const bool isSoundDuplication = true);
+    void SemanticChangeRandom(
+        const double pSemanticShift,
+        const double maxSemanticShiftRate);
+    void LoanwordRandom(const int nLoanword, const double pLoanword);
+    void ChangeLanguageStrengthRandom(const double pChangeStrength);
+    void ObsoleteWordRandom(const double pWordLoss);
+    void MakeCompoundRandom(const double pWordBirth);
+    void ExportLanguageToCSV(const std::string &filename);
+    bool HasAllPlaceLanguage();
+    void ToNextPeriod();
+    void SetLanguageFamily(LanguageFamily languageFamily);
+
+private:
+    void ApplyDifference(const LanguageDifference &diff);
+    void ApplyDifferences(const std::vector<LanguageDifference> &diffs);
+};
+
+PhonologicalChange makepPhonologicalChangeRandom(const Phomene &beforePhoneme, const std::vector<std::vector<std::string>> &table, const double pRemovePhoneme);
+Phomene getRandomSoundFromTable(const std::vector<std::vector<std::string>> &table);
+Phomene getRandomSoundFromLanguage(Language &language);
