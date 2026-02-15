@@ -30,7 +30,7 @@ namespace
     std::string output_path = "ignore\\Output.csv";
 
     // 生成した語族データ
-    std::optional<LanguageFamily> language_system;
+    std::optional<LanguageFamilySimulator> simulator;
 
     // 選択した地域名
     std::string selected_place;
@@ -227,7 +227,7 @@ WindowType DisplayWindow(WindowType type)
     {
         std::cout << "=============================================\n";
         std::cout << "> 言語変化シミュレート > 実行\n";
-        language_system = evolution(
+        simulator = evolution(
             n_loanword,
             p_phonological_change,
             p_phonological_change_loss,
@@ -239,7 +239,7 @@ WindowType DisplayWindow(WindowType type)
             phoneme_table_path,
             geometry_path,
             output_path);
-        if (language_system)
+        if (simulator)
         {
             std::cout << "シミュレート完了\n";
             std::cout << "任意のキーを押してください\n";
@@ -261,7 +261,7 @@ WindowType DisplayWindow(WindowType type)
         std::cout << "=============================================\n";
         std::cout << "> 言語変化シミュレート > 表示\n";
 
-        const auto geometry = getNonEmptyStrings(language_system->Geography);
+        const auto geometry = getNonEmptyStrings(simulator->LanguageFamily_.Geography);
         DisplayMulti(geometry);
 
         std::cout << "q : 戻る\n";
@@ -283,7 +283,7 @@ WindowType DisplayWindow(WindowType type)
         std::cout << "=============================================\n";
         std::cout << "> 言語変化シミュレート > 表示 > 個別言語\n";
 
-        const auto words = language_system->GetWords(selected_place);
+        const auto words = simulator->GetWords(selected_place);
         DisplayMulti(words);
 
         std::cout << "q : 戻る\n";
@@ -304,13 +304,11 @@ WindowType DisplayWindow(WindowType type)
         std::string input;
         std::cin >> input;
 
-        language_system = LanguageFamily();
-        language_system->Import(input);
-        language_system->ApplyDifferences(language_system->languageDifference);
+        LanguageFamily languageFamily;
+        languageFamily.Import(input);
+        simulator->SetLanguageFamily(languageFamily);
 
-        language_system->Export("ignore/test.log");
-
-        if (language_system)
+        if (simulator)
         {
             return WindowType::SellectFileDisplay;
         }
@@ -328,7 +326,7 @@ WindowType DisplayWindow(WindowType type)
         std::cout << "=============================================\n";
         std::cout << "> ファイル選択 > 結果\n";
 
-        const auto geometry = getNonEmptyStrings(language_system->Geography);
+        const auto geometry = getNonEmptyStrings(simulator->LanguageFamily_.Geography);
         DisplayMulti(geometry);
 
         std::cout << "q : 戻る\n";
@@ -350,7 +348,7 @@ WindowType DisplayWindow(WindowType type)
         std::cout << "=============================================\n";
         std::cout << "> ファイル選択 > 結果 > 個別言語\n";
 
-        const auto words = language_system->GetWords(selected_place);
+        const auto words = simulator->GetWords(selected_place);
         DisplayMulti(words);
 
         std::cout << "q : 戻る\n";
