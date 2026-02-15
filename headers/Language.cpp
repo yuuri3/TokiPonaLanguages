@@ -1,13 +1,11 @@
 #include "Language.h"
 #include <fstream>
-#include <cmath>
 #include <set>
 #include <sstream>
 #include <iomanip>
 
 namespace
 {
-    double TOLERANCE = 1.0e-6;
 
     // ヘルパー：vectorの中身を文字列に変換
     template <typename T>
@@ -111,75 +109,6 @@ namespace
         trim(second);
 
         return {first, second};
-    }
-}
-
-/**
- * @brief 意味ベクトルの加算
- *
- * @param mean 可算する意味ベクトル
- */
-Meaning Meaning::Add(const Meaning &meaning) const
-{
-    Meaning result = *this;
-    for (const auto &[key, value] : meaning)
-    {
-        result[key] += value;
-    }
-    return result;
-}
-
-/**
- * @brief 意味ベクトルの内積
- *
- * @param meaning 掛ける意味ベクトル
- */
-double Meaning::Dot(const Meaning &meaning) const
-{
-    double result = 0.0;
-
-    for (const auto &[key, value] : meaning)
-    {
-        auto it = find(key);
-        if (it != end())
-        {
-            result += value * it->second;
-        }
-    }
-
-    return result;
-}
-
-/**
- * @brief 実数倍
- *
- * @param scalar 掛ける実数
- */
-Meaning Meaning::Product(const double scalar) const
-{
-    Meaning result = *this;
-    for (auto &[key, value] : result)
-    {
-        value *= scalar;
-    }
-    return result;
-}
-
-/**
- * @brief 正規化
- *
- */
-void Meaning::Normalize()
-{
-    const double dotSelf = Dot(*this);
-    if (dotSelf <= TOLERANCE * TOLERANCE) // sqrtの前に判定
-    {
-        return;
-    }
-    const double invNorm = 1.0 / std::sqrt(dotSelf);
-    for (auto &[key, value] : *this)
-    {
-        value *= invNorm;
     }
 }
 
