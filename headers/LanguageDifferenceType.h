@@ -9,34 +9,34 @@ enum class LanguageDifferenceType
     // int 単語ID
     // string 語形
     // Meaning 意味
-    AddWord,
+    AddWord = 0,
     // 影響度変化
     // string 地理
     // double 影響度
-    ChangeStrength,
+    ChangeStrength = 1,
     // 音韻変化
     // string 地理
     // int 単語ID
     // PhonologicalChange 音韻変化
-    PhonologicalChange,
+    PhonologicalChange = 2,
     // 意味変化
     // string 地理
     // int 単語ID
     // Meaning 意味変化
-    SemanticChange,
+    SemanticChange = 3,
     // 借用
     // string 地理
     // int 借用元単語ID
     // string 地理
     // int 借用先単語ID
-    Loanword,
+    Loanword = 4,
     // 複合語
     // string 地理
     // int 単語ID
     // int... 参照単語ID
-    AddCompound,
+    AddCompound = 5,
     // 死語
     // string 地理
     // int 単語ID
-    ObsoleteWord
+    ObsoleteWord = 6
 };
