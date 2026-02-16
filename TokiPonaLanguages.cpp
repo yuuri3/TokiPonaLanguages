@@ -21,11 +21,11 @@ namespace
     // 1世代である言語の単語が生成される確率
     int p_compound = 0;
     // 祖語ファイルパス
-    std::string proto_language_path = "OldTokiPona.csv";
+    std::string proto_language_path = "ProtoLanguage.csv";
     // 音素表ファイルパス
-    std::string phoneme_table_path = "Phonetics.csv";
+    std::string phoneme_table_path = "Phoneme.csv";
     // 地理データファイルパス
-    std::string geometry_path = "Map.csv";
+    std::string geometry_path = "Geometry.csv";
     // 出力ファイルパス
     std::string output_path = "ignore\\Output.csv";
 
