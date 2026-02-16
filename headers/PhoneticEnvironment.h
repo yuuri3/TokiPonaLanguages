@@ -5,9 +5,9 @@
 enum PhoneticEnvironment
 {
     // 語頭
-    Start,
+    Start = 0,
     // 語中
-    Middle,
+    Middle = 1,
     // 語尾
-    End
+    End = 2
 };
