@@ -24,14 +24,14 @@ WordForSimulation WordForSimulation::Add(const WordForSimulation &word) const
  */
 void WordForSimulation::UpdateReconstructedWord(const Language &protoLanguage)
 {
-    double maxDot = -1.0;
-    for (const auto &[_, word] : protoLanguage.Words)
+    double maxMeaningDot = -1.0;
+    for (const auto &[_, reconstructedWord] : protoLanguage.Words)
     {
-        const double dot = Meanings.Dot(word.Meanings);
-        if (dot > maxDot)
+        const double meaningDot = Meanings.Dot(reconstructedWord.Meanings);
+        if (meaningDot > maxMeaningDot)
         {
-            maxDot = dot;
-            ReconstructedWord = word.Word_.Form;
+            maxMeaningDot = meaningDot;
+            ReconstructedWord = reconstructedWord.Word_.Form;
         }
     }
 }

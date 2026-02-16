@@ -23,11 +23,11 @@ namespace
     // 前後のスペースを除去。 スペースのみのセルは空文字列とする。
     std::string EraseSpace(std::string str)
     {
-        size_t first = str.find_first_not_of(" ");
-        size_t last = str.find_last_not_of(" ");
+        size_t firstNoSpacePosotion = str.find_first_not_of(" ");
+        size_t lastNoSpacePosition = str.find_last_not_of(" ");
 
-        if (first != std::string::npos)
-            return str.substr(first, (last - first + 1));
+        if (firstNoSpacePosotion != std::string::npos)
+            return str.substr(firstNoSpacePosotion, (lastNoSpacePosition - firstNoSpacePosotion + 1));
         else
             return "";
     }
@@ -36,12 +36,12 @@ namespace
     std::vector<std::string> parseYamlList(const std::string &line)
     {
         std::vector<std::string> result;
-        size_t start = line.find('[');
-        size_t end = line.find(']');
-        if (start == std::string::npos || end == std::string::npos)
+        size_t openingParenthesisPosition = line.find('[');
+        size_t closingParenthesisPosition = line.find(']');
+        if (openingParenthesisPosition == std::string::npos || closingParenthesisPosition == std::string::npos)
             return result;
 
-        std::string content = line.substr(start + 1, end - start - 1);
+        std::string content = line.substr(openingParenthesisPosition + 1, closingParenthesisPosition - openingParenthesisPosition - 1);
         std::stringstream ss(content);
         std::string item;
         while (std::getline(ss, item, ','))
@@ -57,30 +57,16 @@ namespace
      */
     std::pair<std::string, std::string> splitByColon(const std::string &line)
     {
-        size_t pos = line.find(':');
-        if (pos == std::string::npos)
+        size_t colonPosition = line.find(':');
+        if (colonPosition == std::string::npos)
         {
             return {line, ""};
         }
 
-        std::string first = line.substr(0, pos);
-        std::string second = line.substr(pos + 1);
+        std::string firstItem = line.substr(0, colonPosition);
+        std::string secondItem = line.substr(colonPosition + 1);
 
-        // 必要に応じて前後の空白を削除（トリミング）
-        auto trim = [](std::string &s)
-        {
-            size_t f = s.find_first_not_of(" ");
-            size_t l = s.find_last_not_of(" \r\n\t");
-            if (f == std::string::npos)
-                s = "";
-            else
-                s = s.substr(f, l - f + 1);
-        };
-
-        trim(first);
-        trim(second);
-
-        return {first, second};
+        return {EraseSpace(firstItem), EraseSpace(secondItem)};
     }
 }
 
@@ -144,6 +130,8 @@ void LanguageFamily::Export(const std::string &filename)
             file << "        Value: " << pair.second << "\n";
         }
     }
+
+    file.close();
 }
 
 /**
@@ -178,7 +166,7 @@ void LanguageFamily::Import(const std::string &filename)
     Mode mode;
     SubMode subMode;
     LanguageDifference dif;
-    bool b = false;
+    bool isDifferenceSection = false;
 
     std::string line;
     while (std::getline(file, line))
@@ -212,24 +200,24 @@ void LanguageFamily::Import(const std::string &filename)
         }
         else if (mode == Mode::LanguageDifferences_)
         {
-            auto [key, value] = splitByColon(line);
-            if (key == "- Section")
+            auto [memberName, memberValue] = splitByColon(line);
+            if (memberName == "- Section")
             {
-                if (b)
+                if (isDifferenceSection)
                 {
                     languageDifference.emplace_back(dif);
                     dif = LanguageDifference();
                 }
                 else
                 {
-                    b = true;
+                    isDifferenceSection = true;
                 }
-                dif.Period = std::stoi(value);
+                dif.Period = std::stoi(memberValue);
                 continue;
             }
-            else if (key == "Type")
+            else if (memberName == "Type")
             {
-                dif.Type = static_cast<LanguageDifferenceType>(std::stoi(value));
+                dif.Type = static_cast<LanguageDifferenceType>(std::stoi(memberValue));
                 continue;
             }
             else if (line == "    IntParam:")
@@ -251,27 +239,27 @@ void LanguageFamily::Import(const std::string &filename)
             {
                 std::getline(file, line); // Before:
                 std::getline(file, line); // Place:
-                std::tie(key, value) = splitByColon(line);
-                const int beforePlace = std::stoi(value);
+                std::tie(memberName, memberValue) = splitByColon(line);
+                const int beforePlace = std::stoi(memberValue);
                 std::getline(file, line); // Manner:
-                std::tie(key, value) = splitByColon(line);
-                const int beforeManner = std::stoi(value);
+                std::tie(memberName, memberValue) = splitByColon(line);
+                const int beforeManner = std::stoi(memberValue);
 
                 std::getline(file, line); // After:
                 std::getline(file, line); // Place:
-                std::tie(key, value) = splitByColon(line);
-                const int afterPlace = std::stoi(value);
+                std::tie(memberName, memberValue) = splitByColon(line);
+                const int afterPlace = std::stoi(memberValue);
                 std::getline(file, line); // Manner:
-                std::tie(key, value) = splitByColon(line);
-                const int afterManner = std::stoi(value);
+                std::tie(memberName, memberValue) = splitByColon(line);
+                const int afterManner = std::stoi(memberValue);
 
                 std::getline(file, line); // Condition:
-                std::tie(key, value) = splitByColon(line);
-                const auto phoneticEnvironment = static_cast<PhoneticEnvironment>(std::stoi(value));
+                std::tie(memberName, memberValue) = splitByColon(line);
+                const auto phoneticEnvironment = static_cast<PhoneticEnvironment>(std::stoi(memberValue));
 
                 std::getline(file, line); // IsRemove:
-                std::tie(key, value) = splitByColon(line);
-                const bool isRemove = static_cast<bool>(std::stoi(value));
+                std::tie(memberName, memberValue) = splitByColon(line);
+                const bool isRemove = static_cast<bool>(std::stoi(memberValue));
 
                 dif.PhonologicalChanges.BeforePhoneme.Place = beforePlace;
                 dif.PhonologicalChanges.BeforePhoneme.Manner = beforeManner;
@@ -302,10 +290,10 @@ void LanguageFamily::Import(const std::string &filename)
             else if (subMode == SubMode::SemanticChange_)
             {
                 std::getline(file, line);
-                const auto [_1, key2] = splitByColon(line);
+                const auto [_, SemanticChangeKey] = splitByColon(line);
                 std::getline(file, line);
-                const auto [_2, value2] = splitByColon(line);
-                dif.SemanticChange[key2] = std::stod(value2);
+                const auto [__, SemanticChangeValue] = splitByColon(line);
+                dif.SemanticChange[SemanticChangeKey] = std::stod(SemanticChangeValue);
             }
         }
     }

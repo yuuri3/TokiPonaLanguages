@@ -1,67 +1,65 @@
 #include "PhonemeConverter.h"
 
-PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::string>> &table)
+PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::string>> &phonemeTable)
 {
-    PhonemeConverter result;
+    PhonemeConverter converter;
 
-    for (int r = 0; r < (int)table.size(); ++r)
+    for (int row = 0; row < (int)phonemeTable.size(); ++row)
     {
-        for (int c = 0; c < (int)table[r].size(); ++c)
+        for (int column = 0; column < (int)phonemeTable[row].size(); ++column)
         {
-            const std::string &token = table[r][c];
-            Phomene p;
-            p.Manner = r;
-            p.Place = c;
-            result.Map[token] = p;
+            const std::string &item = phonemeTable[row][column];
+            Phomene phoneme;
+            phoneme.Manner = row;
+            phoneme.Place = column;
+            converter.PhonemeMap[item] = phoneme;
         }
     }
-    return result;
+    return converter;
 }
 
 /**
  * 文字列を変換表に基づいて音素列に変換する
  * @param str 文字列
- * @param table 音素表
  */
 std::vector<Phomene> PhonemeConverter::ConvertToPhoneme(const std::string &str)
 {
-    std::vector<Phomene> output;
-    output.reserve(str.length());
+    std::vector<Phomene> convertedPhoneme;
+    convertedPhoneme.reserve(str.length());
 
-    for (size_t i = 0; i < str.length();)
+    for (size_t charPosition = 0; charPosition < str.length();)
     {
-        bool matched = false;
+        bool isMatch = false;
         // 最長一致を優先（最大長が既知ならその値から開始）
-        for (size_t len = 2; len > 0; --len)
+        for (size_t phonemeCharCount = 2; phonemeCharCount > 0; --phonemeCharCount)
         {
-            if (i + len <= str.length())
+            if (charPosition + phonemeCharCount <= str.length())
             {
-                std::string sub = str.substr(i, len);
-                auto it = Map.find(sub);
-                if (it != Map.end())
+                std::string PhonemeStr = str.substr(charPosition, phonemeCharCount);
+                auto it = PhonemeMap.find(PhonemeStr);
+                if (it != PhonemeMap.end())
                 {
-                    output.push_back(it->second);
-                    i += len;
-                    matched = true;
+                    convertedPhoneme.push_back(it->second);
+                    charPosition += phonemeCharCount;
+                    isMatch = true;
                     break;
                 }
             }
         }
-        if (!matched)
-            i++;
+        if (!isMatch)
+            charPosition++;
     }
-    return output;
+    return convertedPhoneme;
 }
 
 /**
  * @brief 文字列の配列を言語に変換する
  * @param strs 文字列の配列
- * @param table 音素表
  * @return 言語
  */
 Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &strs)
 {
-    Language result;
+    Language convertedLanguage;
     int wordID = 0;
     for (const auto &str : strs)
     {
@@ -69,9 +67,9 @@ Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &str
         word.GetForm() = ConvertToPhoneme(str);
         word.Meanings[str] = 1.0;
         word.ReconstructedWord = word.GetForm();
-        result.Words[wordID] = word;
+        convertedLanguage.Words[wordID] = word;
         wordID++;
     }
-    result.Strength = 0.0;
-    return result;
+    convertedLanguage.Strength = 0.0;
+    return convertedLanguage;
 }

@@ -24,8 +24,7 @@ int getRandomInt(int min, int max)
     // [min, max] の範囲で一様分布させる設定
     std::uniform_int_distribution<int> dist(min, max);
 
-    auto hoge = dist(gen);
-    return hoge;
+    return dist(gen);
 }
 
 /**
