@@ -1,6 +1,7 @@
 #include "LanguageFamilySimulator.h"
 #include <iostream>
 #include <map>
+#include <optional>
 
 #include <iostream>
 

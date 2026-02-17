@@ -1,5 +1,5 @@
-#include "WordForSimulation.h"
-#include "Language.h"
+#include "..\\include\WordForSimulation.h"
+#include "..\\include\Language.h"
 
 /**
  * @brief 複合語を生成

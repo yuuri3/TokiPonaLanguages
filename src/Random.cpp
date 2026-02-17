@@ -1,11 +1,12 @@
-#include "Random.h"
+#include "..\\include\Random.h"
+#include <chrono>
 #include <random>
 #include <algorithm>
 
 namespace
 {
-    static std::random_device rd;
-    static std::mt19937 gen(rd() + std::rand());
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed);
 }
 
 /**

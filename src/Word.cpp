@@ -1,5 +1,5 @@
-#include "Word.h"
-#include "Language.h"
+#include "..\\include\Word.h"
+#include "..\\include\Language.h"
 
 /**
  * @brief 複合語を生成

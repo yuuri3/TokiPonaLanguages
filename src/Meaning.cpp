@@ -1,4 +1,4 @@
-#include "Meaning.h"
+#include "..\\include\Meaning.h"
 #include <cmath>
 
 namespace

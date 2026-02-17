@@ -1,4 +1,4 @@
-#include "LanguageFamilySimulator.h"
+#include "..\\include\LanguageFamilySimulator.h"
 #include <set>
 #include <fstream>
 #include <sstream>

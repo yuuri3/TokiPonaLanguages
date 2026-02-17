@@ -1,4 +1,4 @@
-#include "LanguageDifference.h"
+#include "..\\include\LanguageDifference.h"
 
 /**
  * @brief Create a Add 単語 object
