@@ -306,7 +306,8 @@ WindowType DisplayWindow(WindowType type)
 
         LanguageFamily languageFamily;
         languageFamily.Import(input);
-        simulator->SetLanguageFamily(languageFamily);
+        languageFamily.Export("ignore/test.log");
+        simulator = LanguageFamilySimulator::Create(languageFamily);
 
         if (simulator)
         {

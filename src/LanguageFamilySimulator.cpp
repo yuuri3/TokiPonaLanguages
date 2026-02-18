@@ -897,6 +897,7 @@ void LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
                 Languages[diff.StringParam[1]].Words[diff.IntParam[1]] = referenceWord;
             }
         }
+        break;
     }
 
     case LanguageDifferenceType::AddCompound:
@@ -938,16 +939,18 @@ void LanguageFamilySimulator::ApplyDifferences(const std::vector<LanguageDiffere
 }
 
 /**
- * @brief 語族をセットする。差分情報の適用も同時にしておく
+ * @brief インスタンス生成
  *
  * @param languageFamily 語族
  */
-void LanguageFamilySimulator::SetLanguageFamily(LanguageFamily languageFamily)
+std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create(LanguageFamily languageFamily)
 {
-    LanguageFamily_ = languageFamily;
-    Period = 0;
-    Languages.clear();
-    ProtoLanguage = Language();
+    LanguageFamilySimulator simulator;
+    simulator.LanguageFamily_ = languageFamily;
+    simulator.Period = 0;
+    simulator.Languages.clear();
+    simulator.ProtoLanguage = Language();
 
-    ApplyDifferences(languageFamily.languageDifference);
+    simulator.ApplyDifferences(languageFamily.languageDifference);
+    return simulator;
 }
