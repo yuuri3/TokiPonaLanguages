@@ -817,8 +817,10 @@ void LanguageFamilySimulator::ToNextPeriod()
  * @brief 差分を適用
  *
  * @param diff 差分
+ *
+ * @return 成否
  */
-void LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
+bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
 {
     const auto places = getNonEmptyStrings(LanguageFamily_.Geography);
     PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable);
@@ -827,6 +829,10 @@ void LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
     {
     case LanguageDifferenceType::AddWord:
     {
+        if (diff.IntParam.size() < 1 || diff.StringParam.size() < 2)
+        {
+            return false;
+        }
         Languages[diff.StringParam[0]].Words[diff.IntParam[0]].GetForm() = converter.ConvertToPhoneme(diff.StringParam[1]);
         Languages[diff.StringParam[0]].Words[diff.IntParam[0]].Meanings = diff.SemanticChange;
         break;
@@ -834,17 +840,30 @@ void LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
 
     case LanguageDifferenceType::ChangeStrength:
     {
+        if (diff.DoubleParam.size() < 1 || diff.StringParam.size() < 1)
+        {
+            return false;
+        }
         Languages[diff.StringParam[0]].Strength = diff.DoubleParam[0];
         break;
     }
 
     case LanguageDifferenceType::PhonologicalChange:
     {
+        if (diff.IntParam.size() < 1 || diff.StringParam.size() < 1)
+        {
+            return false;
+        }
         auto targetWordIterator = Languages[diff.StringParam[0]].Words.find(diff.IntParam[0]);
         if (targetWordIterator != Languages[diff.StringParam[0]].Words.end())
         {
             // 音韻変化を適用（インプレース更新）
             const auto &phonologicalChange = diff.PhonologicalChanges;
+            auto converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable);
+            if (converter.ConvertToString({phonologicalChange.BeforePhoneme}) == "" || converter.ConvertToString({phonologicalChange.AfterPhoneme}) == "")
+            {
+                return false;
+            }
             std::vector<Phomene> changedWordForm;
             changedWordForm.reserve(targetWordIterator->second.GetForm().size());
 
@@ -877,6 +896,10 @@ void LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
 
     case LanguageDifferenceType::SemanticChange:
     {
+        if (diff.IntParam.size() < 1 || diff.StringParam.size() < 1)
+        {
+            return false;
+        }
         auto targetWordIterator = Languages[diff.StringParam[0]].Words.find(diff.IntParam[0]);
         if (targetWordIterator != Languages[diff.StringParam[0]].Words.end())
         {
@@ -888,6 +911,10 @@ void LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
 
     case LanguageDifferenceType::Loanword:
     {
+        if (diff.IntParam.size() < 2 || diff.StringParam.size() < 2)
+        {
+            return false;
+        }
         if (Languages.count(diff.StringParam[0]) == 1)
         {
             const auto referenceLanguage = Languages.at(diff.StringParam[0]);
@@ -902,6 +929,10 @@ void LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
 
     case LanguageDifferenceType::AddCompound:
     {
+        if (diff.IntParam.size() < 2 || diff.StringParam.size() < 1)
+        {
+            return false;
+        }
         WordForSimulation compound;
         // IntParam[1]以降に合成元の単語IDリストが格納されている
         for (size_t i = 1; i < diff.IntParam.size(); ++i)
@@ -919,23 +950,39 @@ void LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
 
     case LanguageDifferenceType::ObsoleteWord:
     {
+        if (diff.IntParam.size() < 1 || diff.StringParam.size() < 1)
+        {
+            return false;
+        }
         Languages[diff.StringParam[0]].Words.erase(diff.IntParam[0]);
         break;
     }
+
+    default:
+    {
+        return false;
     }
+    }
+    return true;
 }
 
 /**
  * @brief 差分を複数適用
  *
  * @param diffs 差分
+ *
+ * @return 成否
  */
-void LanguageFamilySimulator::ApplyDifferences(const std::vector<LanguageDifference> &diffs)
+bool LanguageFamilySimulator::ApplyDifferences(const std::vector<LanguageDifference> &diffs)
 {
     for (const auto &diff : diffs)
     {
-        ApplyDifference(diff);
+        if (!ApplyDifference(diff))
+        {
+            return false;
+        }
     }
+    return true;
 }
 
 /**
@@ -951,6 +998,9 @@ std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create(LanguageF
     simulator.Languages.clear();
     simulator.ProtoLanguage = Language();
 
-    simulator.ApplyDifferences(languageFamily.languageDifference);
+    if (!simulator.ApplyDifferences(languageFamily.languageDifference))
+    {
+        return std::nullopt;
+    }
     return simulator;
 }

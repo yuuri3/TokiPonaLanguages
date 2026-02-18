@@ -19,5 +19,5 @@ struct LanguageFamily
     std::vector<LanguageDifference> languageDifference;
 
     void Export(const std::string &filename);
-    void Import(const std::string &filename);
+    bool Import(const std::string &filename);
 };

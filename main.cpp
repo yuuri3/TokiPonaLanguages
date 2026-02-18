@@ -304,12 +304,15 @@ WindowType DisplayWindow(WindowType type)
         std::string input;
         std::cin >> input;
 
+        bool hasImport = true;
         LanguageFamily languageFamily;
-        languageFamily.Import(input);
-        languageFamily.Export("ignore/test.log");
+        if (!languageFamily.Import(input))
+        {
+            hasImport = false;
+        }
         simulator = LanguageFamilySimulator::Create(languageFamily);
 
-        if (simulator)
+        if (simulator && hasImport)
         {
             return WindowType::SellectFileDisplay;
         }

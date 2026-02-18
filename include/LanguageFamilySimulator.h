@@ -44,8 +44,8 @@ struct LanguageFamilySimulator
     void ToNextPeriod();
 
 private:
-    void ApplyDifference(const LanguageDifference &diff);
-    void ApplyDifferences(const std::vector<LanguageDifference> &diffs);
+    bool ApplyDifference(const LanguageDifference &diff);
+    bool ApplyDifferences(const std::vector<LanguageDifference> &diffs);
 };
 
 PhonologicalChange makepPhonologicalChangeRandom(const Phomene &beforePhoneme, const std::vector<std::vector<std::string>> &table, const double pRemovePhoneme);
