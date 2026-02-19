@@ -1,4 +1,4 @@
-# うなぎエディタ(仮称) Ver. 0.1
+# うなぎエディタ(仮称) Ver. 0.1.1
 
 ## 1 機能概要
 
@@ -35,6 +35,9 @@ Unagi Conlang Editor（うなぎエディタ）は
    pacman -S mingw-w64-ucrt-x86_64-gcc \
           mingw-w64-ucrt-x86_64-cmake \
           mingw-w64-ucrt-x86_64-ninja \
+          mingw-w64-ucrt-x86_64-gdb
+          mingw-w64-ucrt-x86_64-qt6-base \
+          mingw-w64-ucrt-x86_64-qt6-tools \
           mingw-w64-ucrt-x86_64-gdb
    ```
 5. ignore,build フォルダを作っておく
