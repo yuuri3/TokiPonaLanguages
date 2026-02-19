@@ -5,6 +5,7 @@
 #include "PhonemeConverter.h"
 #include "LanguageDifference.h"
 #include "LanguageFamily.h"
+#include <optional>
 
 /**
  * @brief 語族の時間発展をシミュレート
@@ -21,6 +22,7 @@ struct LanguageFamilySimulator
     // 祖語（シミュレーション用）
     Language ProtoLanguage;
 
+    static std::optional<LanguageFamilySimulator> Create(LanguageFamily languageFamily);
     void SetProtoLanguageOnGeography(
         const std::string &startPlace,
         const Language &protoLanguage);
@@ -40,11 +42,10 @@ struct LanguageFamilySimulator
     void ExportLanguageToCSV(const std::string &filename);
     bool HasAllPlaceLanguage();
     void ToNextPeriod();
-    void SetLanguageFamily(LanguageFamily languageFamily);
 
 private:
-    void ApplyDifference(const LanguageDifference &diff);
-    void ApplyDifferences(const std::vector<LanguageDifference> &diffs);
+    bool ApplyDifference(const LanguageDifference &diff);
+    bool ApplyDifferences(const std::vector<LanguageDifference> &diffs);
 };
 
 PhonologicalChange makepPhonologicalChangeRandom(const Phomene &beforePhoneme, const std::vector<std::vector<std::string>> &table, const double pRemovePhoneme);

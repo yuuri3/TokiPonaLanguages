@@ -1,11 +1,12 @@
-#include "Random.h"
+#include "..\\include\Random.h"
+#include <chrono>
 #include <random>
 #include <algorithm>
 
 namespace
 {
-    static std::random_device rd;
-    static std::mt19937 gen(rd() + std::rand());
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed);
 }
 
 /**
@@ -24,8 +25,7 @@ int getRandomInt(int min, int max)
     // [min, max] の範囲で一様分布させる設定
     std::uniform_int_distribution<int> dist(min, max);
 
-    auto hoge = dist(gen);
-    return hoge;
+    return dist(gen);
 }
 
 /**

@@ -1,4 +1,4 @@
-#include "Meaning.h"
+#include "..\\include\Meaning.h"
 #include <cmath>
 
 namespace
@@ -9,7 +9,7 @@ namespace
 /**
  * @brief 意味ベクトルの加算
  *
- * @param mean 可算する意味ベクトル
+ * @param meaning 可算する意味ベクトル
  */
 Meaning Meaning::Add(const Meaning &meaning) const
 {
@@ -63,14 +63,14 @@ Meaning Meaning::Product(const double scalar) const
  */
 void Meaning::Normalize()
 {
-    const double dotSelf = Dot(*this);
-    if (dotSelf <= TOLERANCE * TOLERANCE) // sqrtの前に判定
+    const double square = Dot(*this);
+    if (square <= TOLERANCE * TOLERANCE) // sqrtの前に判定
     {
         return;
     }
-    const double invNorm = 1.0 / std::sqrt(dotSelf);
+    const double inverseNorm = 1.0 / std::sqrt(square);
     for (auto &[key, value] : *this)
     {
-        value *= invNorm;
+        value *= inverseNorm;
     }
 }

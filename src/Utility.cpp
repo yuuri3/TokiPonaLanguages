@@ -1,4 +1,4 @@
-#include "Utility.h"
+#include "..\\include\Utility.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -55,14 +55,14 @@ bool writeCSV(const std::string &filename, const std::vector<std::vector<std::st
         return false;
     }
 
-    for (size_t i = 0; i < data.size(); ++i)
+    for (size_t row = 0; row < data.size(); ++row)
     {
-        for (size_t j = 0; j < data[i].size(); ++j)
+        for (size_t column = 0; column < data[row].size(); ++column)
         {
-            file << data[i][j];
+            file << data[row][column];
 
             // 最後の列以外にはカンマを挿入する
-            if (j < data[i].size() - 1)
+            if (column < data[row].size() - 1)
             {
                 file << ",";
             }
@@ -84,25 +84,25 @@ std::vector<std::pair<std::string, std::string>> getAdjacencies(const std::vecto
 {
     std::vector<std::pair<std::string, std::string>> edges;
 
-    for (size_t r = 0; r < data.size(); ++r)
+    for (size_t row = 0; row < data.size(); ++row)
     {
-        for (size_t c = 0; c < data[r].size(); ++c)
+        for (size_t column = 0; column < data[row].size(); ++column)
         {
             // 空文字列はスルー
-            if (data[r][c].empty())
+            if (data[row][column].empty())
             {
                 continue;
             }
             // 1. 横方向の隣接（右隣があるかチェック）
-            if (c + 1 < data[r].size() && !data[r][c + 1].empty())
+            if (column + 1 < data[row].size() && !data[row][column + 1].empty())
             {
-                edges.push_back({data[r][c], data[r][c + 1]});
+                edges.push_back({data[row][column], data[row][column + 1]});
             }
 
             // 2. 縦方向の隣接（一つ下の行に同じ列があるかチェック）
-            if (r + 1 < data.size() && c < data[r + 1].size() && !data[r + 1][c].empty())
+            if (row + 1 < data.size() && column < data[row + 1].size() && !data[row + 1][column].empty())
             {
-                edges.push_back({data[r][c], data[r + 1][c]});
+                edges.push_back({data[row][column], data[row + 1][column]});
             }
         }
     }

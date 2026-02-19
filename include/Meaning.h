@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 
 /**
  * @brief 意味ベクトル

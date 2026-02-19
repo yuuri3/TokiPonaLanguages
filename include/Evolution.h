@@ -1,26 +1,27 @@
 #include "LanguageFamilySimulator.h"
 #include <iostream>
 #include <map>
+#include <optional>
 
 #include <iostream>
 
 std::optional<LanguageFamilySimulator> evolution(
-    const int N_LOANWORD,
-    const double P_SOUND_CHANGE,
-    const double P_SOUND_LOSS,
-    const double P_SEMANTIC_SHIFT,
-    const double MAX_SEMANTIC_SHIFT_RATE,
-    const double P_WORD_LOSS,
-    const double P_WORD_BIRTH,
-    const std::string &PROTO_LANGUAGE_PATH,
-    const std::string &PHONEME_TABLE_PATH,
-    const std::string &GEOGRAPHY_PATH,
-    const std::string &OUTPUT_PATH)
+    const int nLoanword,
+    const double pPhonologicalChange,
+    const double pSoundLoss,
+    const double pSemanticShift,
+    const double maxSemanticShiftRate,
+    const double pObsoleteWord,
+    const double pCompound,
+    const std::string &protoLanguagePath,
+    const std::string &phonemeTablePath,
+    const std::string &geographyPath,
+    const std::string &outputPath)
 {
     // ファイル読み込み
-    const auto protoLanguageData = readCSV(PROTO_LANGUAGE_PATH);
-    const auto phonemeTableData = readCSV(PHONEME_TABLE_PATH);
-    const auto geographyData = readCSV(GEOGRAPHY_PATH);
+    const auto protoLanguageData = readCSV(protoLanguagePath);
+    const auto phonemeTableData = readCSV(phonemeTablePath);
+    const auto geographyData = readCSV(geographyPath);
 
     // データ準備
     if (protoLanguageData.empty() || phonemeTableData.empty() || geographyData.empty())
@@ -36,7 +37,7 @@ std::optional<LanguageFamilySimulator> evolution(
     simulator.LanguageFamily_.PhonemeTable = phonemeTableData;
     simulator.SetProtoLanguageOnGeography("0", protoLanguage);
 
-    if (N_LOANWORD == 0)
+    if (nLoanword == 0)
     {
         return std::nullopt;
     }
@@ -50,14 +51,14 @@ std::optional<LanguageFamilySimulator> evolution(
         // 言語の影響度を変化させる。
         simulator.ChangeLanguageStrengthRandom(1.0);
         // 借用
-        simulator.LoanwordRandom(N_LOANWORD, 0.5);
+        simulator.LoanwordRandom(nLoanword, 0.5);
         // 音韻変化
-        simulator.PhonologicalChangeRandom(P_SOUND_CHANGE, P_SOUND_LOSS);
+        simulator.PhonologicalChangeRandom(pPhonologicalChange, pSoundLoss);
         // 単語の脱落と新語追加
-        simulator.ObsoleteWordRandom(P_WORD_LOSS);
-        simulator.MakeCompoundRandom(P_WORD_BIRTH);
+        simulator.ObsoleteWordRandom(pObsoleteWord);
+        simulator.MakeCompoundRandom(pCompound);
         // 単語の意味変化
-        simulator.SemanticChangeRandom(P_SEMANTIC_SHIFT, MAX_SEMANTIC_SHIFT_RATE);
+        simulator.SemanticChangeRandom(pSemanticShift, maxSemanticShiftRate);
         // 各位置に言語があれば終了
         if (simulator.HasAllPlaceLanguage())
         {
@@ -65,7 +66,7 @@ std::optional<LanguageFamilySimulator> evolution(
         }
     }
     // 出力
-    simulator.ExportLanguageToCSV(OUTPUT_PATH);
-    simulator.LanguageFamily_.Export(OUTPUT_PATH + ".log");
+    simulator.ExportLanguageToCSV(outputPath);
+    simulator.LanguageFamily_.Export(outputPath + ".log");
     return simulator;
 }
