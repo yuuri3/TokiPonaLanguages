@@ -1,3 +1,12 @@
+# src/CMakeLists.txt
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+
+# ヘッダーファイルもリストに含める
 add_library(src
   SHARED
     LanguageDifference.cpp
@@ -9,8 +18,12 @@ add_library(src
     Utility.cpp
     Word.cpp
     WordForSimulation.cpp
+    MainWindow.cpp
+    ../include/MainWindow.h  # <--- これを追加！
   )
 
 target_include_directories(src
   PUBLIC C:/TokiLanguages/include
   )
+
+target_link_libraries(src PUBLIC Qt6::Widgets)
