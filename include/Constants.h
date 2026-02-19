@@ -4,5 +4,5 @@
 
 namespace MyConst
 {
-    QString Name = "うなぎエディタ Ver. 0.1";
+    QString Name = "うなぎエディタ Ver. 0.1.1";
 }
