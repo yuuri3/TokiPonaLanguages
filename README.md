@@ -36,6 +36,9 @@ Unagi Conlang Editor（うなぎエディタ）は
           mingw-w64-ucrt-x86_64-cmake \
           mingw-w64-ucrt-x86_64-ninja \
           mingw-w64-ucrt-x86_64-gdb
+          mingw-w64-ucrt-x86_64-qt6-base \
+          mingw-w64-ucrt-x86_64-qt6-tools \
+          mingw-w64-ucrt-x86_64-gdb
    ```
 5. ignore,build フォルダを作っておく
 6. CMake を用いてビルド
