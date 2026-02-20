@@ -29,6 +29,10 @@ UnimplementedDialog::UnimplementedDialog(QWidget *parent)
     this->setFixedSize(sizeHint());
 }
 
+/**
+ * @brief OKボタンクリック時イベント
+ *
+ */
 void UnimplementedDialog::OkButtonClicked()
 {
     this->close();

@@ -408,134 +408,6 @@ PhonologicalChange makepPhonologicalChangeRandom(const Phomene &beforePhon, cons
     return randomPhonologicalChange;
 }
 
-void exportLanguageToCSV(
-    Language &protoLanguage,
-    const std::map<std::string, Language> &languages,
-    const std::vector<std::vector<std::string>> &phonemeTable,
-    const std::string &filename)
-{
-    std::ofstream file(filename.c_str());
-    if (!file.is_open())
-        return;
-
-    // 1. 文字列変換の結果をキャッシュするマップ (高速化の肝)
-    std::map<std::vector<Phomene>, std::string> convertCache;
-    auto getCachedString = [&](const std::vector<Phomene> &s) -> const std::string &
-    {
-        auto iterator = convertCache.find(s);
-        if (iterator != convertCache.end())
-            return iterator->second;
-        PhonemeConverter converter = PhonemeConverter::Create(phonemeTable);
-        return convertCache[s] = converter.ConvertToString(s); //
-    };
-
-    // 2. ヘッダー行 (Place) の出力と、Languageポインタのキャッシュ
-    file << ",";
-    std::vector<const Language *> languagePtrList;
-    languagePtrList.reserve(languages.size());
-    for (const auto &[place, language] : languages)
-    {
-        file << place << ",";
-        languagePtrList.push_back(&language); // ループ内でのmap検索を避けるために保持
-    }
-    file << "\n";
-
-    // 3. 祖語の単語との対応マップの作成
-    // mapsReconstructedWordToWord[言語インデックス][祖語の音素列] -> 該当する単語リスト
-    std::vector<std::map<std::vector<Phomene>, std::vector<const WordForSimulation *>>> mapsReconstructedWordToWord;
-    mapsReconstructedWordToWord.resize(languagePtrList.size());
-    for (size_t i = 0; i < languagePtrList.size(); ++i)
-    {
-        for (const auto &[_, word] : languagePtrList[i]->Words)
-        {
-            mapsReconstructedWordToWord[i][word.ReconstructedWord].push_back(&word); //
-        }
-    }
-
-    // 4. 「Toki Pona」行の出力 (言語名の特定)
-    int indexToki = -1, indexPona = -1;
-    for (const auto &[wordID, word] : protoLanguage.Words)
-    {
-        std::string wordForm = getCachedString(word.GetForm());
-        if (wordForm == "toki")
-            indexToki = wordID;
-        if (wordForm == "pona")
-            indexPona = wordID;
-    }
-
-    file << "Toki Pona,";
-    if (indexToki != -1 && indexPona != -1)
-    {
-        const auto &tokiSounds = protoLanguage.Words[indexToki].GetForm();
-        const auto &ponaSounds = protoLanguage.Words[indexPona].GetForm();
-
-        for (size_t languageIndex = 0; languageIndex < languagePtrList.size(); ++languageIndex)
-        {
-            const auto &tokiList = mapsReconstructedWordToWord[languageIndex][tokiSounds];
-            const auto &ponaList = mapsReconstructedWordToWord[languageIndex][ponaSounds];
-
-            if (tokiList.empty() || ponaList.empty())
-            {
-                file << ",";
-            }
-            else
-            {
-                std::string tokiStr = getCachedString(tokiList[0]->GetForm());
-                std::string ponaStr = getCachedString(ponaList[0]->GetForm());
-                if (!tokiStr.empty())
-                    tokiStr[0] = std::toupper(tokiStr[0]);
-                if (!ponaStr.empty())
-                    ponaStr[0] = std::toupper(ponaStr[0]);
-                file << tokiStr << " " << ponaStr << ",";
-            }
-        }
-    }
-    file << "\n";
-
-    // 5. 各単語の出力
-    for (const auto &[_, reconstructedWord] : protoLanguage.Words)
-    {
-        const auto &reconstructedWordForm = reconstructedWord.GetForm();
-
-        // この祖語単語に対して、各地点で最大何個の派生語があるか確認
-        size_t maxDerivativeCount = 0;
-        for (size_t languageIndex = 0; languageIndex < languagePtrList.size(); ++languageIndex)
-        {
-            maxDerivativeCount = std::max(maxDerivativeCount, mapsReconstructedWordToWord[languageIndex][reconstructedWordForm].size());
-        }
-
-        // 派生語の数だけ行を出力
-        for (size_t row = 0; row < maxDerivativeCount; ++row)
-        {
-            if (row == 0)
-                file << getCachedString(reconstructedWordForm); // 最初の行だけ祖語を表示
-            file << ",";
-
-            for (size_t languageIndex = 0; languageIndex < languagePtrList.size(); ++languageIndex)
-            {
-                const auto &derivedWords = mapsReconstructedWordToWord[languageIndex][reconstructedWordForm];
-                if (row < derivedWords.size())
-                {
-                    file << getCachedString(derivedWords[row]->GetForm());
-                }
-                file << (languageIndex == languagePtrList.size() - 1 ? "" : ",");
-            }
-            file << "\n";
-        }
-    }
-
-    file.close();
-}
-
-/**
- * Language構造体のリストをCSVに出力する
- * @param filename 出力ファイル名
- */
-void LanguageFamilySimulator::ExportLanguageToCSV(const std::string &filename)
-{
-    exportLanguageToCSV(ProtoLanguage, Languages, LanguageFamily_.PhonemeTable, filename);
-}
-
 /**
  * 単語を借用
  *
@@ -1005,6 +877,11 @@ std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create(LanguageF
     return simulator;
 }
 
+/**
+ * @brief 文字列の配列に変換
+ *
+ * @return std::vector<std::vector<std::string>> 配列
+ */
 std::vector<std::vector<std::string>> LanguageFamilySimulator::ToString()
 {
     std::vector<std::vector<std::string>> result;

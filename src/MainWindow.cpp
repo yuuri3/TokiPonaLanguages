@@ -9,6 +9,12 @@
 
 namespace
 {
+    /**
+     * @brief 文字列の配列をウィンドウに表示
+     *
+     * @param window ウィンドウ
+     * @param data 文字列の配列
+     */
     void DisplayTable(MainWindow *window, const std::vector<std::vector<std::string>> &data)
     {
         QWidget *centralWidget = new QWidget(window);
@@ -106,12 +112,20 @@ MainWindow::~MainWindow()
 {
 }
 
+/**
+ * @brief 未実装な機能へアクセスしたときの処理
+ *
+ */
 void MainWindow::Unimplemented()
 {
     UnimplementedDialog sub(this);
     sub.exec();
 }
 
+/**
+ * @brief シミュレート
+ *
+ */
 void MainWindow::Simulate()
 {
     SimulationDialog sub(this);
@@ -123,6 +137,10 @@ void MainWindow::Simulate()
     }
 }
 
+/**
+ * @brief 語族をウィンドウに表示
+ *
+ */
 void MainWindow::DisplayLanguageFamily()
 {
     const auto table = simulator->ToString();

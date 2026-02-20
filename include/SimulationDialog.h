@@ -4,7 +4,6 @@
 #include <QDoubleSpinBox>
 #include "Evolution.h"
 
-// クラスの前方宣言（コンパイル速度向上のため）
 class QSpinBox;
 class QLineEdit;
 class QPushButton;

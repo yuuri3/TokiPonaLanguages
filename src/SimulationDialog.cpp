@@ -9,27 +9,48 @@
 
 namespace
 {
-    QSpinBox *CreateNSpin(SimulationDialog *dialog)
+    /**
+     * @brief スピンボックス作成
+     *
+     * @param dialog ダイアログ
+     * @param start 初期値
+     * @return QSpinBox*
+     */
+    QSpinBox *CreateNSpin(SimulationDialog *dialog, const int start)
     {
         QSpinBox *spin = new QSpinBox(dialog);
         spin->setRange(1, 10000);
-        spin->setValue(3);
+        spin->setValue(start);
         return spin;
     }
 
-    QDoubleSpinBox *CreatePSpin(SimulationDialog *dialog, const double startP)
+    /**
+     * @brief 数値ボックス作成
+     *
+     * @param dialog ダイアログ
+     * @param start 初期値
+     * @return QDoubleSpinBox*
+     */
+    QDoubleSpinBox *CreatePSpin(SimulationDialog *dialog, const double start)
     {
         QDoubleSpinBox *spin = new QDoubleSpinBox(dialog);
         spin->setRange(0, 1);
-        spin->setValue(startP);
+        spin->setValue(start);
         spin->setButtonSymbols(QAbstractSpinBox::NoButtons);
         return spin;
     }
 
-    QLineEdit *CreateLineEdit(SimulationDialog *dialog, const std::string startP)
+    /**
+     * @brief テキストボックス作成
+     *
+     * @param dialog ダイアログ
+     * @param start 初期値
+     * @return QLineEdit*
+     */
+    QLineEdit *CreateLineEdit(SimulationDialog *dialog, const std::string start)
     {
         QLineEdit *lineEdit = new QLineEdit(dialog);
-        lineEdit->setText(QString::fromStdString(startP));
+        lineEdit->setText(QString::fromStdString(start));
         return lineEdit;
     }
 }
@@ -44,7 +65,7 @@ SimulationDialog::SimulationDialog(QWidget *parent) : QDialog(parent)
     QFormLayout *formLayout = new QFormLayout();
 
     // 借用回数
-    nLoanwordSpin = CreateNSpin(this);
+    nLoanwordSpin = CreateNSpin(this, 3);
     formLayout->addRow("借用回数:", nLoanwordSpin);
 
     // 音韻変化率
@@ -96,11 +117,19 @@ SimulationDialog::SimulationDialog(QWidget *parent) : QDialog(parent)
     connect(runButton, &QPushButton::clicked, this, &SimulationDialog::accept);
 }
 
+/**
+ * @brief キャンセルボタンクリック時イベント
+ *
+ */
 void SimulationDialog::reject()
 {
     QDialog::reject();
 }
 
+/**
+ * @brief 実行開始ボタンクリック時イベント
+ *
+ */
 void SimulationDialog::accept()
 {
     simulator = evolution(nLoanwordSpin->value(),
@@ -124,6 +153,11 @@ void SimulationDialog::accept()
     QDialog::accept();
 }
 
+/**
+ * @brief シミュレータを取得
+ *
+ * @return std::optional<LanguageFamilySimulator>
+ */
 std::optional<LanguageFamilySimulator> SimulationDialog::GetSimulator()
 {
     return simulator;
