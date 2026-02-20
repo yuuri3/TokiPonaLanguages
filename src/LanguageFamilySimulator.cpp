@@ -899,6 +899,7 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToString()
     };
 
     // 2. ヘッダー行 (Place) の出力と、Languageポインタのキャッシュ
+    line.emplace_back("");
     std::vector<const Language *> languagePtrList;
     languagePtrList.reserve(Languages.size());
     for (const auto &[place, language] : Languages)
