@@ -17,7 +17,12 @@ private slots:
     void Unimplemented();
 
 private:
-    QPushButton *simulateButton;
-    QPushButton *newButton;
-    QPushButton *openFileButton;
+    QMenuBar *menuBar;
+
+    QMenu *fileMenu;
+    QMenu *simulationMenu;
+
+    QAction *simulateAction;
+    QAction *newFileAction;
+    QAction *openFileAction;
 };
