@@ -37,8 +37,6 @@ struct LanguageFamilySimulator
         const double maxSemanticShiftRate);
     void LoanwordRandom(const int nLoanword, const double pLoanword);
     void ChangeLanguageStrengthRandom(const double pChangeStrength);
-    void ObsoleteWordRandom(const double pWordLoss);
-    void MakeCompoundRandom(const double pWordBirth);
     bool HasAllPlaceLanguage();
     void ToNextPeriod();
     std::vector<std::vector<std::string>> ToString();

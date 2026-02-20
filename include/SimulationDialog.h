@@ -22,8 +22,6 @@ private:
     QSpinBox *nLoanwordSpin;
     QDoubleSpinBox *pPhonologicalChangeSpin;
     QDoubleSpinBox *pPhonologicalLossSpin;
-    QDoubleSpinBox *pObsoleteWordSpin;
-    QDoubleSpinBox *pCompoundSpin;
     QLineEdit *protoLanguagePath;
     QLineEdit *phonemeTablePath;
     QLineEdit *geometryPath;

@@ -11,8 +11,6 @@ std::optional<LanguageFamilySimulator> evolution(
     const double pSoundLoss,
     const double pSemanticShift,
     const double maxSemanticShiftRate,
-    const double pObsoleteWord,
-    const double pCompound,
     const std::string &protoLanguagePath,
     const std::string &phonemeTablePath,
     const std::string &geographyPath,
