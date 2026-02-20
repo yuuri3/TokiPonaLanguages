@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QMessageBox>
 
 namespace
 {
@@ -115,11 +116,10 @@ void SimulationDialog::accept()
                           "ignore/hoge.csv");
     if (!simulator)
     {
-        // エラー
-    }
-    else
-    {
-        //
+        QMessageBox::critical(
+            this,
+            "実行エラー",
+            "シミュレーションの実行に失敗しました。\nファイルパスや設定値を確認してください。");
     }
     QDialog::accept();
 }
