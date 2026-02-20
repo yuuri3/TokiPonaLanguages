@@ -1,12 +1,10 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
-
 #pragma once
 
 #include <QMainWindow>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QVBoxLayout>
+#include "LanguageFamilySimulator.h"
 
 class MainWindow : public QMainWindow
 {
@@ -17,12 +15,20 @@ public:
     virtual ~MainWindow();
 
 private slots:
-    void onRunButtonClicked();
+    void Unimplemented();
+    void Simulate();
 
 private:
-    QPushButton *simulateButton;
-    QPushButton *newButton;
-    QPushButton *openFileButton;
-};
+    QMenuBar *menuBar;
 
-#endif
+    QMenu *fileMenu;
+    QMenu *simulationMenu;
+
+    std::optional<LanguageFamilySimulator> simulator;
+
+    QAction *simulateAction;
+    QAction *newFileAction;
+    QAction *openFileAction;
+
+    void DisplayLanguageFamily();
+};

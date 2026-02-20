@@ -9,6 +9,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 # ヘッダーファイルもリストに含める
 add_library(src
   SHARED
+    Evolution.cpp
     LanguageDifference.cpp
     LanguageFamily.cpp
     LanguageFamilySimulator.cpp
@@ -19,7 +20,12 @@ add_library(src
     Word.cpp
     WordForSimulation.cpp
     MainWindow.cpp
-    ../include/MainWindow.h  # <--- これを追加！
+    UnimplementedDialog.cpp
+    SimulationDialog.cpp
+    ../include/MainWindow.h
+    ../include/UnimplementedDialog.h
+    ../include/SimulationDialog.h
+    ../include/Evolution.h
   )
 
 target_include_directories(src

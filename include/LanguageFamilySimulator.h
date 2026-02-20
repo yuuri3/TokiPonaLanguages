@@ -39,9 +39,9 @@ struct LanguageFamilySimulator
     void ChangeLanguageStrengthRandom(const double pChangeStrength);
     void ObsoleteWordRandom(const double pWordLoss);
     void MakeCompoundRandom(const double pWordBirth);
-    void ExportLanguageToCSV(const std::string &filename);
     bool HasAllPlaceLanguage();
     void ToNextPeriod();
+    std::vector<std::vector<std::string>> ToString();
 
 private:
     bool ApplyDifference(const LanguageDifference &diff);
