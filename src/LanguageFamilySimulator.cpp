@@ -28,8 +28,6 @@ namespace
             return "ChangeStrength";
         case LanguageDifferenceType::PhonologicalChange:
             return "ChangeSound";
-        case LanguageDifferenceType::SemanticChange:
-            return "ChangeMeaning";
         case LanguageDifferenceType::Loanword:
             return "BorrowWord";
         case LanguageDifferenceType::AddCompound:
@@ -295,86 +293,6 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
 }
 
 /**
- * @brief 意味変化
- *
- * @param pSemanticShift 意味変化確率
- * @param maxChangeRate 意味変化大きさ
- *
- * @note 単語１つの意味を変化させる
- */
-void LanguageFamilySimulator::SemanticChangeRandom(
-    const double pSemanticShift,
-    const double maxSemanticShiftRate)
-{
-    for (auto &[place, language] : Languages)
-    {
-        // 意味変化するかどうか
-        if (getWithProbability(pSemanticShift))
-        {
-            if (language.Words.empty())
-                return;
-
-            // 変更対象の単語をランダムに選択
-            // マップの要素にランダムアクセスするため、イテレータを進める
-            int targetWordIteratorPosition = getRandomInt(0, (int)language.Words.size() - 1);
-            auto targetWordIterator = language.Words.begin();
-            std::advance(targetWordIterator, targetWordIteratorPosition);
-            const auto wordID = targetWordIterator->first;
-            WordForSimulation &targetWord = targetWordIterator->second;
-
-            // 変化の種となる単語をもう一つ選択
-            int referenceWordIteratorPosition = getRandomInt(0, (int)language.Words.size() - 1);
-            auto referenceWordIterator = language.Words.begin();
-            std::advance(referenceWordIterator, referenceWordIteratorPosition);
-            const WordForSimulation &referenceWord = referenceWordIterator->second;
-
-            // 現在の状態を保存（ロールバック用）
-            Meaning currentTargetMeaning = targetWord.Meanings;
-            std::vector<Phomene> currentTargetReconstructedWord = targetWord.ReconstructedWord;
-
-            // 意味の変化を適用
-            double changeRate = getRandomDouble(0.0, maxSemanticShiftRate);
-            targetWord.Meanings = targetWord.Meanings.Add(referenceWord.Meanings.Product(changeRate));
-            targetWord.Meanings.Normalize();
-            targetWord.UpdateReconstructedWord(ProtoLanguage);
-
-            // 整合性チェック：すべての単語が異なる祖語に対応しているか
-            bool isSurjectiveWordToConstructedWord = false;
-            if (targetWord.ReconstructedWord == currentTargetReconstructedWord)
-            {
-                isSurjectiveWordToConstructedWord = true;
-            }
-            else
-            {
-                for (auto iterator = language.Words.begin(); iterator != language.Words.end(); ++iterator)
-                {
-                    if (iterator == targetWordIterator)
-                        continue; // 自分自身はスキップ
-                    if (iterator->second.ReconstructedWord == currentTargetReconstructedWord)
-                    {
-                        isSurjectiveWordToConstructedWord = true;
-                        break;
-                    }
-                }
-            }
-
-            // 全射でない場合は元の状態に戻す
-            if (!isSurjectiveWordToConstructedWord)
-            {
-                targetWord.Meanings = std::move(currentTargetMeaning);
-                targetWord.ReconstructedWord = std::move(currentTargetReconstructedWord);
-            }
-            else
-            {
-                // ログ
-                const auto dif = LanguageDifference::CreateSemanticChange(place, Period, wordID, referenceWord.Meanings);
-                LanguageFamily_.languageDifference.emplace_back(dif);
-            }
-        }
-    }
-}
-
-/**
  * 変化規則をランダムに生成
  * @param beforePlace 変化前音素
  * @param beforeMannar 変化前音素
@@ -631,7 +549,6 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
             return false;
         }
         Languages[diff.StringParam[0]].Words[diff.IntParam[0]].GetForm() = converter.ConvertToPhoneme(diff.StringParam[1]);
-        Languages[diff.StringParam[0]].Words[diff.IntParam[0]].Meanings = diff.SemanticChange;
         break;
     }
 
@@ -687,21 +604,6 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
                 }
             }
             targetWordIterator->second.GetForm() = std::move(changedWordForm);
-        }
-        break;
-    }
-
-    case LanguageDifferenceType::SemanticChange:
-    {
-        if (diff.IntParam.size() < 1 || diff.StringParam.size() < 1)
-        {
-            return false;
-        }
-        auto targetWordIterator = Languages[diff.StringParam[0]].Words.find(diff.IntParam[0]);
-        if (targetWordIterator != Languages[diff.StringParam[0]].Words.end())
-        {
-            targetWordIterator->second.Meanings = diff.SemanticChange;
-            targetWordIterator->second.UpdateReconstructedWord(ProtoLanguage);
         }
         break;
     }

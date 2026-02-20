@@ -127,8 +127,6 @@ void SimulationDialog::accept()
     simulator = evolution(nLoanwordSpin->value(),
                           pPhonologicalChangeSpin->value(),
                           pPhonologicalLossSpin->value(),
-                          0.0,
-                          0.0,
                           protoLanguagePath->text().toStdString(),
                           phonemeTablePath->text().toStdString(),
                           geometryPath->text().toStdString(),

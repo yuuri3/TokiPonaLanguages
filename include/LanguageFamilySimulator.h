@@ -32,9 +32,6 @@ struct LanguageFamilySimulator
         const double pSoundLoss,
         const bool isProhibitMinimalPair = true,
         const bool isSoundDuplication = true);
-    void SemanticChangeRandom(
-        const double pSemanticShift,
-        const double maxSemanticShiftRate);
     void LoanwordRandom(const int nLoanword, const double pLoanword);
     void ChangeLanguageStrengthRandom(const double pChangeStrength);
     bool HasAllPlaceLanguage();
