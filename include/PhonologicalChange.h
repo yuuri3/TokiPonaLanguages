@@ -10,11 +10,11 @@
 struct PhonologicalChange
 {
     // 変化前の音韻
-    Phomene BeforePhoneme;
+    Phoneme BeforePhoneme;
     // 条件
     PhoneticEnvironment PhoneticEnvironment;
     // 音韻が消えるか
     bool IsRemove;
     // 変化前の音韻
-    Phomene AfterPhoneme;
+    Phoneme AfterPhoneme;
 };

@@ -10,7 +10,7 @@
 struct Language
 {
     // 言語名
-    std::vector<Phomene> Name;
+    std::vector<Phoneme> Name;
     // 影響度、大きい方から小さいほうへ単語が借用される
     double Strength;
     // 語彙

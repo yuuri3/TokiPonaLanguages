@@ -9,7 +9,7 @@ PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::str
         for (int column = 0; column < (int)phonemeTable[row].size(); ++column)
         {
             const std::string &item = phonemeTable[row][column];
-            Phomene phoneme;
+            Phoneme phoneme;
             phoneme.Manner = row;
             phoneme.Place = column;
             converter.PhonemeMap[item] = phoneme;
@@ -22,9 +22,9 @@ PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::str
  * 文字列を変換表に基づいて音素列に変換する
  * @param str 文字列
  */
-std::vector<Phomene> PhonemeConverter::ConvertToPhoneme(const std::string &str)
+std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
 {
-    std::vector<Phomene> convertedPhoneme;
+    std::vector<Phoneme> convertedPhoneme;
     convertedPhoneme.reserve(str.length());
 
     for (size_t charPosition = 0; charPosition < str.length();)
