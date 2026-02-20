@@ -19,7 +19,9 @@ add_library(src
     Word.cpp
     WordForSimulation.cpp
     MainWindow.cpp
-    ../include/MainWindow.h  # <--- これを追加！
+    UnimplementedDialog.cpp
+    ../include/MainWindow.h
+    ../include/UnimplementedDialog.h
   )
 
 target_include_directories(src

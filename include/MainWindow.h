@@ -14,7 +14,7 @@ public:
     virtual ~MainWindow();
 
 private slots:
-    void onRunButtonClicked();
+    void Unimplemented();
 
 private:
     QPushButton *simulateButton;

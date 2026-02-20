@@ -1,0 +1,35 @@
+#include "UnimplementedDialog.h"
+#include "Constants.h"
+#include <QLabel>
+
+UnimplementedDialog::UnimplementedDialog(QWidget *parent)
+{
+    setWindowTitle(MyConst::Name);
+
+    QVBoxLayout *layout = new QVBoxLayout(this);
+
+    QLabel *warningText = new QLabel("機能未実装です", this);
+    layout->addWidget(warningText);
+
+    OKButton = new QPushButton("OK", this);
+    layout->addWidget(OKButton);
+    connect(OKButton, &QPushButton::clicked, this, &UnimplementedDialog::OkButtonClicked);
+
+    // レイアウト調整
+    constexpr int BUTTON_HEIGHT = 30;
+    constexpr int BUTTON_WIDTH = 90;
+    constexpr int MARGIN = 20;
+    constexpr int BUTTON_SPACE = 5;
+
+    layout->setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN);
+    layout->setSpacing(BUTTON_SPACE);
+
+    OKButton->setFixedSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+
+    this->setFixedSize(sizeHint());
+}
+
+void UnimplementedDialog::OkButtonClicked()
+{
+    this->close();
+}

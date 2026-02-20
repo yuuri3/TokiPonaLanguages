@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "Constants.h"
+#include "UnimplementedDialog.h"
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -20,14 +21,17 @@ MainWindow::MainWindow(QWidget *parent)
     // シミュレーション
     simulateButton = new QPushButton("シミュレーション", this);
     layout->addWidget(simulateButton);
+    connect(simulateButton, &QPushButton::clicked, this, &MainWindow::Unimplemented);
 
     // 新規作成
     newButton = new QPushButton("新規作成", this);
     layout->addWidget(newButton);
+    connect(newButton, &QPushButton::clicked, this, &MainWindow::Unimplemented);
 
     // ファイルを開く
     openFileButton = new QPushButton("ファイルを開く", this);
     layout->addWidget(openFileButton);
+    connect(openFileButton, &QPushButton::clicked, this, &MainWindow::Unimplemented);
 
     // レイアウト調整
     constexpr int BUTTON_HEIGHT = 30;
@@ -49,6 +53,8 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::onRunButtonClicked()
+void MainWindow::Unimplemented()
 {
+    UnimplementedDialog sub(this);
+    sub.exec();
 }
