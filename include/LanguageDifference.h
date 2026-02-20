@@ -2,8 +2,7 @@
 
 #include "LanguageDifferenceType.h"
 #include "PhonologicalChange.h"
-#include <string>
-#include <vector>
+#include "stdafx.h"
 
 /**
  * @brief 語族差分

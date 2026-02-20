@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Word.h"
-#include <map>
+#include "stdafx.h"
 
 /**
  * @brief 言語

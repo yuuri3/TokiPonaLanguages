@@ -1,9 +1,5 @@
 #include "LanguageFamilySimulator.h"
-#include <iostream>
-#include <map>
-#include <optional>
-
-#include <iostream>
+#include "stdafx.h"
 
 std::optional<LanguageFamilySimulator> evolution(
     const int nLoanword,

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Language.h"
-#include <string>
+#include "stdafx.h"
 
 /**
  * @brief 音素 <-> 表記変換

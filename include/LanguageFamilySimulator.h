@@ -5,7 +5,7 @@
 #include "PhonemeConverter.h"
 #include "LanguageDifference.h"
 #include "LanguageFamily.h"
-#include <optional>
+#include "stdafx.h"
 
 /**
  * @brief 語族の時間発展をシミュレート

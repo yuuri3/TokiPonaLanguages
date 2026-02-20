@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Phoneme.h"
-#include <vector>
-#include <map>
-#include <string>
+#include "stdafx.h"
 
 class Language;
 

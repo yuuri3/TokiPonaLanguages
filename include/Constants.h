@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QString>
+#include "stdafx.h"
 
 namespace MyConst
 {

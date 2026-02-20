@@ -1,7 +1,6 @@
 #pragma once
 
-#include <vector>
-#include <string>
+#include "stdafx.h"
 
 int getRandomInt(int min, int max);
 double getRandomDouble(double min, double max);
