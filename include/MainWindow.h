@@ -1,6 +1,3 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
-
 #pragma once
 
 #include <QMainWindow>
@@ -24,5 +21,3 @@ private:
     QPushButton *newButton;
     QPushButton *openFileButton;
 };
-
-#endif
