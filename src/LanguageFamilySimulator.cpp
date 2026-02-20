@@ -1004,3 +1004,77 @@ std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create(LanguageF
     }
     return simulator;
 }
+
+std::vector<std::vector<std::string>> LanguageFamilySimulator::ToString()
+{
+    std::vector<std::vector<std::string>> result;
+    std::vector<std::string> line;
+
+    // 1. 文字列変換の結果をキャッシュするマップ (高速化の肝)
+    std::map<std::vector<Phomene>, std::string> convertCache;
+    auto getCachedString = [&](const std::vector<Phomene> &s) -> const std::string &
+    {
+        auto iterator = convertCache.find(s);
+        if (iterator != convertCache.end())
+            return iterator->second;
+        PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable);
+        return convertCache[s] = converter.ConvertToString(s); //
+    };
+
+    // 2. ヘッダー行 (Place) の出力と、Languageポインタのキャッシュ
+    std::vector<const Language *> languagePtrList;
+    languagePtrList.reserve(Languages.size());
+    for (const auto &[place, language] : Languages)
+    {
+        line.emplace_back(place);
+        languagePtrList.push_back(&language); // ループ内でのmap検索を避けるために保持
+    }
+    result.emplace_back(line);
+    line.clear();
+
+    // 3. 祖語の単語との対応マップの作成
+    // mapsReconstructedWordToWord[言語インデックス][祖語の音素列] -> 該当する単語リスト
+    std::vector<std::map<std::vector<Phomene>, std::vector<const WordForSimulation *>>> mapsReconstructedWordToWord;
+    mapsReconstructedWordToWord.resize(languagePtrList.size());
+    for (size_t i = 0; i < languagePtrList.size(); ++i)
+    {
+        for (const auto &[_, word] : languagePtrList[i]->Words)
+        {
+            mapsReconstructedWordToWord[i][word.ReconstructedWord].push_back(&word); //
+        }
+    }
+
+    // 4. 「Toki Pona」行の出力 (言語名の特定)
+
+    // 5. 各単語の出力
+    for (const auto &[_, reconstructedWord] : ProtoLanguage.Words)
+    {
+        const auto &reconstructedWordForm = reconstructedWord.GetForm();
+
+        // この祖語単語に対して、各地点で最大何個の派生語があるか確認
+        size_t maxDerivativeCount = 0;
+        for (size_t languageIndex = 0; languageIndex < languagePtrList.size(); ++languageIndex)
+        {
+            maxDerivativeCount = std::max(maxDerivativeCount, mapsReconstructedWordToWord[languageIndex][reconstructedWordForm].size());
+        }
+
+        // 派生語の数だけ行を出力
+        for (size_t row = 0; row < maxDerivativeCount; ++row)
+        {
+            if (row == 0)
+                line.emplace_back(getCachedString(reconstructedWordForm));
+
+            for (size_t languageIndex = 0; languageIndex < languagePtrList.size(); ++languageIndex)
+            {
+                const auto &derivedWords = mapsReconstructedWordToWord[languageIndex][reconstructedWordForm];
+                if (row < derivedWords.size())
+                {
+                    line.emplace_back(getCachedString(derivedWords[row]->GetForm()));
+                }
+            }
+            result.emplace_back(line);
+            line.clear();
+        }
+    }
+    return result;
+}

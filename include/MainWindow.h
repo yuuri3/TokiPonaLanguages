@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QVBoxLayout>
+#include "LanguageFamilySimulator.h"
 
 class MainWindow : public QMainWindow
 {
@@ -15,6 +16,7 @@ public:
 
 private slots:
     void Unimplemented();
+    void Simulate();
 
 private:
     QMenuBar *menuBar;
@@ -22,7 +24,11 @@ private:
     QMenu *fileMenu;
     QMenu *simulationMenu;
 
+    std::optional<LanguageFamilySimulator> simulator;
+
     QAction *simulateAction;
     QAction *newFileAction;
     QAction *openFileAction;
+
+    void DisplayLanguageFamily();
 };

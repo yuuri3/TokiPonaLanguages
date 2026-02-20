@@ -43,6 +43,8 @@ struct LanguageFamilySimulator
     bool HasAllPlaceLanguage();
     void ToNextPeriod();
 
+    std::vector<std::vector<std::string>> ToString();
+
 private:
     bool ApplyDifference(const LanguageDifference &diff);
     bool ApplyDifferences(const std::vector<LanguageDifference> &diffs);

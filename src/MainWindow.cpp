@@ -1,7 +1,51 @@
 #include "MainWindow.h"
 #include "Constants.h"
 #include "UnimplementedDialog.h"
+#include "SimulationDialog.h"
+#include "Utility.h"
 #include <QMenuBar>
+#include <QTableWidget>
+#include <QHeaderView>
+
+namespace
+{
+    void DisplayTable(MainWindow *window, const std::vector<std::vector<std::string>> &data)
+    {
+        QWidget *centralWidget = new QWidget(window);
+        window->setCentralWidget(centralWidget);
+        QHBoxLayout *layout = new QHBoxLayout(centralWidget);
+
+        QTableWidget *table = new QTableWidget(window);
+
+        if (!data.empty())
+        {
+            int rows = data.size();
+            int cols = data[0].size();
+            table->setRowCount(rows);
+            table->setColumnCount(cols);
+
+            // 3. データの流し込み
+            for (int i = 0; i < rows; ++i)
+            {
+                for (int j = 0; j < cols; ++j)
+                {
+                    // std::string から QString へ変換してセット
+                    QString content = QString::fromStdString(data[i][j]);
+                    table->setItem(i, j, new QTableWidgetItem(content));
+                }
+            }
+        }
+
+        table->verticalHeader()->setVisible(false);
+        table->horizontalHeader()->setVisible(false);
+        table->resizeColumnsToContents();
+        table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+
+        layout->addWidget(table);
+    }
+}
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -26,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
     //     * シミュレーション
     simulateAction = new QAction("シミュレーション", this);
     simulationMenu->addAction(simulateAction);
-    connect(simulateAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+    connect(simulateAction, &QAction::triggered, this, &MainWindow::Simulate);
 
     //     * 新規作成
     newFileAction = new QAction("新規作成", this);
@@ -66,4 +110,21 @@ void MainWindow::Unimplemented()
 {
     UnimplementedDialog sub(this);
     sub.exec();
+}
+
+void MainWindow::Simulate()
+{
+    SimulationDialog sub(this);
+    sub.exec();
+    simulator = sub.GetSimulator();
+    if (simulator)
+    {
+        DisplayLanguageFamily();
+    }
+}
+
+void MainWindow::DisplayLanguageFamily()
+{
+    const auto table = simulator->ToString();
+    DisplayTable(this, table);
 }
