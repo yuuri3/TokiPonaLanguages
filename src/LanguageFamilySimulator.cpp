@@ -84,7 +84,7 @@ void LanguageFamilySimulator::SetProtoLanguageOnGeography(
     LanguageFamily_.languageDifference.emplace_back(LanguageDifference::CreateChangeStrength(startPlace, Period, protoLanguage.Strength));
     for (const auto &[wordID, word] : protoLanguage.Words)
     {
-        LanguageFamily_.languageDifference.emplace_back(LanguageDifference::CreateAddWord(startPlace, Period, wordID, converter.ConvertToString(word.GetForm())));
+        LanguageFamily_.languageDifference.emplace_back(LanguageDifference::CreateAddWord(startPlace, Period, wordID, converter.ConvertToString(word.Form)));
     }
 }
 
@@ -105,7 +105,7 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
     PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable);
     for (const auto &[_, word] : language.Words)
     {
-        words.emplace_back(converter.ConvertToString(word.GetForm()));
+        words.emplace_back(converter.ConvertToString(word.Form));
     }
     return words;
 }
@@ -168,18 +168,18 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
             constexpr int MAX_CONSONANT_MANNER = 3;
 
             // 変更が発生した単語を記録する一時的なマップ（インプレース更新用）
-            std::map<int, WordForSimulation> phonologicalChangedWords;
+            std::map<int, Word> phonologicalChangedWords;
 
             // 1. 音韻変化の適用と音素重複チェックを同時に行う
             for (auto &[wordID, word] : language.Words)
             {
                 bool isChanged = false;
                 std::vector<Phomene> changedWordForm;
-                changedWordForm.reserve(word.GetForm().size());
+                changedWordForm.reserve(word.Form.size());
 
-                for (size_t soundPosition = 0; soundPosition < word.GetForm().size(); ++soundPosition)
+                for (size_t soundPosition = 0; soundPosition < word.Form.size(); ++soundPosition)
                 {
-                    const auto &sound = word.GetForm()[soundPosition];
+                    const auto &sound = word.Form[soundPosition];
 
                     // 変化条件の判定
                     bool isSoundEqualToBeforePhoneme = (sound == randomPhonologicalChange.BeforePhoneme);
@@ -187,9 +187,9 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
                     {
                         if (randomPhonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Start && soundPosition != 0)
                             isSoundEqualToBeforePhoneme = false;
-                        else if (randomPhonologicalChange.PhoneticEnvironment == PhoneticEnvironment::End && soundPosition != word.GetForm().size() - 1)
+                        else if (randomPhonologicalChange.PhoneticEnvironment == PhoneticEnvironment::End && soundPosition != word.Form.size() - 1)
                             isSoundEqualToBeforePhoneme = false;
-                        else if (randomPhonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Middle && (soundPosition == 0 || soundPosition == word.GetForm().size() - 1))
+                        else if (randomPhonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Middle && (soundPosition == 0 || soundPosition == word.Form.size() - 1))
                             isSoundEqualToBeforePhoneme = false;
                     }
 
@@ -253,8 +253,8 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
                 }
 
                 // 変化後の単語候補を一時保存
-                WordForSimulation changedWord = word;
-                changedWord.GetForm() = std::move(changedWordForm); // 所有権を移転してコピーを回避
+                Word changedWord = word;
+                changedWord.Form = std::move(changedWordForm); // 所有権を移転してコピーを回避
                 phonologicalChangedWords[wordID] = std::move(changedWord);
             }
 
@@ -266,13 +266,13 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
                 for (const auto &[wordID, word] : language.Words)
                 {
                     auto it = phonologicalChangedWords.find(wordID);
-                    mimimalPairCount[it != phonologicalChangedWords.end() ? it->second.GetForm() : word.GetForm()]++;
+                    mimimalPairCount[it != phonologicalChangedWords.end() ? it->second.Form : word.Form]++;
                 }
 
                 // 重複が発生する変化を差し止める
                 for (auto it = phonologicalChangedWords.begin(); it != phonologicalChangedWords.end();)
                 {
-                    if (mimimalPairCount[it->second.GetForm()] > 1)
+                    if (mimimalPairCount[it->second.Form] > 1)
                         it = phonologicalChangedWords.erase(it);
                     else
                         ++it;
@@ -386,45 +386,15 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
 
             for (auto &[targetWordID, targetWord] : targetLanguage->Words)
             {
+                // 借用率は 0.5 で固定
                 if (getRandomInt(0, 1) != 0)
                     continue;
 
-                const WordForSimulation *referenceWordSameMeaning = nullptr;
-                int referenceWordSameMeaningID = -1;
-                double maxMeaningDot = -1.0;
+                targetWord = referenceLanguage->Words[targetWordID];
 
-                for (const auto &[referenceWordID, referenceWord] : referenceLanguage->Words)
-                {
-                    double meaningDot = targetWord.Meanings.Dot(referenceWord.Meanings);
-                    if (meaningDot > maxMeaningDot)
-                    {
-                        maxMeaningDot = meaningDot;
-                        referenceWordSameMeaning = &referenceWord;
-                        referenceWordSameMeaningID = referenceWordID;
-                    }
-                }
-
-                if (referenceWordSameMeaning)
-                {
-                    // 同音語チェックを最適化
-                    bool isHomophone = false;
-                    for (const auto &[targetWordID, targetWord] : targetLanguage->Words)
-                    {
-                        if (targetWord.GetForm() == referenceWordSameMeaning->GetForm())
-                        {
-                            isHomophone = true;
-                            break;
-                        }
-                    }
-                    if (!isHomophone)
-                    {
-                        targetWord.GetForm() = referenceWordSameMeaning->GetForm();
-
-                        // ログ
-                        const auto dif = LanguageDifference::CreateLoanword(referencePlace, targetPlace, Period, referenceWordSameMeaningID, targetWordID);
-                        LanguageFamily_.languageDifference.emplace_back(dif);
-                    }
-                }
+                // ログ
+                const auto dif = LanguageDifference::CreateLoanword(referencePlace, targetPlace, Period, targetWordID, targetWordID);
+                LanguageFamily_.languageDifference.emplace_back(dif);
             }
         }
     }
@@ -474,8 +444,8 @@ Phomene getRandomSoundFromLanguage(Language &language)
         return {0, 0};
     }
     const int randomWordIndex = getRandomInt(0, (int)(language.Words.size()) - 1);
-    const int PhonemeIndex = getRandomInt(0, (int)(language.Words[randomWordIndex].GetForm().size()) - 1);
-    return language.Words[randomWordIndex].GetForm()[PhonemeIndex];
+    const int PhonemeIndex = getRandomInt(0, (int)(language.Words[randomWordIndex].Form.size()) - 1);
+    return language.Words[randomWordIndex].Form[PhonemeIndex];
 }
 
 /**
@@ -548,7 +518,7 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         {
             return false;
         }
-        Languages[diff.StringParam[0]].Words[diff.IntParam[0]].GetForm() = converter.ConvertToPhoneme(diff.StringParam[1]);
+        Languages[diff.StringParam[0]].Words[diff.IntParam[0]].Form = converter.ConvertToPhoneme(diff.StringParam[1]);
         break;
     }
 
@@ -579,18 +549,18 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
                 return false;
             }
             std::vector<Phomene> changedWordForm;
-            changedWordForm.reserve(targetWordIterator->second.GetForm().size());
+            changedWordForm.reserve(targetWordIterator->second.Form.size());
 
-            for (size_t phonemePosition = 0; phonemePosition < targetWordIterator->second.GetForm().size(); ++phonemePosition)
+            for (size_t phonemePosition = 0; phonemePosition < targetWordIterator->second.Form.size(); ++phonemePosition)
             {
-                bool isEqualToBeforePhoneme = (targetWordIterator->second.GetForm()[phonemePosition] == phonologicalChange.BeforePhoneme);
+                bool isEqualToBeforePhoneme = (targetWordIterator->second.Form[phonemePosition] == phonologicalChange.BeforePhoneme);
                 if (isEqualToBeforePhoneme)
                 {
                     if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Start && phonemePosition != 0)
                         isEqualToBeforePhoneme = false;
-                    else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::End && phonemePosition != targetWordIterator->second.GetForm().size() - 1)
+                    else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::End && phonemePosition != targetWordIterator->second.Form.size() - 1)
                         isEqualToBeforePhoneme = false;
-                    else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Middle && (phonemePosition == 0 || phonemePosition == targetWordIterator->second.GetForm().size() - 1))
+                    else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Middle && (phonemePosition == 0 || phonemePosition == targetWordIterator->second.Form.size() - 1))
                         isEqualToBeforePhoneme = false;
                 }
                 if (isEqualToBeforePhoneme)
@@ -600,10 +570,10 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
                 }
                 else
                 {
-                    changedWordForm.push_back(targetWordIterator->second.GetForm()[phonemePosition]);
+                    changedWordForm.push_back(targetWordIterator->second.Form[phonemePosition]);
                 }
             }
-            targetWordIterator->second.GetForm() = std::move(changedWordForm);
+            targetWordIterator->second.Form = std::move(changedWordForm);
         }
         break;
     }
@@ -632,7 +602,7 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         {
             return false;
         }
-        WordForSimulation compound;
+        Word compound;
         // IntParam[1]以降に合成元の単語IDリストが格納されている
         for (size_t i = 1; i < diff.IntParam.size(); ++i)
         {
@@ -642,7 +612,6 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
                 compound = compound.Add(itPart->second);
             }
         }
-        compound.UpdateReconstructedWord(ProtoLanguage);
         Languages[diff.StringParam[0]].Words[diff.IntParam[0]] = std::move(compound);
         break;
     }
@@ -737,49 +706,16 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToString()
     result.emplace_back(line);
     line.clear();
 
-    // 3. 祖語の単語との対応マップの作成
-    // mapsReconstructedWordToWord[言語インデックス][祖語の音素列] -> 該当する単語リスト
-    std::vector<std::map<std::vector<Phomene>, std::vector<const WordForSimulation *>>> mapsReconstructedWordToWord;
-    mapsReconstructedWordToWord.resize(languagePtrList.size());
-    for (size_t i = 0; i < languagePtrList.size(); ++i)
-    {
-        for (const auto &[_, word] : languagePtrList[i]->Words)
-        {
-            mapsReconstructedWordToWord[i][word.ReconstructedWord].push_back(&word); //
-        }
-    }
-
-    // 4. 「Toki Pona」行の出力 (言語名の特定)
-
     // 5. 各単語の出力
-    for (const auto &[_, reconstructedWord] : ProtoLanguage.Words)
+    for (const auto &[wordID, _] : ProtoLanguage.Words)
     {
-        const auto &reconstructedWordForm = reconstructedWord.GetForm();
-
-        // この祖語単語に対して、各地点で最大何個の派生語があるか確認
-        size_t maxDerivativeCount = 0;
-        for (size_t languageIndex = 0; languageIndex < languagePtrList.size(); ++languageIndex)
+        line.emplace_back(getCachedString(ProtoLanguage.Words.at(wordID).Form));
+        for (const auto &[__, language] : Languages)
         {
-            maxDerivativeCount = std::max(maxDerivativeCount, mapsReconstructedWordToWord[languageIndex][reconstructedWordForm].size());
+            line.emplace_back(getCachedString(language.Words.at(wordID).Form));
         }
-
-        // 派生語の数だけ行を出力
-        for (size_t row = 0; row < maxDerivativeCount; ++row)
-        {
-            if (row == 0)
-                line.emplace_back(getCachedString(reconstructedWordForm));
-
-            for (size_t languageIndex = 0; languageIndex < languagePtrList.size(); ++languageIndex)
-            {
-                const auto &derivedWords = mapsReconstructedWordToWord[languageIndex][reconstructedWordForm];
-                if (row < derivedWords.size())
-                {
-                    line.emplace_back(getCachedString(derivedWords[row]->GetForm()));
-                }
-            }
-            result.emplace_back(line);
-            line.clear();
-        }
+        result.emplace_back(line);
+        line.clear();
     }
     return result;
 }

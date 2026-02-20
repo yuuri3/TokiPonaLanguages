@@ -2,7 +2,7 @@
 
 #include "LanguageDifferenceType.h"
 #include "PhonologicalChange.h"
-#include "Meaning.h"
+#include <string>
 #include <vector>
 
 /**

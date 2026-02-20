@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Phoneme.h"
-#include "Meaning.h"
 #include <vector>
 
 class Language;
