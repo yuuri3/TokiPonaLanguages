@@ -77,15 +77,15 @@ SimulationDialog::SimulationDialog(QWidget *parent) : QDialog(parent)
     formLayout->addRow("音韻脱落率:", pPhonologicalLossSpin);
 
     // 祖語ファイルパス
-    protoLanguagePath = CreateLineEdit(this, "ProtoLanguage.csv");
+    protoLanguagePath = CreateLineEdit(this, "data/ProtoLanguage.csv");
     formLayout->addRow("祖語ファイルパス:", protoLanguagePath);
 
     // 音素表ファイルパス
-    phonemeTablePath = CreateLineEdit(this, "Phoneme.csv");
+    phonemeTablePath = CreateLineEdit(this, "data/Phoneme.csv");
     formLayout->addRow("音素表ファイルパス:", phonemeTablePath);
 
     // 地理ファイルパス
-    geometryPath = CreateLineEdit(this, "Geometry.csv");
+    geometryPath = CreateLineEdit(this, "data/Geometry.csv");
     formLayout->addRow("地理ファイルパス:", geometryPath);
 
     mainLayout->addLayout(formLayout);
