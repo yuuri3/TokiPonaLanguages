@@ -1,7 +1,6 @@
 #pragma once
 
-#include <vector>
-#include <string>
+#include "stdafx.h"
 
 std::vector<std::vector<std::string>> readCSV(const std::string &filename);
 bool writeCSV(const std::string &filename, const std::vector<std::vector<std::string>> &data);

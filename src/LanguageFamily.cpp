@@ -122,13 +122,6 @@ void LanguageFamily::Export(const std::string &filename)
         file << "        Mannar: " << diff.PhonologicalChanges.AfterPhoneme.Manner << "\n";
         file << "      Condition: " << static_cast<int>(diff.PhonologicalChanges.PhoneticEnvironment) << "\n";
         file << "      IsRemove: " << diff.PhonologicalChanges.IsRemove << "\n";
-
-        file << "    MeaningChange:\n";
-        for (const auto &pair : diff.SemanticChange)
-        {
-            file << "      - Key: " << pair.first << "\n";
-            file << "        Value: " << pair.second << "\n";
-        }
     }
 
     file.close();
@@ -162,7 +155,6 @@ bool LanguageFamily::Import(const std::string &filename)
         DoubleParam_,
         StringParam_,
         PhonologicalChanges_,
-        SemanticChange_,
     };
 
     Mode mode;
@@ -273,11 +265,6 @@ bool LanguageFamily::Import(const std::string &filename)
                     dif.PhonologicalChanges.IsRemove = isRemove;
                     continue;
                 }
-                else if (line == "    MeaningChange:")
-                {
-                    subMode = SubMode::SemanticChange_;
-                    continue;
-                }
 
                 if (subMode == SubMode::IntParam_)
                 {
@@ -290,14 +277,6 @@ bool LanguageFamily::Import(const std::string &filename)
                 else if (subMode == SubMode::StringParam_)
                 {
                     dif.StringParam.emplace_back(line.substr(8));
-                }
-                else if (subMode == SubMode::SemanticChange_)
-                {
-                    std::getline(file, line);
-                    const auto [_, SemanticChangeKey] = splitByColon(line);
-                    std::getline(file, line);
-                    const auto [__, SemanticChangeValue] = splitByColon(line);
-                    dif.SemanticChange[SemanticChangeKey] = std::stod(SemanticChangeValue);
                 }
             }
             else

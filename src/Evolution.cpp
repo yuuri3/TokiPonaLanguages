@@ -4,10 +4,6 @@ std::optional<LanguageFamilySimulator> evolution(
     const int nLoanword,
     const double pPhonologicalChange,
     const double pSoundLoss,
-    const double pSemanticShift,
-    const double maxSemanticShiftRate,
-    const double pObsoleteWord,
-    const double pCompound,
     const std::string &protoLanguagePath,
     const std::string &phonemeTablePath,
     const std::string &geographyPath,
@@ -49,11 +45,6 @@ std::optional<LanguageFamilySimulator> evolution(
         simulator.LoanwordRandom(nLoanword, 0.5);
         // 音韻変化
         simulator.PhonologicalChangeRandom(pPhonologicalChange, pSoundLoss);
-        // 単語の脱落と新語追加
-        simulator.ObsoleteWordRandom(pObsoleteWord);
-        simulator.MakeCompoundRandom(pCompound);
-        // 単語の意味変化
-        simulator.SemanticChangeRandom(pSemanticShift, maxSemanticShiftRate);
         // 各位置に言語があれば終了
         if (simulator.HasAllPlaceLanguage())
         {

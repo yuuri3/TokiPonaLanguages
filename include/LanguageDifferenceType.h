@@ -19,11 +19,6 @@ enum class LanguageDifferenceType
     // int 単語ID
     // PhonologicalChange 音韻変化
     PhonologicalChange = 2,
-    // 意味変化
-    // string 地理
-    // int 単語ID
-    // Meaning 意味変化
-    SemanticChange = 3,
     // 借用
     // string 地理
     // int 借用元単語ID

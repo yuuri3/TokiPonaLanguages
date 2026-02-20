@@ -76,14 +76,6 @@ SimulationDialog::SimulationDialog(QWidget *parent) : QDialog(parent)
     pPhonologicalLossSpin = CreatePSpin(this, 0.3);
     formLayout->addRow("音韻脱落率:", pPhonologicalLossSpin);
 
-    // 単語消失率
-    pObsoleteWordSpin = CreatePSpin(this, 0.0);
-    formLayout->addRow("単語消失率:", pObsoleteWordSpin);
-
-    // 単語生成率
-    pCompoundSpin = CreatePSpin(this, 0.0);
-    formLayout->addRow("単語生成率:", pCompoundSpin);
-
     // 祖語ファイルパス
     protoLanguagePath = CreateLineEdit(this, "ProtoLanguage.csv");
     formLayout->addRow("祖語ファイルパス:", protoLanguagePath);
@@ -135,10 +127,6 @@ void SimulationDialog::accept()
     simulator = evolution(nLoanwordSpin->value(),
                           pPhonologicalChangeSpin->value(),
                           pPhonologicalLossSpin->value(),
-                          0.0,
-                          0.0,
-                          pObsoleteWordSpin->value(),
-                          pCompoundSpin->value(),
                           protoLanguagePath->text().toStdString(),
                           phonemeTablePath->text().toStdString(),
                           geometryPath->text().toStdString(),

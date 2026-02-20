@@ -5,7 +5,7 @@
 #include "PhonemeConverter.h"
 #include "LanguageDifference.h"
 #include "LanguageFamily.h"
-#include <optional>
+#include "stdafx.h"
 
 /**
  * @brief 語族の時間発展をシミュレート
@@ -32,13 +32,8 @@ struct LanguageFamilySimulator
         const double pSoundLoss,
         const bool isProhibitMinimalPair = true,
         const bool isSoundDuplication = true);
-    void SemanticChangeRandom(
-        const double pSemanticShift,
-        const double maxSemanticShiftRate);
     void LoanwordRandom(const int nLoanword, const double pLoanword);
     void ChangeLanguageStrengthRandom(const double pChangeStrength);
-    void ObsoleteWordRandom(const double pWordLoss);
-    void MakeCompoundRandom(const double pWordBirth);
     bool HasAllPlaceLanguage();
     void ToNextPeriod();
     std::vector<std::vector<std::string>> ToString();

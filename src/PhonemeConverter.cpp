@@ -63,10 +63,8 @@ Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &str
     int wordID = 0;
     for (const auto &str : strs)
     {
-        WordForSimulation word;
-        word.GetForm() = ConvertToPhoneme(str);
-        word.Meanings[str] = 1.0;
-        word.ReconstructedWord = word.GetForm();
+        Word word;
+        word.Form = ConvertToPhoneme(str);
         convertedLanguage.Words[wordID] = word;
         wordID++;
     }

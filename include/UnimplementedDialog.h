@@ -1,9 +1,6 @@
 #pragma once
 
-#include <QDialog>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QVBoxLayout>
+#include "stdafx.h"
 
 class UnimplementedDialog : public QDialog
 {

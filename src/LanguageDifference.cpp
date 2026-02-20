@@ -59,26 +59,6 @@ LanguageDifference LanguageDifference::CreatePhonologicalChange(const std::strin
 }
 
 /**
- * @brief Change 単語の意味
- *
- * @param place 地理
- * @param period 時代
- * @param wordID 単語ID
- * @param meaning 意味変化
- * @return LanguageDifference
- */
-LanguageDifference LanguageDifference::CreateSemanticChange(const std::string &place, const int period, const int wordID, const Meaning meaning)
-{
-    LanguageDifference diff;
-    diff.Period = period;
-    diff.Type = LanguageDifferenceType::SemanticChange;
-    diff.StringParam.emplace_back(place);
-    diff.IntParam.emplace_back(wordID);
-    diff.SemanticChange = meaning;
-    return diff;
-}
-
-/**
  * @brief 借用
  *
  * @param place1 借用元言語地域

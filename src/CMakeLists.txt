@@ -13,12 +13,10 @@ add_library(src
     LanguageDifference.cpp
     LanguageFamily.cpp
     LanguageFamilySimulator.cpp
-    Meaning.cpp
     PhonemeConverter.cpp
     Random.cpp
     Utility.cpp
     Word.cpp
-    WordForSimulation.cpp
     MainWindow.cpp
     UnimplementedDialog.cpp
     SimulationDialog.cpp

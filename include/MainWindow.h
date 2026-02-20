@@ -1,10 +1,7 @@
 #pragma once
 
-#include <QMainWindow>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QVBoxLayout>
 #include "LanguageFamilySimulator.h"
+#include "stdafx.h"
 
 class MainWindow : public QMainWindow
 {
