@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
     //     * 新規作成
     newFileAction = new QAction("新規作成", this);
     fileMenu->addAction(newFileAction);
-    connect(newFileAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+    connect(newFileAction, &QAction::triggered, this, &MainWindow::NewFile);
 
     //     * ファイルを開く
     openFileAction = new QAction("ファイルを開く", this);
@@ -211,4 +211,27 @@ void MainWindow::OpenFile()
     languageFamily.Import(fileName.toStdString());
     simulator = LanguageFamilySimulator::Create(languageFamily);
     DisplayLanguageFamily();
+}
+
+void MainWindow::NewFile()
+{
+    if (simulator)
+    {
+        const auto reply = QMessageBox::warning(
+            this,
+            "",
+            "現在開いているファイルを保存しますか。",
+            QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::Yes)
+        {
+            QString fileName = QFileDialog::getSaveFileName(
+                this,
+                "保存先を設定",
+                QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                "CSV Files (*.log);;All Files (*)");
+
+            simulator->LanguageFamily_.Export(fileName.toStdString());
+        }
+    }
+    simulator = LanguageFamilySimulator::Create();
 }

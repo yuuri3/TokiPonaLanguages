@@ -660,6 +660,23 @@ bool LanguageFamilySimulator::ApplyDifferences(const std::vector<LanguageDiffere
 /**
  * @brief インスタンス生成
  *
+ */
+std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create()
+{
+    LanguageFamilySimulator simulator;
+    simulator.LanguageFamily_.languageDifference = {};
+    simulator.LanguageFamily_.Geography = {{""}};
+    simulator.LanguageFamily_.PhonemeTable = {{""}};
+    simulator.Period = 0;
+    simulator.Languages.clear();
+    simulator.ProtoLanguage = Language();
+
+    return simulator;
+}
+
+/**
+ * @brief インスタンス生成
+ *
  * @param languageFamily 語族
  */
 std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create(LanguageFamily languageFamily)
