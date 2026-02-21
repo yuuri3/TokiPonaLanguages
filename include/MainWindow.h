@@ -15,6 +15,8 @@ private slots:
     void Unimplemented();
     void Simulate();
     void SaveFile();
+    void OpenFile();
+    void NewFile();
 
 private:
     QMenuBar *menuBar;
@@ -29,5 +31,9 @@ private:
     QAction *openFileAction;
     QAction *saveFileAction;
 
+    QTableWidget *mainTable;
+
     void DisplayLanguageFamily();
+    void WarningUnsaveFile();
+    void DisplayTable(const std::vector<std::vector<std::string>> &data);
 };

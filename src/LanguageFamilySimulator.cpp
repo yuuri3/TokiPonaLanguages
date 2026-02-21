@@ -519,6 +519,10 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
             return false;
         }
         Languages[diff.StringParam[0]].Words[diff.IntParam[0]].Form = converter.ConvertToPhoneme(diff.StringParam[1]);
+        if (diff.Period == 0 && diff.StringParam[0] == "0")
+        {
+            ProtoLanguage.Words[diff.IntParam[0]].Form = converter.ConvertToPhoneme(diff.StringParam[1]);
+        }
         break;
     }
 
@@ -651,6 +655,23 @@ bool LanguageFamilySimulator::ApplyDifferences(const std::vector<LanguageDiffere
         }
     }
     return true;
+}
+
+/**
+ * @brief インスタンス生成
+ *
+ */
+std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create()
+{
+    LanguageFamilySimulator simulator;
+    simulator.LanguageFamily_.languageDifference = {};
+    simulator.LanguageFamily_.Geography = {{""}};
+    simulator.LanguageFamily_.PhonemeTable = {{""}};
+    simulator.Period = 0;
+    simulator.Languages.clear();
+    simulator.ProtoLanguage = Language();
+
+    return simulator;
 }
 
 /**

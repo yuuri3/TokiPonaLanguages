@@ -22,6 +22,7 @@ struct LanguageFamilySimulator
     // 祖語（シミュレーション用）
     Language ProtoLanguage;
 
+    static std::optional<LanguageFamilySimulator> Create();
     static std::optional<LanguageFamilySimulator> Create(LanguageFamily languageFamily);
     void SetProtoLanguageOnGeography(
         const std::string &startPlace,
