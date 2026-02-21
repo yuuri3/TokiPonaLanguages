@@ -519,6 +519,10 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
             return false;
         }
         Languages[diff.StringParam[0]].Words[diff.IntParam[0]].Form = converter.ConvertToPhoneme(diff.StringParam[1]);
+        if (diff.Period == 0 && diff.StringParam[0] == "0")
+        {
+            ProtoLanguage.Words[diff.IntParam[0]].Form = converter.ConvertToPhoneme(diff.StringParam[1]);
+        }
         break;
     }
 
