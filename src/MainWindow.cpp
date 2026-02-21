@@ -91,6 +91,7 @@ void MainWindow::Unimplemented()
  */
 void MainWindow::Simulate()
 {
+    WarningUnsaveFile();
     SimulationDialog sub(this);
     sub.exec();
     simulator = sub.GetSimulator();
