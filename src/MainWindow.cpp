@@ -83,7 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
     //     * ファイル保存
     saveFileAction = new QAction("ファイル保存", this);
     fileMenu->addAction(saveFileAction);
-    connect(saveFileAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+    connect(saveFileAction, &QAction::triggered, this, &MainWindow::SaveFile);
 
     //   * シミュレーションメニュー
     simulationMenu = menuBar->addMenu("シミュレーション");
@@ -150,4 +150,29 @@ void MainWindow::DisplayLanguageFamily()
 {
     const auto table = simulator->ToString();
     DisplayTable(this, table);
+}
+
+/**
+ * @brief 編集結果を保存
+ *
+ */
+void MainWindow::SaveFile()
+{
+    if (simulator)
+    {
+        QString fileName = QFileDialog::getSaveFileName(
+            this,
+            "保存先を設定",
+            QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+            "CSV Files (*.log);;All Files (*)");
+
+        simulator->LanguageFamily_.Export(fileName.toStdString());
+    }
+    else
+    {
+        QMessageBox::critical(
+            this,
+            "実行エラー",
+            "保存するファイルがありません。");
+    }
 }
