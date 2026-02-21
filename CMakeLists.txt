@@ -11,25 +11,32 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 include_directories(include)
 add_subdirectory(src)
+
 if(WIN32)
     set(UI_RESOURCES "resource.rc")
-    add_executable(a.out WIN32 main.cpp ${UI_RESOURCES})
+    add_executable(Unagi-Conlang-Editor WIN32 main.cpp ${UI_RESOURCES})
 else()
-    add_executable(a.out WIN32 main.cpp)
+    add_executable(Unagi-Conlang-Editor WIN32 main.cpp)
 endif()
 
+# 生成されるファイル名（.exe）を日本語にする設定を追加
+set_target_properties(Unagi-Conlang-Editor PROPERTIES OUTPUT_NAME "うなぎエディタ")
+
+# リンク設定も英字のターゲット名に合わせる
+target_link_libraries(Unagi-Conlang-Editor PRIVATE Qt6::Widgets)
+
 # Qtのライブラリをリンク
-target_link_libraries(a.out PRIVATE src Qt6::Widgets)
+target_link_libraries(Unagi-Conlang-Editor PRIVATE src Qt6::Widgets)
 
 # ビルド直後に、exeの隣にDLLを集める設定
-add_custom_command(TARGET a.out POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:src> $<TARGET_FILE_DIR:a.out>
-    COMMAND ${CMAKE_COMMAND} -D "EXE=$<TARGET_FILE:a.out>" -P "${CMAKE_SOURCE_DIR}/fixup.cmake"
+add_custom_command(TARGET Unagi-Conlang-Editor POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:src> $<TARGET_FILE_DIR:Unagi-Conlang-Editor>
+    COMMAND ${CMAKE_COMMAND} -D "EXE=$<TARGET_FILE:Unagi-Conlang-Editor>" -P "${CMAKE_SOURCE_DIR}/fixup.cmake"
     COMMENT "Fixing up dependencies..."
 )
 
 find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
-add_custom_command(TARGET a.out POST_BUILD
-    COMMAND ${WINDEPLOYQT_EXECUTABLE} "$<TARGET_FILE:a.out>"
+add_custom_command(TARGET Unagi-Conlang-Editor POST_BUILD
+    COMMAND ${WINDEPLOYQT_EXECUTABLE} "$<TARGET_FILE:Unagi-Conlang-Editor>"
     COMMENT "Running windeployqt..."
 )
