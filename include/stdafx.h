@@ -12,3 +12,8 @@
 #include <QVBoxLayout>
 #include <QDialog>
 #include <QDoubleSpinBox>
+#include <QMessageBox>
+#include <QTableWidget>
+#include <QHeaderView>
+#include <QMenuBar>
+#include <QFileDialog>

@@ -3,9 +3,7 @@
 #include "UnimplementedDialog.h"
 #include "SimulationDialog.h"
 #include "Utility.h"
-#include <QMenuBar>
-#include <QTableWidget>
-#include <QHeaderView>
+#include "stdafx.h"
 
 namespace
 {
