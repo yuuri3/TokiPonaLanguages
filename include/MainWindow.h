@@ -15,6 +15,7 @@ private slots:
     void Unimplemented();
     void Simulate();
     void SaveFile();
+    void OpenFile();
 
 private:
     QMenuBar *menuBar;
