@@ -31,5 +31,9 @@ private:
     QAction *openFileAction;
     QAction *saveFileAction;
 
+    QTableWidget *mainTable;
+
     void DisplayLanguageFamily();
+    void WarningUnsaveFile();
+    void DisplayTable(const std::vector<std::vector<std::string>> &data);
 };
