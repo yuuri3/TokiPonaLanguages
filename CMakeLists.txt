@@ -12,15 +12,26 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 include_directories(include)
 add_subdirectory(src)
 
+# 1. バージョン定義
+set(APP_VERSION "0.2.5")
+set(EXE_VERSION "0.2.5.1")
+string(REPLACE "." "," APP_VERSION_COMMA "${APP_VERSION},0") 
+string(REPLACE "." "," EXE_VERSION_COMMA "${EXE_VERSION}") 
+
+# 2. テンプレートから実際の .rc ファイルを生成
+configure_file(version.rc.in version.rc @ONLY)
+
+set(RESOURCE_FILES build/version.rc)
+
 if(WIN32)
     set(UI_RESOURCES "resource.rc")
-    add_executable(Unagi-Conlang-Editor WIN32 main.cpp ${UI_RESOURCES})
+    add_executable(Unagi-Conlang-Editor WIN32 main.cpp ${UI_RESOURCES} ${RESOURCE_FILES})
 else()
-    add_executable(Unagi-Conlang-Editor WIN32 main.cpp)
+    add_executable(Unagi-Conlang-Editor WIN32 main.cpp ${RESOURCE_FILES})
 endif()
 
 # 生成されるファイル名（.exe）を日本語にする設定を追加
-set_target_properties(Unagi-Conlang-Editor PROPERTIES OUTPUT_NAME "うなぎエディタ")
+set_target_properties(Unagi-Conlang-Editor PROPERTIES OUTPUT_NAME "うなぎエディタ_Ver${APP_VERSION}")
 
 # リンク設定も英字のターゲット名に合わせる
 target_link_libraries(Unagi-Conlang-Editor PRIVATE Qt6::Widgets)
