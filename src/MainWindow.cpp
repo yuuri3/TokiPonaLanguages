@@ -3,9 +3,7 @@
 #include "UnimplementedDialog.h"
 #include "SimulationDialog.h"
 #include "Utility.h"
-#include <QMenuBar>
-#include <QTableWidget>
-#include <QHeaderView>
+#include "stdafx.h"
 
 namespace
 {
@@ -71,12 +69,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     //   * ファイルメニュー
     fileMenu = menuBar->addMenu("ファイル");
-    simulationMenu = menuBar->addMenu("シミュレーション");
-
-    //     * シミュレーション
-    simulateAction = new QAction("シミュレーション", this);
-    simulationMenu->addAction(simulateAction);
-    connect(simulateAction, &QAction::triggered, this, &MainWindow::Simulate);
 
     //     * 新規作成
     newFileAction = new QAction("新規作成", this);
@@ -87,6 +79,19 @@ MainWindow::MainWindow(QWidget *parent)
     openFileAction = new QAction("ファイルを開く", this);
     fileMenu->addAction(openFileAction);
     connect(openFileAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+
+    //     * ファイル保存
+    saveFileAction = new QAction("ファイル保存", this);
+    fileMenu->addAction(saveFileAction);
+    connect(saveFileAction, &QAction::triggered, this, &MainWindow::SaveFile);
+
+    //   * シミュレーションメニュー
+    simulationMenu = menuBar->addMenu("シミュレーション");
+
+    //     * シミュレーション
+    simulateAction = new QAction("シミュレーション", this);
+    simulationMenu->addAction(simulateAction);
+    connect(simulateAction, &QAction::triggered, this, &MainWindow::Simulate);
 
     // * セントラル
     QWidget *centralWidget = new QWidget(this);
@@ -145,4 +150,29 @@ void MainWindow::DisplayLanguageFamily()
 {
     const auto table = simulator->ToString();
     DisplayTable(this, table);
+}
+
+/**
+ * @brief 編集結果を保存
+ *
+ */
+void MainWindow::SaveFile()
+{
+    if (simulator)
+    {
+        QString fileName = QFileDialog::getSaveFileName(
+            this,
+            "保存先を設定",
+            QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+            "CSV Files (*.log);;All Files (*)");
+
+        simulator->LanguageFamily_.Export(fileName.toStdString());
+    }
+    else
+    {
+        QMessageBox::critical(
+            this,
+            "実行エラー",
+            "保存するファイルがありません。");
+    }
 }

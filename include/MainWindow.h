@@ -14,6 +14,7 @@ public:
 private slots:
     void Unimplemented();
     void Simulate();
+    void SaveFile();
 
 private:
     QMenuBar *menuBar;
@@ -26,6 +27,7 @@ private:
     QAction *simulateAction;
     QAction *newFileAction;
     QAction *openFileAction;
+    QAction *saveFileAction;
 
     void DisplayLanguageFamily();
 };
