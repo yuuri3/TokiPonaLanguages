@@ -82,6 +82,11 @@ MainWindow::MainWindow(QWidget *parent)
     fileMenu->addAction(openFileAction);
     connect(openFileAction, &QAction::triggered, this, &MainWindow::Unimplemented);
 
+    //     * ファイル保存
+    saveFileAction = new QAction("ファイル保存", this);
+    fileMenu->addAction(saveFileAction);
+    connect(saveFileAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+
     //   * シミュレーションメニュー
     simulationMenu = menuBar->addMenu("シミュレーション");
 

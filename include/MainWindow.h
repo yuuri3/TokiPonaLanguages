@@ -26,6 +26,7 @@ private:
     QAction *simulateAction;
     QAction *newFileAction;
     QAction *openFileAction;
+    QAction *saveFileAction;
 
     void DisplayLanguageFamily();
 };
