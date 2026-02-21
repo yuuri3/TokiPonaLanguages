@@ -11,8 +11,12 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 include_directories(include)
 add_subdirectory(src)
-
-add_executable(a.out WIN32 main.cpp)
+if(WIN32)
+    set(UI_RESOURCES "resource.rc")
+    add_executable(a.out WIN32 main.cpp ${UI_RESOURCES})
+else()
+    add_executable(a.out WIN32 main.cpp)
+endif()
 
 # Qtのライブラリをリンク
 target_link_libraries(a.out PRIVATE src Qt6::Widgets)
