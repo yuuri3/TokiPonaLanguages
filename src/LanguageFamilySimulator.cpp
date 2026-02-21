@@ -115,7 +115,7 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
  * @param Phonemes 音素列
  * @param table 音素表
  */
-std::string PhonemeConverter::ConvertToString(const std::vector<Phomene> &phonemes)
+std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonemes)
 {
     std::string str = "";
 
@@ -174,7 +174,7 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
             for (auto &[wordID, word] : language.Words)
             {
                 bool isChanged = false;
-                std::vector<Phomene> changedWordForm;
+                std::vector<Phoneme> changedWordForm;
                 changedWordForm.reserve(word.Form.size());
 
                 for (size_t soundPosition = 0; soundPosition < word.Form.size(); ++soundPosition)
@@ -262,7 +262,7 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
             if (isProhibitMinimalPair)
             {
                 // 現在の言語全体の単語分布を把握（変化しなかった単語 + 変化候補）
-                std::map<std::vector<Phomene>, int> mimimalPairCount;
+                std::map<std::vector<Phoneme>, int> mimimalPairCount;
                 for (const auto &[wordID, word] : language.Words)
                 {
                     auto it = phonologicalChangedWords.find(wordID);
@@ -299,7 +299,7 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
  * @param table 音素表
  * @param pRemovePhoneme 音が脱落する確率
  */
-PhonologicalChange makepPhonologicalChangeRandom(const Phomene &beforePhon, const std::vector<std::vector<std::string>> &phonemeTable, const double pRemoveSound)
+PhonologicalChange makepPhonologicalChangeRandom(const Phoneme &beforePhon, const std::vector<std::vector<std::string>> &phonemeTable, const double pRemoveSound)
 {
     int randomPhoneticEnvironment = getRandomInt(0, 2);
 
@@ -405,10 +405,10 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
  * @param phonemeTable 音素表
  * @return 音素
  */
-Phomene getRandomSoundFromTable(const std::vector<std::vector<std::string>> &phonemeTable)
+Phoneme getRandomSoundFromTable(const std::vector<std::vector<std::string>> &phonemeTable)
 {
     // 1. 空ではないセルの「座標」をリストに貯める
-    std::vector<Phomene> phonemeLiist;
+    std::vector<Phoneme> phonemeLiist;
     phonemeLiist.reserve(phonemeTable.size() * phonemeTable[0].size());
 
     for (int row = 0; row < (int)phonemeTable.size(); ++row)
@@ -437,7 +437,7 @@ Phomene getRandomSoundFromTable(const std::vector<std::vector<std::string>> &pho
  * @param language 言語
  * @return 音素
  */
-Phomene getRandomSoundFromLanguage(Language &language)
+Phoneme getRandomSoundFromLanguage(Language &language)
 {
     if (language.Words.empty())
     {
@@ -548,7 +548,7 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
             {
                 return false;
             }
-            std::vector<Phomene> changedWordForm;
+            std::vector<Phoneme> changedWordForm;
             changedWordForm.reserve(targetWordIterator->second.Form.size());
 
             for (size_t phonemePosition = 0; phonemePosition < targetWordIterator->second.Form.size(); ++phonemePosition)
@@ -684,8 +684,8 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToString()
     std::vector<std::string> line;
 
     // 1. 文字列変換の結果をキャッシュするマップ (高速化の肝)
-    std::map<std::vector<Phomene>, std::string> convertCache;
-    auto getCachedString = [&](const std::vector<Phomene> &s) -> const std::string &
+    std::map<std::vector<Phoneme>, std::string> convertCache;
+    auto getCachedString = [&](const std::vector<Phoneme> &s) -> const std::string &
     {
         auto iterator = convertCache.find(s);
         if (iterator != convertCache.end())

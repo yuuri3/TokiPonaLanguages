@@ -15,7 +15,7 @@ struct Word
     //   ID
     int ID;
     //   form
-    std::vector<Phomene> Form;
+    std::vector<Phoneme> Form;
     // translation <title,form>
     std::map<std::string, std::vector<std::string>> Translations;
     // tags
@@ -23,7 +23,7 @@ struct Word
     // contents <title,text>
     std::map<std::string, std::string> Contents;
     // variations <title,form>
-    std::map<std::string, std::vector<Phomene>> Variations;
+    std::map<std::string, std::vector<Phoneme>> Variations;
     // relations <title,entry>
     std::map<std::string, int> Relations;
 
