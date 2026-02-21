@@ -1,10 +1,10 @@
 #include "UnimplementedDialog.h"
-#include "Constants.h"
 #include <QLabel>
 
 UnimplementedDialog::UnimplementedDialog(QWidget *parent)
 {
-    setWindowTitle(MyConst::Name);
+    const auto appName = QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName();
+    setWindowTitle(appName);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 

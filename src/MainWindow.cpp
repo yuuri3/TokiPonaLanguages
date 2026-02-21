@@ -1,5 +1,4 @@
 #include "MainWindow.h"
-#include "Constants.h"
 #include "UnimplementedDialog.h"
 #include "SimulationDialog.h"
 #include "Utility.h"
@@ -13,7 +12,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    setWindowTitle(MyConst::Name);
+    const auto appName = QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName();
+    setWindowTitle(appName);
 
     // * メニューバー
     menuBar = new QMenuBar(this);
