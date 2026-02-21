@@ -71,12 +71,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     //   * ファイルメニュー
     fileMenu = menuBar->addMenu("ファイル");
-    simulationMenu = menuBar->addMenu("シミュレーション");
-
-    //     * シミュレーション
-    simulateAction = new QAction("シミュレーション", this);
-    simulationMenu->addAction(simulateAction);
-    connect(simulateAction, &QAction::triggered, this, &MainWindow::Simulate);
 
     //     * 新規作成
     newFileAction = new QAction("新規作成", this);
@@ -87,6 +81,14 @@ MainWindow::MainWindow(QWidget *parent)
     openFileAction = new QAction("ファイルを開く", this);
     fileMenu->addAction(openFileAction);
     connect(openFileAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+
+    //   * シミュレーションメニュー
+    simulationMenu = menuBar->addMenu("シミュレーション");
+
+    //     * シミュレーション
+    simulateAction = new QAction("シミュレーション", this);
+    simulationMenu->addAction(simulateAction);
+    connect(simulateAction, &QAction::triggered, this, &MainWindow::Simulate);
 
     // * セントラル
     QWidget *centralWidget = new QWidget(this);
