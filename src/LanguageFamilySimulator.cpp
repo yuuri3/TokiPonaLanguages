@@ -529,10 +529,15 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         {
             return false;
         }
-        Languages[diff.StringParam[0]].Words[diff.IntParam[0]].Form = converter.ConvertToPhoneme(diff.StringParam[1]);
-        if (diff.Period == 0 && diff.StringParam[0] == "0")
+
+        const auto geometry = diff.StringParam[0];
+        const auto wordID = diff.IntParam[0];
+        const auto form = diff.StringParam[1];
+
+        Languages[geometry].Words[wordID].Form = converter.ConvertToPhoneme(form);
+        if (diff.Period == 0 && geometry == "0")
         {
-            ProtoLanguage.Words[diff.IntParam[0]].Form = converter.ConvertToPhoneme(diff.StringParam[1]);
+            ProtoLanguage.Words[wordID].Form = converter.ConvertToPhoneme(form);
         }
         break;
     }
@@ -543,7 +548,11 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         {
             return false;
         }
-        Languages[diff.StringParam[0]].Strength = diff.DoubleParam[0];
+
+        const auto geometry = diff.StringParam[0];
+        const auto strength = diff.DoubleParam[0];
+
+        Languages[geometry].Strength = strength;
         break;
     }
 
@@ -553,9 +562,12 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         {
             return false;
         }
-        if (Languages.count(diff.StringParam[0]) == 1)
+
+        const auto geometry = diff.StringParam[0];
+
+        if (Languages.count(geometry) == 1)
         {
-            ApplyPhonologicalChange(Languages[diff.StringParam[0]], diff.PhonologicalChanges, true, true);
+            ApplyPhonologicalChange(Languages[geometry], diff.PhonologicalChanges, true, true);
         }
         break;
     }
@@ -566,13 +578,19 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         {
             return false;
         }
-        if (Languages.count(diff.StringParam[0]) == 1)
+
+        const auto referenceGeometry = diff.StringParam[0];
+        const auto targetGeometry = diff.StringParam[1];
+        const auto referenceWordID = diff.IntParam[0];
+        const auto targetWordID = diff.IntParam[1];
+
+        if (Languages.count(referenceGeometry) == 1)
         {
-            const auto referenceLanguage = Languages.at(diff.StringParam[0]);
-            if (referenceLanguage.Words.count(diff.IntParam[0]) == 1)
+            const auto referenceLanguage = Languages.at(referenceGeometry);
+            if (referenceLanguage.Words.count(referenceWordID) == 1)
             {
-                const auto referenceWord = referenceLanguage.Words.at(diff.IntParam[0]);
-                Languages[diff.StringParam[1]].Words[diff.IntParam[1]] = referenceWord;
+                const auto referenceWord = referenceLanguage.Words.at(referenceWordID);
+                Languages[targetGeometry].Words[targetWordID] = referenceWord;
             }
         }
         break;
@@ -584,17 +602,21 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         {
             return false;
         }
+
+        const auto geometry = diff.StringParam[0];
+        const auto wordID = diff.IntParam[0];
+
         Word compound;
         // IntParam[1]以降に合成元の単語IDリストが格納されている
         for (size_t i = 1; i < diff.IntParam.size(); ++i)
         {
-            auto itPart = Languages[diff.StringParam[0]].Words.find(diff.IntParam[i]);
-            if (itPart != Languages[diff.StringParam[0]].Words.end())
+            auto itPart = Languages[geometry].Words.find(diff.IntParam[i]);
+            if (itPart != Languages[geometry].Words.end())
             {
                 compound = compound.Add(itPart->second);
             }
         }
-        Languages[diff.StringParam[0]].Words[diff.IntParam[0]] = std::move(compound);
+        Languages[geometry].Words[wordID] = std::move(compound);
         break;
     }
 
@@ -604,7 +626,11 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         {
             return false;
         }
-        Languages[diff.StringParam[0]].Words.erase(diff.IntParam[0]);
+
+        const auto geometry = diff.StringParam[0];
+        const auto wordID = diff.IntParam[0];
+
+        Languages[geometry].Words.erase(wordID);
         break;
     }
 
