@@ -141,11 +141,11 @@ void ApplyPhonologicalChange(Language &language, const PhonologicalChange &phono
             bool isSoundEqualToBeforePhoneme = (sound == phonologicalChange.BeforePhoneme);
             if (isSoundEqualToBeforePhoneme)
             {
-                if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Start && soundPosition != 0)
+                if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Start && !(soundPosition == 0 || word.Form[soundPosition - 1].IsSpace))
                     isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::End && soundPosition != word.Form.size() - 1)
+                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::End && !(soundPosition == word.Form.size() - 1 || word.Form[soundPosition + 1].IsSpace))
                     isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Middle && (soundPosition == 0 || soundPosition == word.Form.size() - 1))
+                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Middle && (soundPosition == 0 || word.Form[soundPosition - 1].IsSpace || soundPosition == word.Form.size() - 1 || word.Form[soundPosition + 1].IsSpace))
                     isSoundEqualToBeforePhoneme = false;
             }
 
@@ -405,7 +405,11 @@ Phoneme getRandomSoundFromTable(const std::vector<std::vector<std::string>> &pho
         {
             if (!phonemeTable[row][collum].empty())
             {
-                phonemeLiist.push_back({row, collum});
+                Phoneme phoneme;
+                phoneme.IsSpace = false;
+                phoneme.Manner = row;
+                phoneme.Place = collum;
+                phonemeLiist.push_back({phoneme});
             }
         }
     }
@@ -413,7 +417,11 @@ Phoneme getRandomSoundFromTable(const std::vector<std::vector<std::string>> &pho
     // 候補が一つもない場合
     if (phonemeLiist.empty())
     {
-        return {-1, -1};
+        Phoneme phoneme;
+        phoneme.IsSpace = true;
+        phoneme.Manner = -1;
+        phoneme.Place = -1;
+        return phoneme;
     }
 
     // 座標リストのインデックスをランダムに選択

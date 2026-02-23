@@ -6,6 +6,8 @@
  */
 struct Phoneme
 {
+    // 無音フラグ
+    bool IsSpace = false;
     // 調音方法
     int Manner;
     // 調音部位
