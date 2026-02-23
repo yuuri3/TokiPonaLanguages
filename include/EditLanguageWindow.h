@@ -24,5 +24,4 @@ private:
     QTableWidget *mainTable;
 
     void UpdateTable();
-    void DisplayTable(const std::vector<std::vector<std::string>> &data);
 };

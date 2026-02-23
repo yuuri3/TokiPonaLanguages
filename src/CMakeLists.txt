@@ -21,6 +21,7 @@ add_library(src
     UnimplementedDialog.cpp
     SimulationDialog.cpp
     EditLanguageWindow.cpp
+    ../include/Utility.h
     ../include/MainWindow.h
     ../include/UnimplementedDialog.h
     ../include/SimulationDialog.h
