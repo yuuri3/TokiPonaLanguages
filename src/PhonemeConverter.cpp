@@ -30,20 +30,16 @@ std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
     for (size_t charPosition = 0; charPosition < str.length();)
     {
         bool isMatch = false;
-        // 最長一致を優先（最大長が既知ならその値から開始）
-        for (size_t phonemeCharCount = 2; phonemeCharCount > 0; --phonemeCharCount)
+        const int phonemeCharCount = 1;
+        if (charPosition + phonemeCharCount <= str.length())
         {
-            if (charPosition + phonemeCharCount <= str.length())
+            std::string PhonemeStr = str.substr(charPosition, phonemeCharCount);
+            auto it = PhonemeMap.find(PhonemeStr);
+            if (it != PhonemeMap.end())
             {
-                std::string PhonemeStr = str.substr(charPosition, phonemeCharCount);
-                auto it = PhonemeMap.find(PhonemeStr);
-                if (it != PhonemeMap.end())
-                {
-                    convertedPhoneme.push_back(it->second);
-                    charPosition += phonemeCharCount;
-                    isMatch = true;
-                    break;
-                }
+                convertedPhoneme.push_back(it->second);
+                charPosition += phonemeCharCount;
+                isMatch = true;
             }
         }
         if (!isMatch)

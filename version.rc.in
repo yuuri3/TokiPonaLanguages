@@ -1,0 +1,30 @@
+#include <windows.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     @EXE_VERSION_COMMA@
+PRODUCTVERSION  @APP_VERSION_COMMA@
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS       0x0L
+FILEOS          VOS_NT_WINDOWS32
+FILETYPE        VFT_APP
+FILESUBTYPE     0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041104b0" // 日本語 (0411) / Unicode (04b0)
+        BEGIN
+            VALUE "CompanyName",      "TokiLanguages Team"
+            VALUE "FileDescription",  "うなぎエディタ"
+            VALUE "FileVersion",      "@EXE_VERSION@"
+            VALUE "InternalName",     "UnagiEditor"
+            VALUE "LegalCopyright",   "Copyright (C) 2026"
+            VALUE "OriginalFilename", "うなぎエディタ.exe"
+            VALUE "ProductName",      "Unagi-Conlang-Editor"
+            VALUE "ProductVersion",   "@APP_VERSION@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0411, 1200
+    END
+END

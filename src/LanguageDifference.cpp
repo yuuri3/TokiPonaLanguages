@@ -43,17 +43,15 @@ LanguageDifference LanguageDifference::CreateChangeStrength(const std::string &p
  *
  * @param place 地域
  * @param period 時代
- * @param wordID 単語ID
  * @param phonologicalChange 音韻変化
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreatePhonologicalChange(const std::string &place, const int period, const int wordID, const PhonologicalChange phonologicalChange)
+LanguageDifference LanguageDifference::CreatePhonologicalChange(const std::string &place, const int period, const PhonologicalChange phonologicalChange)
 {
     LanguageDifference diff;
     diff.Period = period;
     diff.Type = LanguageDifferenceType::PhonologicalChange;
     diff.StringParam.emplace_back(place);
-    diff.IntParam.emplace_back(wordID);
     diff.PhonologicalChanges = phonologicalChange;
     return diff;
 }

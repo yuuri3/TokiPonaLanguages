@@ -17,5 +17,6 @@
 #include <QHeaderView>
 #include <QMenuBar>
 #include <QFileDialog>
-#include <QFileDialog>
 #include <QStandardPaths>
+#include <QCoreApplication>
+#include <QFileInfo>
