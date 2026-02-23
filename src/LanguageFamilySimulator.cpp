@@ -111,29 +111,6 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
 }
 
 /**
- * 音素列を変換表に基づいて文字列に復元する
- * @param Phonemes 音素列
- * @param table 音素表
- */
-std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonemes)
-{
-    std::string str = "";
-
-    for (const auto &phoneme : phonemes)
-    {
-        for (const auto &[keyString, valuePhoneme] : PhonemeMap)
-        {
-            if (phoneme == valuePhoneme)
-            {
-                str += keyString;
-            }
-        }
-    }
-
-    return str;
-}
-
-/**
  * @brief 音韻変化を言語に適用
  *
  * @param language 言語
