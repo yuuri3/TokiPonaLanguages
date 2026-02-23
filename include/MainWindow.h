@@ -23,6 +23,7 @@ private:
     QMenuBar *menuBar;
 
     QMenu *fileMenu;
+    QMenu *editMenu;
     QMenu *simulationMenu;
     QMenu *helpMenu;
 
@@ -32,13 +33,15 @@ private:
     QAction *newFileAction;
     QAction *openFileAction;
     QAction *saveFileAction;
+    QAction *phonologicalChangeAction;
+    QAction *loanwordAction;
     QAction *helpAction;
 
     QTableWidget *mainTable;
 
     void DisplayLanguageFamily();
     void WarningUnsaveFile();
-    void DisplayTable(const std::vector<std::vector<std::string>> &data);
+    void EditLanguage(const std::string place, const int period);
 
 protected:
     void closeEvent(QCloseEvent *event) override;

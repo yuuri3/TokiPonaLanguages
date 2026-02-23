@@ -3,6 +3,7 @@
 #include "SimulationDialog.h"
 #include "Utility.h"
 #include "stdafx.h"
+#include "EditLanguageWindow.h"
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -38,6 +39,19 @@ MainWindow::MainWindow(QWidget *parent)
     saveFileAction = new QAction("ファイル保存", this);
     fileMenu->addAction(saveFileAction);
     connect(saveFileAction, &QAction::triggered, this, &MainWindow::SaveFile);
+
+    //   * 編集メニュー
+    editMenu = menuBar->addMenu("編集");
+
+    //     * 音韻変化
+    phonologicalChangeAction = new QAction("音韻変化", this);
+    editMenu->addAction(phonologicalChangeAction);
+    connect(phonologicalChangeAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+
+    //     * 借用
+    loanwordAction = new QAction("借用", this);
+    editMenu->addAction(loanwordAction);
+    connect(loanwordAction, &QAction::triggered, this, &MainWindow::Unimplemented);
 
     //   * シミュレーションメニュー
     simulationMenu = menuBar->addMenu("シミュレーション");
@@ -120,7 +134,7 @@ void MainWindow::Simulate()
 void MainWindow::DisplayLanguageFamily()
 {
     const auto table = simulator->ToStringLanguageFamily();
-    DisplayTable(table);
+    DisplayTable(mainTable, table);
 }
 
 /**
@@ -201,47 +215,6 @@ void MainWindow::WarningUnsaveFile()
 }
 
 /**
- * @brief 文字列の配列をウィンドウに表示
- *
- * @param window ウィンドウ
- * @param data 文字列の配列
- */
-void MainWindow::DisplayTable(const std::vector<std::vector<std::string>> &data)
-{
-    mainTable->clear();
-    mainTable->setRowCount(0);
-    mainTable->setColumnCount(0);
-
-    if (!data.empty())
-    {
-        int rows = data.size();
-        int cols = data[0].size();
-        mainTable->setRowCount(rows);
-        mainTable->setColumnCount(cols);
-
-        // 3. データの流し込み
-        for (int i = 0; i < rows; ++i)
-        {
-            for (int j = 0; j < cols; ++j)
-            {
-                // std::string から QString へ変換してセット
-                QString content = QString::fromStdString(data[i][j]);
-                mainTable->setItem(i, j, new QTableWidgetItem(content));
-            }
-        }
-    }
-
-    mainTable->verticalHeader()->setVisible(false);
-    mainTable->horizontalHeader()->setVisible(false);
-    mainTable->resizeColumnsToContents();
-    mainTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    mainTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    mainTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-
-    mainTable->resizeColumnsToContents();
-}
-
-/**
  * @brief メインテーブル右クリック時
  *
  */
@@ -260,7 +233,11 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
 
     if (selectedAction == editAction)
     {
-        Unimplemented();
+        const int row = mainTable->currentRow();
+        const int column = mainTable->currentColumn();
+        const std::string place = mainTable->item(0, column)->text().toStdString();
+        const int period = row;
+        EditLanguage(place, period);
     }
 }
 
@@ -304,4 +281,19 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         event->ignore();
     }
+}
+
+/**
+ * @brief 言語編集ウィンドウを開く
+ *
+ * @param place 地域
+ * @param period 時代
+ */
+void MainWindow::EditLanguage(const std::string place, const int period)
+{
+    EditLanguageWindow subWindow(this);
+    subWindow.SetLanguages(std::make_shared<LanguageFamily>(simulator->LanguageFamily_));
+    subWindow.SetPlace(place);
+    subWindow.SetPeriod(period);
+    subWindow.exec();
 }

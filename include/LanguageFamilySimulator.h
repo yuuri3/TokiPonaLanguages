@@ -39,6 +39,7 @@ struct LanguageFamilySimulator
     void ToNextPeriod();
     std::vector<std::vector<std::string>> ToStringLanguageFamily();
     std::vector<std::vector<std::string>> ToStringCurrentLanguages();
+    std::optional<Language> CalculateLanguage(const std::string place, const int period);
 
 private:
     bool ApplyDifference(const LanguageDifference &diff);

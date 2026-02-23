@@ -131,3 +131,44 @@ std::vector<std::string> getNonEmptyStrings(const std::vector<std::vector<std::s
 
     return result;
 }
+
+/**
+ * @brief ウィンドウに表を表示
+ *
+ * @param table 表
+ * @param data データ
+ */
+void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string>> &data)
+{
+    table->clear();
+    table->setRowCount(0);
+    table->setColumnCount(0);
+
+    if (!data.empty())
+    {
+        int rows = data.size();
+        int cols = data[0].size();
+        table->setRowCount(rows);
+        table->setColumnCount(cols);
+
+        // 3. データの流し込み
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                // std::string から QString へ変換してセット
+                QString content = QString::fromStdString(data[i][j]);
+                table->setItem(i, j, new QTableWidgetItem(content));
+            }
+        }
+    }
+
+    table->verticalHeader()->setVisible(false);
+    table->horizontalHeader()->setVisible(false);
+    table->resizeColumnsToContents();
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+
+    table->resizeColumnsToContents();
+}

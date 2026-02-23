@@ -630,6 +630,22 @@ bool LanguageFamilySimulator::ApplyDifferences(const std::vector<LanguageDiffere
     return true;
 }
 
+std::optional<Language> LanguageFamilySimulator::CalculateLanguage(const std::string place, const int period)
+{
+    for (const auto &diff : LanguageFamily_.languageDifference)
+    {
+        if (diff.Period > period)
+        {
+            return Languages.at(place);
+        }
+        if (!ApplyDifference(diff))
+        {
+            return std::nullopt;
+        }
+    }
+    return Languages.at(place);
+}
+
 /**
  * @brief インスタンス生成
  *
