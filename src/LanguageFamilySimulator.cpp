@@ -269,7 +269,7 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
         {
             continue;
         }
-        const auto randomSound = getRandomSoundFromLanguage(language);
+        const auto randomSound = getRandomSoundFromTable(LanguageFamily_.PhonemeTable);
         PhonologicalChange randomPhonologicalChange = makepPhonologicalChangeRandom(randomSound, LanguageFamily_.PhonemeTable, pSoundLoss);
 
         // ログ
@@ -418,22 +418,6 @@ Phoneme getRandomSoundFromTable(const std::vector<std::vector<std::string>> &pho
 
     // 座標リストのインデックスをランダムに選択
     return phonemeLiist[getRandomInt(0, phonemeLiist.size() - 1)];
-}
-
-/**
- * @brief 言語から、音素をランダムに1つ選択する
- * @param language 言語
- * @return 音素
- */
-Phoneme getRandomSoundFromLanguage(Language &language)
-{
-    if (language.Words.empty())
-    {
-        return {0, 0};
-    }
-    const int randomWordIndex = getRandomInt(0, (int)(language.Words.size()) - 1);
-    const int PhonemeIndex = getRandomInt(0, (int)(language.Words[randomWordIndex].Form.size()) - 1);
-    return language.Words[randomWordIndex].Form[PhonemeIndex];
 }
 
 /**
