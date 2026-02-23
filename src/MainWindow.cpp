@@ -47,6 +47,14 @@ MainWindow::MainWindow(QWidget *parent)
     simulationMenu->addAction(simulateAction);
     connect(simulateAction, &QAction::triggered, this, &MainWindow::Simulate);
 
+    //   * ヘルプメニュー
+    helpMenu = menuBar->addMenu("ヘルプ");
+
+    //     * ヘルプ
+    helpAction = new QAction("ヘルプ", this);
+    helpMenu->addAction(helpAction);
+    connect(helpAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+
     // * セントラル
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);

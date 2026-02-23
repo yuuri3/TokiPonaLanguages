@@ -24,6 +24,7 @@ private:
 
     QMenu *fileMenu;
     QMenu *simulationMenu;
+    QMenu *helpMenu;
 
     std::optional<LanguageFamilySimulator> simulator;
 
@@ -31,6 +32,7 @@ private:
     QAction *newFileAction;
     QAction *openFileAction;
     QAction *saveFileAction;
+    QAction *helpAction;
 
     QTableWidget *mainTable;
 
