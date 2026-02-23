@@ -17,23 +17,29 @@ private slots:
     void SaveFile();
     void OpenFile();
     void NewFile();
+    void ShowContextMenu(const QPoint &pos);
 
 private:
     QMenuBar *menuBar;
 
     QMenu *fileMenu;
     QMenu *simulationMenu;
+    QMenu *helpMenu;
 
-    std::optional<LanguageFamilySimulator> simulator;
+    std::optional<LanguageFamilySimulator> simulator = std::nullopt;
 
     QAction *simulateAction;
     QAction *newFileAction;
     QAction *openFileAction;
     QAction *saveFileAction;
+    QAction *helpAction;
 
     QTableWidget *mainTable;
 
     void DisplayLanguageFamily();
     void WarningUnsaveFile();
     void DisplayTable(const std::vector<std::vector<std::string>> &data);
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 };

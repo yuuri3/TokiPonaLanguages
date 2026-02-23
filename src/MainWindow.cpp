@@ -47,6 +47,14 @@ MainWindow::MainWindow(QWidget *parent)
     simulationMenu->addAction(simulateAction);
     connect(simulateAction, &QAction::triggered, this, &MainWindow::Simulate);
 
+    //   * ヘルプメニュー
+    helpMenu = menuBar->addMenu("ヘルプ");
+
+    //     * ヘルプ
+    helpAction = new QAction("ヘルプ", this);
+    helpMenu->addAction(helpAction);
+    connect(helpAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+
     // * セントラル
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
@@ -56,6 +64,10 @@ MainWindow::MainWindow(QWidget *parent)
     //   * メインテーブル
     mainTable = new QTableWidget(this);
     layout->addWidget(mainTable);
+
+    mainTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(mainTable, &QTableWidget::customContextMenuRequested,
+            this, &MainWindow::ShowContextMenu);
 
     // レイアウト調整
     constexpr int BUTTON_HEIGHT = 30;
@@ -227,4 +239,69 @@ void MainWindow::DisplayTable(const std::vector<std::vector<std::string>> &data)
     mainTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
     mainTable->resizeColumnsToContents();
+}
+
+/**
+ * @brief メインテーブル右クリック時
+ *
+ */
+void MainWindow::ShowContextMenu(const QPoint &pos)
+{
+    // クリックされた位置のアイテムを取得
+    QTableWidgetItem *item = mainTable->itemAt(pos);
+    if (!item)
+        return; // セルのない場所なら何もしない
+
+    QMenu menu(this);
+    QAction *editAction = menu.addAction("個別言語編集");
+
+    // メニューを表示し、選ばれたアクションを取得
+    QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
+
+    if (selectedAction == editAction)
+    {
+        Unimplemented();
+    }
+}
+
+/**
+ * @brief アプリクローズ時イベント
+ *
+ * @param event
+ */
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (!simulator)
+    {
+        event->accept();
+        return;
+    }
+
+    // カスタムダイアログの作成
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle("うなぎエディタ");
+    msgBox.setText("変更が保存されていません。");
+    msgBox.setInformativeText("終了する前に保存しますか？");
+
+    // ボタンの追加
+    QPushButton *saveButton = msgBox.addButton("保存して終了", QMessageBox::ActionRole);
+    QPushButton *discardButton = msgBox.addButton("保存せずに終了", QMessageBox::DestructiveRole);
+    QPushButton *cancelButton = msgBox.addButton("キャンセル", QMessageBox::RejectRole);
+
+    msgBox.setDefaultButton(saveButton);
+    msgBox.exec();
+
+    if (msgBox.clickedButton() == saveButton)
+    {
+        SaveFile();
+        event->accept();
+    }
+    else if (msgBox.clickedButton() == discardButton)
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
 }

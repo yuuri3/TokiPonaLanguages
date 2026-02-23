@@ -41,6 +41,16 @@ std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
                 charPosition += phonemeCharCount;
                 isMatch = true;
             }
+            if (PhonemeStr == " ")
+            {
+                Phoneme space;
+                space.IsSpace = true;
+                space.Manner = -1;
+                space.Place = -1;
+                convertedPhoneme.emplace_back(space);
+                charPosition += phonemeCharCount;
+                isMatch = true;
+            }
         }
         if (!isMatch)
             charPosition++;
@@ -66,4 +76,31 @@ Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &str
     }
     convertedLanguage.Strength = 0.0;
     return convertedLanguage;
+}
+
+/**
+ * 音素列を変換表に基づいて文字列に復元する
+ * @param Phonemes 音素列
+ * @param table 音素表
+ */
+std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonemes)
+{
+    std::string str = "";
+
+    for (const auto &phoneme : phonemes)
+    {
+        for (const auto &[keyString, valuePhoneme] : PhonemeMap)
+        {
+            if (phoneme == valuePhoneme)
+            {
+                str += keyString;
+            }
+        }
+        if (phoneme.IsSpace)
+        {
+            str += " ";
+        }
+    }
+
+    return str;
 }

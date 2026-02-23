@@ -111,29 +111,6 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
 }
 
 /**
- * 音素列を変換表に基づいて文字列に復元する
- * @param Phonemes 音素列
- * @param table 音素表
- */
-std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonemes)
-{
-    std::string str = "";
-
-    for (const auto &phoneme : phonemes)
-    {
-        for (const auto &[keyString, valuePhoneme] : PhonemeMap)
-        {
-            if (phoneme == valuePhoneme)
-            {
-                str += keyString;
-            }
-        }
-    }
-
-    return str;
-}
-
-/**
  * @brief 音韻変化を言語に適用
  *
  * @param language 言語
@@ -164,11 +141,11 @@ void ApplyPhonologicalChange(Language &language, const PhonologicalChange &phono
             bool isSoundEqualToBeforePhoneme = (sound == phonologicalChange.BeforePhoneme);
             if (isSoundEqualToBeforePhoneme)
             {
-                if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Start && soundPosition != 0)
+                if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Start && !(soundPosition == 0 || word.Form[soundPosition - 1].IsSpace))
                     isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::End && soundPosition != word.Form.size() - 1)
+                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::End && !(soundPosition == word.Form.size() - 1 || word.Form[soundPosition + 1].IsSpace))
                     isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Middle && (soundPosition == 0 || soundPosition == word.Form.size() - 1))
+                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Middle && (soundPosition == 0 || word.Form[soundPosition - 1].IsSpace || soundPosition == word.Form.size() - 1 || word.Form[soundPosition + 1].IsSpace))
                     isSoundEqualToBeforePhoneme = false;
             }
 
@@ -292,7 +269,7 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
         {
             continue;
         }
-        const auto randomSound = getRandomSoundFromLanguage(language);
+        const auto randomSound = getRandomSoundFromTable(LanguageFamily_.PhonemeTable);
         PhonologicalChange randomPhonologicalChange = makepPhonologicalChangeRandom(randomSound, LanguageFamily_.PhonemeTable, pSoundLoss);
 
         // ログ
@@ -428,7 +405,11 @@ Phoneme getRandomSoundFromTable(const std::vector<std::vector<std::string>> &pho
         {
             if (!phonemeTable[row][collum].empty())
             {
-                phonemeLiist.push_back({row, collum});
+                Phoneme phoneme;
+                phoneme.IsSpace = false;
+                phoneme.Manner = row;
+                phoneme.Place = collum;
+                phonemeLiist.push_back({phoneme});
             }
         }
     }
@@ -436,27 +417,15 @@ Phoneme getRandomSoundFromTable(const std::vector<std::vector<std::string>> &pho
     // 候補が一つもない場合
     if (phonemeLiist.empty())
     {
-        return {-1, -1};
+        Phoneme phoneme;
+        phoneme.IsSpace = true;
+        phoneme.Manner = -1;
+        phoneme.Place = -1;
+        return phoneme;
     }
 
     // 座標リストのインデックスをランダムに選択
     return phonemeLiist[getRandomInt(0, phonemeLiist.size() - 1)];
-}
-
-/**
- * @brief 言語から、音素をランダムに1つ選択する
- * @param language 言語
- * @return 音素
- */
-Phoneme getRandomSoundFromLanguage(Language &language)
-{
-    if (language.Words.empty())
-    {
-        return {0, 0};
-    }
-    const int randomWordIndex = getRandomInt(0, (int)(language.Words.size()) - 1);
-    const int PhonemeIndex = getRandomInt(0, (int)(language.Words[randomWordIndex].Form.size()) - 1);
-    return language.Words[randomWordIndex].Form[PhonemeIndex];
 }
 
 /**
