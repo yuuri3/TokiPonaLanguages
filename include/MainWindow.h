@@ -23,6 +23,7 @@ private:
     QMenuBar *menuBar;
 
     QMenu *fileMenu;
+    QMenu *editMenu;
     QMenu *simulationMenu;
     QMenu *helpMenu;
 
@@ -32,6 +33,8 @@ private:
     QAction *newFileAction;
     QAction *openFileAction;
     QAction *saveFileAction;
+    QAction *phonologicalChangeAction;
+    QAction *loanwordAction;
     QAction *helpAction;
 
     QTableWidget *mainTable;

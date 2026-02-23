@@ -39,6 +39,19 @@ MainWindow::MainWindow(QWidget *parent)
     fileMenu->addAction(saveFileAction);
     connect(saveFileAction, &QAction::triggered, this, &MainWindow::SaveFile);
 
+    //   * 編集メニュー
+    editMenu = menuBar->addMenu("編集");
+
+    //     * 音韻変化
+    phonologicalChangeAction = new QAction("音韻変化", this);
+    editMenu->addAction(phonologicalChangeAction);
+    connect(phonologicalChangeAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+
+    //     * 借用
+    loanwordAction = new QAction("借用", this);
+    editMenu->addAction(loanwordAction);
+    connect(loanwordAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+
     //   * シミュレーションメニュー
     simulationMenu = menuBar->addMenu("シミュレーション");
 
