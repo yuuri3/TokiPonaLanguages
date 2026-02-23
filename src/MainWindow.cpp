@@ -57,6 +57,10 @@ MainWindow::MainWindow(QWidget *parent)
     mainTable = new QTableWidget(this);
     layout->addWidget(mainTable);
 
+    mainTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(mainTable, &QTableWidget::customContextMenuRequested,
+            this, &MainWindow::ShowContextMenu);
+
     // レイアウト調整
     constexpr int BUTTON_HEIGHT = 30;
     constexpr int BUTTON_WIDTH = 90;
@@ -227,4 +231,27 @@ void MainWindow::DisplayTable(const std::vector<std::vector<std::string>> &data)
     mainTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
     mainTable->resizeColumnsToContents();
+}
+
+/**
+ * @brief メインテーブル右クリック時
+ *
+ */
+void MainWindow::ShowContextMenu(const QPoint &pos)
+{
+    // クリックされた位置のアイテムを取得
+    QTableWidgetItem *item = mainTable->itemAt(pos);
+    if (!item)
+        return; // セルのない場所なら何もしない
+
+    QMenu menu(this);
+    QAction *editAction = menu.addAction("個別言語編集");
+
+    // メニューを表示し、選ばれたアクションを取得
+    QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
+
+    if (selectedAction == editAction)
+    {
+        Unimplemented();
+    }
 }

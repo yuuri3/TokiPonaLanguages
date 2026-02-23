@@ -17,6 +17,7 @@ private slots:
     void SaveFile();
     void OpenFile();
     void NewFile();
+    void ShowContextMenu(const QPoint &pos);
 
 private:
     QMenuBar *menuBar;
