@@ -3,6 +3,7 @@
 #include "SimulationDialog.h"
 #include "Utility.h"
 #include "stdafx.h"
+#include "EditLanguageWindow.h"
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -273,7 +274,11 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
 
     if (selectedAction == editAction)
     {
-        Unimplemented();
+        const int row = mainTable->currentRow();
+        const int column = mainTable->currentColumn();
+        const std::string place = mainTable->item(0, column)->text().toStdString();
+        const int period = row;
+        EditLanguage(place, period);
     }
 }
 
@@ -317,4 +322,16 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         event->ignore();
     }
+}
+
+/**
+ * @brief 言語編集ウィンドウを開く
+ *
+ * @param place 地域
+ * @param period 時代
+ */
+void MainWindow::EditLanguage(const std::string place, const int period)
+{
+    EditLanguageWindow subWindow(this);
+    subWindow.exec();
 }

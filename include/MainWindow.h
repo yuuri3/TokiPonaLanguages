@@ -42,6 +42,7 @@ private:
     void DisplayLanguageFamily();
     void WarningUnsaveFile();
     void DisplayTable(const std::vector<std::vector<std::string>> &data);
+    void EditLanguage(const std::string place, const int period);
 
 protected:
     void closeEvent(QCloseEvent *event) override;

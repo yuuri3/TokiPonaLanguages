@@ -20,10 +20,12 @@ add_library(src
     MainWindow.cpp
     UnimplementedDialog.cpp
     SimulationDialog.cpp
+    EditLanguageWindow.cpp
     ../include/MainWindow.h
     ../include/UnimplementedDialog.h
     ../include/SimulationDialog.h
     ../include/Evolution.h
+    ../include/EditLanguageWindow.h
   )
 
 target_include_directories(src
