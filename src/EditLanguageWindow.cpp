@@ -1,14 +1,30 @@
 #include "EditLanguageWindow.h"
+#include "UnimplementedDialog.h"
 
 EditLanguageWindow::EditLanguageWindow(QWidget *parent)
 {
     setWindowTitle("個別言語編集");
 
-    QHBoxLayout *layout = new QHBoxLayout(this);
+    QVBoxLayout *layout = new QVBoxLayout(this);
 
     //   * 単語表示
     mainTable = new QTableWidget(this);
     layout->addWidget(mainTable);
+
+    //   * 検索バー
+    QHBoxLayout *searchLayout = new QHBoxLayout();
+
+    searchLineEdit = new QLineEdit(this);
+    searchLineEdit->setPlaceholderText("検索ワードを入力...");
+
+    searchButton = new QPushButton("検索", this);
+
+    connect(searchButton, &QPushButton::clicked, this, &EditLanguageWindow::Unimplemented);
+
+    searchLayout->addWidget(searchLineEdit);
+    searchLayout->addWidget(searchButton);
+
+    layout->addLayout(searchLayout);
 }
 
 /**

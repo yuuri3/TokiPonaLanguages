@@ -15,6 +15,7 @@ public:
     void SetPeriod(const int period);
 
 private slots:
+    void Unimplemented();
 
 private:
     std::shared_ptr<LanguageFamily> Languages;
@@ -22,6 +23,8 @@ private:
     std::optional<int> Period;
 
     QTableWidget *mainTable;
+    QLineEdit *searchLineEdit;
+    QPushButton *searchButton;
 
     void UpdateTable();
 };
