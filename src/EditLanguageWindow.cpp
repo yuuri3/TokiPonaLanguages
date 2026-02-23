@@ -66,9 +66,25 @@ void EditLanguageWindow::UpdateTable()
         std::vector<std::vector<std::string>> wordData;
         std::vector<std::string> line;
         PhonemeConverter converter = PhonemeConverter::Create(Languages->PhonemeTable);
+
+        line.emplace_back("単語");
+        line.emplace_back("訳語");
+        wordData.emplace_back(line);
+        line.clear();
+
         for (const auto &[ID, word] : language->Words)
         {
             line.emplace_back(converter.ConvertToString(word.Form));
+            std::string translations;
+            for (const auto [_, translation] : word.Translations)
+            {
+                for (const auto &t : translation)
+                {
+                    translations += t;
+                    translations += ",";
+                }
+            }
+            line.emplace_back(translations);
             wordData.emplace_back(line);
             line.clear();
         }
