@@ -333,5 +333,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::EditLanguage(const std::string place, const int period)
 {
     EditLanguageWindow subWindow(this);
+    subWindow.SetLanguages(std::make_shared<LanguageFamily>(simulator->LanguageFamily_));
+    subWindow.SetPlace(place);
+    subWindow.SetPeriod(period);
     subWindow.exec();
 }
