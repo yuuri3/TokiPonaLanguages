@@ -26,7 +26,7 @@ private:
     QMenu *simulationMenu;
     QMenu *helpMenu;
 
-    std::optional<LanguageFamilySimulator> simulator;
+    std::optional<LanguageFamilySimulator> simulator = std::nullopt;
 
     QAction *simulateAction;
     QAction *newFileAction;
@@ -39,4 +39,7 @@ private:
     void DisplayLanguageFamily();
     void WarningUnsaveFile();
     void DisplayTable(const std::vector<std::vector<std::string>> &data);
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 };

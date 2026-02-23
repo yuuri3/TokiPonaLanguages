@@ -20,3 +20,4 @@
 #include <QStandardPaths>
 #include <QCoreApplication>
 #include <QFileInfo>
+#include <QCloseEvent>

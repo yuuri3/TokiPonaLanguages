@@ -263,3 +263,45 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
         Unimplemented();
     }
 }
+
+/**
+ * @brief アプリクローズ時イベント
+ *
+ * @param event
+ */
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (!simulator)
+    {
+        event->accept();
+        return;
+    }
+
+    // カスタムダイアログの作成
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle("うなぎエディタ");
+    msgBox.setText("変更が保存されていません。");
+    msgBox.setInformativeText("終了する前に保存しますか？");
+
+    // ボタンの追加
+    QPushButton *saveButton = msgBox.addButton("保存して終了", QMessageBox::ActionRole);
+    QPushButton *discardButton = msgBox.addButton("保存せずに終了", QMessageBox::DestructiveRole);
+    QPushButton *cancelButton = msgBox.addButton("キャンセル", QMessageBox::RejectRole);
+
+    msgBox.setDefaultButton(saveButton);
+    msgBox.exec();
+
+    if (msgBox.clickedButton() == saveButton)
+    {
+        SaveFile();
+        event->accept();
+    }
+    else if (msgBox.clickedButton() == discardButton)
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
+}
