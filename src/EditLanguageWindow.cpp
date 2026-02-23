@@ -25,6 +25,12 @@ EditLanguageWindow::EditLanguageWindow(QWidget *parent)
     searchLayout->addWidget(searchButton);
 
     layout->addLayout(searchLayout);
+
+    //   * 単語追加ボタン
+    addWordButton = new QPushButton("単語追加", this);
+
+    connect(addWordButton, &QPushButton::clicked, this, &EditLanguageWindow::Unimplemented);
+    layout->addWidget(addWordButton);
 }
 
 /**
@@ -107,4 +113,14 @@ void EditLanguageWindow::UpdateTable()
 
         DisplayTable(mainTable, wordData);
     }
+}
+
+/**
+ * @brief 未実装な機能へアクセスしたときの処理
+ *
+ */
+void EditLanguageWindow::Unimplemented()
+{
+    UnimplementedDialog sub(this);
+    sub.exec();
 }

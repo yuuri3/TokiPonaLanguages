@@ -25,6 +25,7 @@ private:
     QTableWidget *mainTable;
     QLineEdit *searchLineEdit;
     QPushButton *searchButton;
+    QPushButton *addWordButton;
 
     void UpdateTable();
 };
