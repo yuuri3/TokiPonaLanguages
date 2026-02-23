@@ -37,7 +37,8 @@ struct LanguageFamilySimulator
     void ChangeLanguageStrengthRandom(const double pChangeStrength);
     bool HasAllPlaceLanguage();
     void ToNextPeriod();
-    std::vector<std::vector<std::string>> ToString();
+    std::vector<std::vector<std::string>> ToStringLanguageFamily();
+    std::vector<std::vector<std::string>> ToStringCurrentLanguages();
 
 private:
     bool ApplyDifference(const LanguageDifference &diff);

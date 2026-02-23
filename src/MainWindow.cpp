@@ -107,7 +107,7 @@ void MainWindow::Simulate()
  */
 void MainWindow::DisplayLanguageFamily()
 {
-    const auto table = simulator->ToString();
+    const auto table = simulator->ToStringLanguageFamily();
     DisplayTable(table);
 }
 

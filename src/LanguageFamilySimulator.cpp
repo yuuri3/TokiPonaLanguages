@@ -699,11 +699,75 @@ std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create(LanguageF
 }
 
 /**
+ * @brief 言語名の配列を出力
+ *
+ * @return std::vector<std::vector<std::string>>
+ */
+std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageFamily()
+{
+    int currentPeriod = 0;
+    std::vector<std::vector<std::string>> result;
+    std::vector<std::string> line;
+    Period = 0;
+    Languages.clear();
+
+    auto converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable);
+
+    for (const auto &place : getNonEmptyStrings(LanguageFamily_.Geography))
+    {
+        line.emplace_back(place);
+    }
+    result.emplace_back(line);
+    line.clear();
+
+    for (const auto &diff : LanguageFamily_.languageDifference)
+    {
+        if (diff.Period != currentPeriod)
+        {
+            currentPeriod = diff.Period;
+            for (const auto &place : getNonEmptyStrings(LanguageFamily_.Geography))
+            {
+                if (Languages.count(place) == 0 || Languages[place].Words.empty())
+                {
+                    line.emplace_back("");
+                }
+                else
+                {
+                    line.emplace_back(converter.ConvertToString(Languages[place].Words[0].Form));
+                }
+            }
+            result.emplace_back(line);
+            line.clear();
+        }
+        if (!ApplyDifference(diff))
+        {
+            return {};
+        }
+    }
+
+    for (const auto &place : getNonEmptyStrings(LanguageFamily_.Geography))
+    {
+        if (Languages.count(place) == 0 || Languages[place].Words.empty())
+        {
+            line.emplace_back("");
+        }
+        else
+        {
+            line.emplace_back(converter.ConvertToString(Languages[place].Words[0].Form));
+        }
+    }
+    result.emplace_back(line);
+    line.clear();
+
+    return result;
+}
+
+/**
  * @brief 文字列の配列に変換
  *
  * @return std::vector<std::vector<std::string>> 配列
  */
-std::vector<std::vector<std::string>> LanguageFamilySimulator::ToString()
+std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringCurrentLanguages()
 {
     std::vector<std::vector<std::string>> result;
     std::vector<std::string> line;
