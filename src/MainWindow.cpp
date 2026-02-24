@@ -15,6 +15,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    isLanguagesSaved = true;
+
     const auto appName = QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName();
     setWindowTitle(appName);
 
@@ -137,6 +139,8 @@ void MainWindow::Simulate()
     {
         DisplayLanguageFamily();
     }
+
+    isLanguagesSaved = false;
 }
 
 /**
@@ -172,6 +176,7 @@ void MainWindow::SaveFile()
             "実行エラー",
             "保存するファイルがありません。");
     }
+    isLanguagesSaved = true;
 }
 
 /**
@@ -191,6 +196,8 @@ void MainWindow::OpenFile()
     languageFamily.Import(fileName.toStdString());
     simulator = LanguageFamilySimulator::Create(languageFamily);
     DisplayLanguageFamily();
+
+    isLanguagesSaved = true;
 }
 
 void MainWindow::NewFile()
@@ -198,6 +205,8 @@ void MainWindow::NewFile()
     WarningUnsaveFile();
     simulator = LanguageFamilySimulator::Create();
     DisplayLanguageFamily();
+
+    isLanguagesSaved = true;
 }
 
 /**
@@ -270,7 +279,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
  */
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (!simulator)
+    if (!simulator || isLanguagesSaved)
     {
         event->accept();
         return;
@@ -318,6 +327,8 @@ void MainWindow::EditLanguage(const std::string place, const int period)
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
+
+    isLanguagesSaved = false;
 }
 
 /**
@@ -351,6 +362,8 @@ void MainWindow::EditPeriod(const std::string place, const int period)
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
+
+    isLanguagesSaved = false;
 }
 
 /**
@@ -366,4 +379,6 @@ void MainWindow::EditGeometry(const std::string place, const int period)
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
+
+    isLanguagesSaved = false;
 }

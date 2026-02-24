@@ -43,6 +43,8 @@ private:
 
     QTableWidget *mainTable;
 
+    bool isLanguagesSaved;
+
     void DisplayLanguageFamily();
     void WarningUnsaveFile();
     void EditLanguage(const std::string place, const int period);
