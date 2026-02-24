@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "EditLanguageWindow.h"
 #include "EditPeriodDialog.h"
+#include "EditGeometryDialog.h"
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -258,7 +259,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     }
     else if (selectedAction == editGeography)
     {
-        Unimplemented();
+        EditGeometry(place, period);
     }
 }
 
@@ -338,9 +339,30 @@ void MainWindow::ShowQtLicense()
     QApplication::aboutQt();
 }
 
+/**
+ * @brief 時間軸編集
+ *
+ * @param place 地域
+ * @param period 時代
+ */
 void MainWindow::EditPeriod(const std::string place, const int period)
 {
     EditPeriodDialog subWindow(this);
+    subWindow.SetPlace(place);
+    subWindow.SetPeriod(period);
+    subWindow.exec();
+}
+
+/**
+ * @brief 地理編集
+ *
+ * @param place 地域
+ * @param period 時代
+ */
+void MainWindow::EditGeometry(const std::string place, const int period)
+{
+    EditGeometryDialog subWindow(this);
+    subWindow.SetLanguages(std::make_shared<LanguageFamily>(simulator->LanguageFamily_));
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();

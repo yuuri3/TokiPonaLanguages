@@ -47,6 +47,7 @@ private:
     void WarningUnsaveFile();
     void EditLanguage(const std::string place, const int period);
     void EditPeriod(const std::string place, const int period);
+    void EditGeometry(const std::string place, const int period);
 
 protected:
     void closeEvent(QCloseEvent *event) override;

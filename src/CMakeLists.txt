@@ -22,6 +22,7 @@ add_library(src
     SimulationDialog.cpp
     EditLanguageWindow.cpp
     EditPeriodDialog.cpp
+    EditGeometryDialog.cpp
     ../include/Utility.h
     ../include/MainWindow.h
     ../include/UnimplementedDialog.h
@@ -29,6 +30,7 @@ add_library(src
     ../include/Evolution.h
     ../include/EditLanguageWindow.h
     ../include/EditPeriodDialog.h
+    ../include/EditGeometryDialog.h
   )
 
 target_include_directories(src
