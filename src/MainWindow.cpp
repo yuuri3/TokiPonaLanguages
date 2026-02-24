@@ -69,6 +69,16 @@ MainWindow::MainWindow(QWidget *parent)
     helpMenu->addAction(helpAction);
     connect(helpAction, &QAction::triggered, this, &MainWindow::Unimplemented);
 
+    //     * バージョン情報
+    versionAction = new QAction("バージョン情報", this);
+    helpMenu->addAction(versionAction);
+    connect(versionAction, &QAction::triggered, this, &MainWindow::ShowVersion);
+
+    //     * Qt ライセンス
+    QtAction = new QAction("Qt ライセンス", this);
+    helpMenu->addAction(QtAction);
+    connect(QtAction, &QAction::triggered, this, &MainWindow::ShowQtLicense);
+
     // * セントラル
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
@@ -227,6 +237,8 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
 
     QMenu menu(this);
     QAction *editAction = menu.addAction("個別言語編集");
+    QAction *editPeriod = menu.addAction("時間軸編集");
+    QAction *editGeography = menu.addAction("地理編集");
 
     // メニューを表示し、選ばれたアクションを取得
     QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
@@ -238,6 +250,14 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
         const std::string place = mainTable->item(0, column)->text().toStdString();
         const int period = row;
         EditLanguage(place, period);
+    }
+    else if (selectedAction == editPeriod)
+    {
+        Unimplemented();
+    }
+    else if (selectedAction == editGeography)
+    {
+        Unimplemented();
     }
 }
 
@@ -296,4 +316,23 @@ void MainWindow::EditLanguage(const std::string place, const int period)
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
+}
+
+/**
+ * @brief バージョン表示イベント
+ *
+ */
+void MainWindow::ShowVersion()
+{
+    QMessageBox::about(this, "バージョン情報",
+                       QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName() + "<p>Copyright 2026 フクロウナギ</p>");
+}
+
+/**
+ * @brief Qt ライセンス表示
+ *
+ */
+void MainWindow::ShowQtLicense()
+{
+    QApplication::aboutQt();
 }

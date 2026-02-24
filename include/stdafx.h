@@ -21,3 +21,4 @@
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <QCloseEvent>
+#include <QApplication>

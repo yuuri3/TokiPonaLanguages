@@ -16,6 +16,7 @@ public:
 
 private slots:
     void Unimplemented();
+    void ShowContextMenu(const QPoint &pos);
 
 private:
     std::shared_ptr<LanguageFamily> Languages;

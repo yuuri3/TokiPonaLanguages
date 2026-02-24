@@ -11,6 +11,10 @@ EditLanguageWindow::EditLanguageWindow(QWidget *parent)
     mainTable = new QTableWidget(this);
     layout->addWidget(mainTable);
 
+    mainTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(mainTable, &QTableWidget::customContextMenuRequested,
+            this, &EditLanguageWindow::ShowContextMenu);
+
     //   * 検索バー
     QHBoxLayout *searchLayout = new QHBoxLayout();
 
@@ -123,4 +127,27 @@ void EditLanguageWindow::Unimplemented()
 {
     UnimplementedDialog sub(this);
     sub.exec();
+}
+
+/**
+ * @brief 単語編集メニュー表示
+ *
+ */
+void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
+{
+    // クリックされた位置のアイテムを取得
+    QTableWidgetItem *item = mainTable->itemAt(pos);
+    if (!item)
+        return; // セルのない場所なら何もしない
+
+    QMenu menu(this);
+    QAction *editAction = menu.addAction("編集");
+
+    // メニューを表示し、選ばれたアクションを取得
+    QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
+
+    if (selectedAction == editAction)
+    {
+        Unimplemented();
+    }
 }
