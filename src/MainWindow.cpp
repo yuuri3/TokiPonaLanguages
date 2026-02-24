@@ -74,6 +74,11 @@ MainWindow::MainWindow(QWidget *parent)
     helpMenu->addAction(versionAction);
     connect(versionAction, &QAction::triggered, this, &MainWindow::ShowVersion);
 
+    //     * Qt ライセンス
+    QtAction = new QAction("Qt ライセンス", this);
+    helpMenu->addAction(QtAction);
+    connect(QtAction, &QAction::triggered, this, &MainWindow::ShowQtLicense);
+
     // * セントラル
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
@@ -311,4 +316,13 @@ void MainWindow::ShowVersion()
 {
     QMessageBox::about(this, "バージョン情報",
                        QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName() + "<p>Copyright 2026 フクロウナギ</p>");
+}
+
+/**
+ * @brief Qt ライセンス表示
+ *
+ */
+void MainWindow::ShowQtLicense()
+{
+    QApplication::aboutQt();
 }
