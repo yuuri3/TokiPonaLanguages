@@ -1,5 +1,6 @@
 #include "EditLanguageWindow.h"
 #include "UnimplementedDialog.h"
+#include "EditWordDialog.h"
 
 EditLanguageWindow::EditLanguageWindow(QWidget *parent)
 {
@@ -148,6 +149,7 @@ void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
 
     if (selectedAction == editAction)
     {
-        Unimplemented();
+        EditWordDialog subWindow(this);
+        subWindow.exec();
     }
 }
