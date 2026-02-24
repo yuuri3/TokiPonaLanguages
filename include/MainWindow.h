@@ -18,6 +18,7 @@ private slots:
     void OpenFile();
     void NewFile();
     void ShowContextMenu(const QPoint &pos);
+    void ShowVersion();
 
 private:
     QMenuBar *menuBar;
@@ -36,6 +37,7 @@ private:
     QAction *phonologicalChangeAction;
     QAction *loanwordAction;
     QAction *helpAction;
+    QAction *versionAction;
 
     QTableWidget *mainTable;
 

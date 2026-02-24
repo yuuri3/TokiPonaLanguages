@@ -69,6 +69,11 @@ MainWindow::MainWindow(QWidget *parent)
     helpMenu->addAction(helpAction);
     connect(helpAction, &QAction::triggered, this, &MainWindow::Unimplemented);
 
+    //     * バージョン情報
+    versionAction = new QAction("バージョン情報", this);
+    helpMenu->addAction(versionAction);
+    connect(versionAction, &QAction::triggered, this, &MainWindow::ShowVersion);
+
     // * セントラル
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
@@ -296,4 +301,14 @@ void MainWindow::EditLanguage(const std::string place, const int period)
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
+}
+
+/**
+ * @brief バージョン表示イベント
+ *
+ */
+void MainWindow::ShowVersion()
+{
+    QMessageBox::about(this, "バージョン情報",
+                       QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName() + "<p>Copyright 2026 フクロウナギ</p>");
 }
