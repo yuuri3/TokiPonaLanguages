@@ -4,6 +4,7 @@
 #include "Utility.h"
 #include "stdafx.h"
 #include "EditLanguageWindow.h"
+#include "EditPeriodDialog.h"
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -243,17 +244,17 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     // メニューを表示し、選ばれたアクションを取得
     QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
 
+    const int row = mainTable->currentRow();
+    const int column = mainTable->currentColumn();
+    const std::string place = mainTable->item(0, column)->text().toStdString();
+    const int period = row;
     if (selectedAction == editAction)
     {
-        const int row = mainTable->currentRow();
-        const int column = mainTable->currentColumn();
-        const std::string place = mainTable->item(0, column)->text().toStdString();
-        const int period = row;
         EditLanguage(place, period);
     }
     else if (selectedAction == editPeriod)
     {
-        Unimplemented();
+        EditPeriod(place, period);
     }
     else if (selectedAction == editGeography)
     {
@@ -335,4 +336,12 @@ void MainWindow::ShowVersion()
 void MainWindow::ShowQtLicense()
 {
     QApplication::aboutQt();
+}
+
+void MainWindow::EditPeriod(const std::string place, const int period)
+{
+    EditPeriodDialog subWindow(this);
+    subWindow.SetPlace(place);
+    subWindow.SetPeriod(period);
+    subWindow.exec();
 }
