@@ -237,6 +237,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
 
     QMenu menu(this);
     QAction *editAction = menu.addAction("個別言語編集");
+    QAction *editPeriod = menu.addAction("時間軸編集");
 
     // メニューを表示し、選ばれたアクションを取得
     QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
@@ -248,6 +249,10 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
         const std::string place = mainTable->item(0, column)->text().toStdString();
         const int period = row;
         EditLanguage(place, period);
+    }
+    else if (selectedAction == editPeriod)
+    {
+        Unimplemented();
     }
 }
 
