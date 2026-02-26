@@ -206,7 +206,7 @@ void EditWordDialog::UpdateDialog()
 }
 
 /**
- * @brief 訳語を表示
+ * @brief 行を表示
  *
  * @param layout
  * @param translations
@@ -266,7 +266,7 @@ void EditWordDialog::AddRelationsButtonPushed()
 }
 
 /**
- * @brief レイアウトに2行追加
+ * @brief 行追加
  *
  */
 void EditWordDialog::AddLine(QWidget *widget, const std::vector<std::string> &values, const std::vector<int> &widths)
@@ -298,7 +298,7 @@ void EditWordDialog::AddLine(QWidget *widget, const std::vector<std::string> &va
 }
 
 /**
- * @brief 訳語編集メニューを表示
+ * @brief 行クリックイベント
  *
  */
 void EditWordDialog::ClickLine(const QPoint &pos)
