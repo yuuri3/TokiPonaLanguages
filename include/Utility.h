@@ -11,3 +11,4 @@ std::string JoinStrs(const std::vector<std::string> &elements, const std::string
 void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string>> &data);
 void ClearLayout(QLayout *layout);
 void DeleteWidget(QWidget *widget);
+void ClearWidget(QWidget *widget);

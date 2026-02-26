@@ -22,15 +22,17 @@ private slots:
     void Click1Col(const QPoint &pos);
     void Click2Cols(const QPoint &pos);
     void AddTagsButtonPushed();
+    void AddContentsButtonPushed();
     void Unimplemented();
 
 private:
     QLineEdit *Entry;
-    QVBoxLayout *TranslationLayout;
+    QWidget *Translations;
     QPushButton *AddTranslationButton;
-    QVBoxLayout *TagsLayout;
+    QWidget *Tags;
     QPushButton *AddTagsButton;
-    QTableWidget *Contents;
+    QWidget *Contents;
+    QPushButton *AddContentsButton;
     QTableWidget *Variations;
     QTableWidget *Relations;
 
@@ -40,8 +42,8 @@ private:
     std::optional<int> WordID;
 
     void UpdateDialog();
-    void Add1Col(QVBoxLayout *layout, std::string value);
-    void Add2Cols(QVBoxLayout *layout, std::string title, std::string value);
-    void Display1Col(QVBoxLayout *layout, std::vector<std::string> values);
-    void Display2Cols(QVBoxLayout *layout, const std::vector<std::pair<std::string, std::string>> &translations);
+    void Add1Col(QWidget *widget, std::string value);
+    void Add2Cols(QWidget *widget, std::string title, std::string value);
+    void Display1Col(QWidget *widget, std::vector<std::string> values);
+    void Display2Cols(QWidget *widget, const std::vector<std::pair<std::string, std::string>> &translations);
 };

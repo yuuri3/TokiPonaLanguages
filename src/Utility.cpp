@@ -241,3 +241,39 @@ void DeleteWidget(QWidget *widget)
     // 2. イベントループの安全なタイミングでメモリを解放する
     widget->deleteLater();
 }
+
+/**
+ * @brief レイアウトの中身を消去
+ * * @param widget クリア対象のウィジェット
+ */
+void ClearWidget(QWidget *widget)
+{
+    if (!widget)
+    {
+        return;
+    }
+
+    // 既存のレイアウトを取得
+    QLayout *oldLayout = widget->layout();
+
+    if (oldLayout)
+    {
+        // 1. レイアウト内のウィジェットやサブレイアウトをすべて削除
+        while (QLayoutItem *item = oldLayout->takeAt(0))
+        {
+            if (QWidget *childWidget = item->widget())
+            {
+                DeleteWidget(childWidget);
+            }
+            else if (QLayout *childLayout = item->layout())
+            {
+                // サブレイアウトがある場合は、その中身も再帰的にクリア
+                ClearLayout(childLayout);
+            }
+            delete item;
+        }
+
+        // 2. レイアウト本体を削除して、ウィジェットから切り離す
+        delete oldLayout;
+    }
+}
