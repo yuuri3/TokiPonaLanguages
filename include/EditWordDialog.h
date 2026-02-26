@@ -18,15 +18,30 @@ public:
              std::optional<int> wordID);
 
 private slots:
+    void AddTranslationButtonPushed();
+    void ClickLine(const QPoint &pos);
+    void AddTagsButtonPushed();
+    void AddContentsButtonPushed();
+    void AddVariationsButtonPushed();
+    void AddRelationsButtonPushed();
     void Unimplemented();
 
 private:
+    const std::vector<int> TWO_WIDTHS = {50, 200};
+    const std::vector<int> ONE_WIDTH = {50};
+    const int BUTTON_WIDTH = 50;
+
     QLineEdit *Entry;
-    QTableWidget *Translations;
-    QTableWidget *Tags;
-    QTableWidget *Contents;
-    QTableWidget *Variations;
-    QTableWidget *Relations;
+    QWidget *Translations;
+    QPushButton *AddTranslationButton;
+    QWidget *Tags;
+    QPushButton *AddTagsButton;
+    QWidget *Contents;
+    QPushButton *AddContentsButton;
+    QWidget *Variations;
+    QPushButton *AddVariationsButton;
+    QWidget *Relations;
+    QPushButton *AddRelationsButton;
 
     std::shared_ptr<LanguageFamily> Languages;
     std::optional<std::string> Place;
@@ -34,4 +49,6 @@ private:
     std::optional<int> WordID;
 
     void UpdateDialog();
+    void AddLine(QWidget *widget, const std::vector<std::string> &values, const std::vector<int> &widths);
+    void DisplayLine(QWidget *widget, const std::vector<std::vector<std::string>> &values, const std::vector<int> &widths);
 };

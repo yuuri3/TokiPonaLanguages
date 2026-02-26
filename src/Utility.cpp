@@ -178,3 +178,102 @@ void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string
 
     table->resizeColumnsToContents();
 }
+
+/**
+ * @brief 文字列を結合
+ *
+ * @param elements 文字列の配列
+ * @param delimiter 区切り文字
+ * @return std::string
+ */
+std::string JoinStrs(const std::vector<std::string> &elements, const std::string &delimiter)
+{
+    std::stringstream ss;
+    for (size_t i = 0; i < elements.size(); ++i)
+    {
+        ss << elements[i];
+        if (i != elements.size() - 1)
+        {
+            ss << delimiter; // 最後の要素以外に区切り文字を入れる
+        }
+    }
+    return ss.str();
+}
+
+/**
+ * @brief レイアウトの中身を消去
+ *
+ * @param layout レイアウト
+ */
+void ClearLayout(QLayout *layout)
+{
+    if (!layout)
+        return;
+
+    while (QLayoutItem *item = layout->takeAt(0))
+    {
+        if (QWidget *widget = item->widget())
+        {
+            widget->setParent(nullptr);
+            widget->deleteLater();
+        }
+        else if (QLayout *childLayout = item->layout())
+        {
+            ClearLayout(childLayout);
+        }
+        delete item;
+    }
+}
+
+/**
+ * @brief ウィジェットを安全に削除
+ *
+ * @param widget 削除対象のウィジェット
+ */
+void DeleteWidget(QWidget *widget)
+{
+    if (!widget)
+        return;
+
+    // 1. 親ウィジェットとの紐付けを解除して画面から消す
+    widget->setParent(nullptr);
+
+    // 2. イベントループの安全なタイミングでメモリを解放する
+    widget->deleteLater();
+}
+
+/**
+ * @brief レイアウトの中身を消去
+ * * @param widget クリア対象のウィジェット
+ */
+void ClearWidget(QWidget *widget)
+{
+    if (!widget)
+    {
+        return;
+    }
+
+    // 既存のレイアウトを取得
+    QLayout *oldLayout = widget->layout();
+
+    if (oldLayout)
+    {
+        // 1. レイアウト内のウィジェットやサブレイアウトをすべて削除
+        while (QLayoutItem *item = oldLayout->takeAt(0))
+        {
+            if (QWidget *childWidget = item->widget())
+            {
+                DeleteWidget(childWidget);
+            }
+            else if (QLayout *childLayout = item->layout())
+            {
+                // サブレイアウトがある場合は、その中身も再帰的にクリア
+                ClearLayout(childLayout);
+            }
+            delete item;
+        }
+
+        // 2. レイアウト本体を削除して、ウィジェットから切り離す
+        delete oldLayout;
+    }
+}

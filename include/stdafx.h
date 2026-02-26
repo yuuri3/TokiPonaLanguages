@@ -23,3 +23,4 @@
 #include <QCloseEvent>
 #include <QApplication>
 #include <QLabel>
+#include <QLayoutItem>
