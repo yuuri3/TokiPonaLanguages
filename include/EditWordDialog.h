@@ -23,6 +23,7 @@ private slots:
     void AddTagsButtonPushed();
     void AddContentsButtonPushed();
     void AddVariationsButtonPushed();
+    void AddRelationsButtonPushed();
     void Unimplemented();
 
 private:
@@ -35,7 +36,8 @@ private:
     QPushButton *AddContentsButton;
     QWidget *Variations;
     QPushButton *AddVariationsButton;
-    QTableWidget *Relations;
+    QWidget *Relations;
+    QPushButton *AddRelationsButton;
 
     std::shared_ptr<LanguageFamily> Languages;
     std::optional<std::string> Place;

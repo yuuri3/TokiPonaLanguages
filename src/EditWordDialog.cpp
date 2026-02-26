@@ -75,15 +75,25 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     DisplayLine(Variations, variations);
 
     //   * 変化形追加ボタン
-    AddVariationsButton = new QPushButton("自由記述追加", this);
+    AddVariationsButton = new QPushButton("変化形追加", this);
     connect(AddVariationsButton, &QPushButton::clicked, this, &EditWordDialog::AddVariationsButtonPushed);
     variationsTitleLayout->addWidget(AddVariationsButton);
 
     // * 関連語
-    layout->addWidget(new QLabel("関連語", this));
+    QHBoxLayout *RelationsTitleLayout = new QHBoxLayout(this);
+    RelationsTitleLayout->addWidget(new QLabel("関連語", this));
+    layout->addLayout(RelationsTitleLayout);
 
-    Relations = new QTableWidget(this);
+    Relations = new QWidget(this);
     layout->addWidget(Relations);
+
+    std::vector<std::vector<std::string>> relations = {{"", ""}};
+    DisplayLine(Relations, relations);
+
+    //   * 関連語追加ボタン
+    AddRelationsButton = new QPushButton("関連語追加", this);
+    connect(AddRelationsButton, &QPushButton::clicked, this, &EditWordDialog::AddRelationsButtonPushed);
+    RelationsTitleLayout->addWidget(AddRelationsButton);
 }
 
 /**
@@ -178,19 +188,16 @@ void EditWordDialog::UpdateDialog()
         DisplayLine(Variations, variationsData);
 
         // 関連語
-        const auto relations = language->Words[*WordID].Relations;
         std::vector<std::vector<std::string>> relationsData;
-        std::vector<std::string> relationsLine;
-        for (const auto &[title, relatedWordID] : relations)
+        for (const auto &[title, relatedWordID] : language->Words[*WordID].Relations)
         {
-
-            relationsLine.emplace_back(title);
-            relationsLine.emplace_back(converter.ConvertToString(language->Words[relatedWordID].Form));
-
-            relationsData.emplace_back(relationsLine);
-            relationsLine.clear();
+            if (language->Words.count(relatedWordID) == 1)
+            {
+                relationsData.push_back({title, converter.ConvertToString(language->Words[relatedWordID].Form)});
+            }
         }
-        DisplayTable(Relations, relationsData);
+        relationsData.push_back({"", ""});
+        DisplayLine(Relations, relationsData);
     }
 }
 
@@ -243,6 +250,15 @@ void EditWordDialog::AddContentsButtonPushed()
 void EditWordDialog::AddVariationsButtonPushed()
 {
     AddLine(Variations, {"", ""});
+}
+
+/**
+ * @brief 関連語追加ボタンクリック
+ *
+ */
+void EditWordDialog::AddRelationsButtonPushed()
+{
+    AddLine(Relations, {"", ""});
 }
 
 /**
