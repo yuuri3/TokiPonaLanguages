@@ -27,6 +27,9 @@ private slots:
     void Unimplemented();
 
 private:
+    const std::vector<int> TWO_WIDTHS = {50, 200};
+    const std::vector<int> ONE_WIDTH = {50};
+
     QLineEdit *Entry;
     QWidget *Translations;
     QPushButton *AddTranslationButton;
@@ -45,6 +48,6 @@ private:
     std::optional<int> WordID;
 
     void UpdateDialog();
-    void AddLine(QWidget *widget, const std::vector<std::string> &value);
-    void DisplayLine(QWidget *widget, const std::vector<std::vector<std::string>> &values);
+    void AddLine(QWidget *widget, const std::vector<std::string> &values, const std::vector<int> &widths);
+    void DisplayLine(QWidget *widget, const std::vector<std::vector<std::string>> &values, const std::vector<int> &widths);
 };

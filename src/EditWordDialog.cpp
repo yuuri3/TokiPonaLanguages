@@ -24,7 +24,7 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Translations);
 
     std::vector<std::vector<std::string>> translations = {{"", ""}};
-    DisplayLine(Translations, translations);
+    DisplayLine(Translations, translations, TWO_WIDTHS);
 
     //   * 訳語追加ボタン
     AddTranslationButton = new QPushButton("訳語追加", this);
@@ -40,7 +40,7 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Tags);
 
     std::vector<std::vector<std::string>> tags = {{""}};
-    DisplayLine(Tags, tags);
+    DisplayLine(Tags, tags, ONE_WIDTH);
 
     //   * タグ追加ボタン
     AddTagsButton = new QPushButton("タグ追加", this);
@@ -56,7 +56,7 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Contents);
 
     std::vector<std::vector<std::string>> contents = {{"", ""}};
-    DisplayLine(Contents, contents);
+    DisplayLine(Contents, contents, TWO_WIDTHS);
 
     //   * 自由記述追加ボタン
     AddContentsButton = new QPushButton("自由記述追加", this);
@@ -72,7 +72,7 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Variations);
 
     std::vector<std::vector<std::string>> variations = {{"", ""}};
-    DisplayLine(Variations, variations);
+    DisplayLine(Variations, variations, TWO_WIDTHS);
 
     //   * 変化形追加ボタン
     AddVariationsButton = new QPushButton("変化形追加", this);
@@ -88,7 +88,7 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Relations);
 
     std::vector<std::vector<std::string>> relations = {{"", ""}};
-    DisplayLine(Relations, relations);
+    DisplayLine(Relations, relations, TWO_WIDTHS);
 
     //   * 関連語追加ボタン
     AddRelationsButton = new QPushButton("関連語追加", this);
@@ -158,7 +158,7 @@ void EditWordDialog::UpdateDialog()
             translations.push_back({title, formsStr});
         }
         translations.push_back({"", ""});
-        DisplayLine(Translations, translations);
+        DisplayLine(Translations, translations, TWO_WIDTHS);
 
         // タグ
         std::vector<std::vector<std::string>> tags;
@@ -167,7 +167,7 @@ void EditWordDialog::UpdateDialog()
             tags.push_back({tag});
         }
         tags.push_back({""});
-        DisplayLine(Tags, tags);
+        DisplayLine(Tags, tags, ONE_WIDTH);
 
         // 自由記述
         std::vector<std::vector<std::string>> contentsData;
@@ -176,7 +176,7 @@ void EditWordDialog::UpdateDialog()
             contentsData.push_back({title, content});
         }
         contentsData.push_back({"", ""});
-        DisplayLine(Contents, contentsData);
+        DisplayLine(Contents, contentsData, TWO_WIDTHS);
 
         // 変化形
         std::vector<std::vector<std::string>> variationsData;
@@ -185,7 +185,7 @@ void EditWordDialog::UpdateDialog()
             variationsData.push_back({title, converter.ConvertToString(variation)});
         }
         variationsData.push_back({"", ""});
-        DisplayLine(Variations, variationsData);
+        DisplayLine(Variations, variationsData, TWO_WIDTHS);
 
         // 関連語
         std::vector<std::vector<std::string>> relationsData;
@@ -197,7 +197,7 @@ void EditWordDialog::UpdateDialog()
             }
         }
         relationsData.push_back({"", ""});
-        DisplayLine(Relations, relationsData);
+        DisplayLine(Relations, relationsData, TWO_WIDTHS);
     }
 }
 
@@ -207,12 +207,12 @@ void EditWordDialog::UpdateDialog()
  * @param layout
  * @param translations
  */
-void EditWordDialog::DisplayLine(QWidget *widget, const std::vector<std::vector<std::string>> &values)
+void EditWordDialog::DisplayLine(QWidget *widget, const std::vector<std::vector<std::string>> &values, const std::vector<int> &widths)
 {
     ClearWidget(widget);
     for (const auto &line : values)
     {
-        AddLine(widget, line);
+        AddLine(widget, line, widths);
     }
 }
 
@@ -222,7 +222,7 @@ void EditWordDialog::DisplayLine(QWidget *widget, const std::vector<std::vector<
  */
 void EditWordDialog::AddTranslationButtonPushed()
 {
-    AddLine(Translations, {"", ""});
+    AddLine(Translations, {"", ""}, TWO_WIDTHS);
 }
 
 /**
@@ -231,7 +231,7 @@ void EditWordDialog::AddTranslationButtonPushed()
  */
 void EditWordDialog::AddTagsButtonPushed()
 {
-    AddLine(Tags, {""});
+    AddLine(Tags, {""}, ONE_WIDTH);
 }
 
 /**
@@ -240,7 +240,7 @@ void EditWordDialog::AddTagsButtonPushed()
  */
 void EditWordDialog::AddContentsButtonPushed()
 {
-    AddLine(Contents, {"", ""});
+    AddLine(Contents, {"", ""}, TWO_WIDTHS);
 }
 
 /**
@@ -249,7 +249,7 @@ void EditWordDialog::AddContentsButtonPushed()
  */
 void EditWordDialog::AddVariationsButtonPushed()
 {
-    AddLine(Variations, {"", ""});
+    AddLine(Variations, {"", ""}, TWO_WIDTHS);
 }
 
 /**
@@ -258,14 +258,14 @@ void EditWordDialog::AddVariationsButtonPushed()
  */
 void EditWordDialog::AddRelationsButtonPushed()
 {
-    AddLine(Relations, {"", ""});
+    AddLine(Relations, {"", ""}, TWO_WIDTHS);
 }
 
 /**
  * @brief レイアウトに2行追加
  *
  */
-void EditWordDialog::AddLine(QWidget *widget, const std::vector<std::string> &values)
+void EditWordDialog::AddLine(QWidget *widget, const std::vector<std::string> &values, const std::vector<int> &widths)
 {
     if (!widget->layout())
     {
@@ -275,11 +275,16 @@ void EditWordDialog::AddLine(QWidget *widget, const std::vector<std::string> &va
     QWidget *rowContainer = new QWidget(this);
     QHBoxLayout *subLayout = new QHBoxLayout(rowContainer);
     subLayout->setContentsMargins(0, 0, 0, 0);
+    subLayout->setAlignment(Qt::AlignLeft);
 
-    for (const auto &value : values)
+    for (int i = 0; i < values.size(); i++)
     {
+        const auto value = values[i];
+        const auto width = widths[i];
+
         auto line = new QLineEdit(this);
         line->setText(QString::fromStdString(""));
+        line->setFixedWidth(width);
         line->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(line, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
         subLayout->addWidget(line);
@@ -308,8 +313,9 @@ void EditWordDialog::ClickLine(const QPoint &pos)
     if (selectedAction == addAction)
     {
         int rowCount = senderLineEdit->parent()->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly).size();
+        auto widths = (rowCount = 1) ? ONE_WIDTH : TWO_WIDTHS;
         std::vector<std::string> newLine(rowCount, "");
-        AddLine(qobject_cast<QWidget *>(senderLineEdit->parent()->parent()), newLine);
+        AddLine(qobject_cast<QWidget *>(senderLineEdit->parent()->parent()), newLine, widths);
     }
     else if (selectedAction == removeAction)
     {
