@@ -16,13 +16,19 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Entry);
 
     // * 訳語
-    layout->addWidget(new QLabel("訳語", this));
+    QHBoxLayout *translationsTitleLayout = new QHBoxLayout(this);
+    translationsTitleLayout->addWidget(new QLabel("訳語", this));
+    layout->addLayout(translationsTitleLayout);
 
     TranslationLayout = new QVBoxLayout(this);
     layout->addLayout(TranslationLayout);
 
     std::vector<std::pair<std::string, std::string>> translations = {{"", ""}};
     DisplayTranslations(TranslationLayout, translations);
+
+    //   * 訳語追加ボタン
+    AddTranslationButton = new QPushButton("訳語追加", this);
+    translationsTitleLayout->addWidget(AddTranslationButton);
 
     // * タグ
     layout->addWidget(new QLabel("タグ", this));

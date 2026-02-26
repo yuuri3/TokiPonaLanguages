@@ -23,6 +23,7 @@ private slots:
 private:
     QLineEdit *Entry;
     QVBoxLayout *TranslationLayout;
+    QPushButton *AddTranslationButton;
     QTableWidget *Tags;
     QTableWidget *Contents;
     QTableWidget *Variations;
