@@ -111,6 +111,76 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
 }
 
 /**
+ * @brief 音韻の制限
+ *
+ * @param changedWordForm
+ * @return true
+ * @return false
+ */
+bool CheckSoundDuplication(const std::vector<Phoneme> &changedWordForm)
+{
+    // 子音と母音の境界
+    constexpr int MAX_CONSONANT_MANNER = 3;
+
+    bool isSoundDuplication = false;
+
+    std::vector<std::vector<Phoneme>> wordForms;
+    std::vector<Phoneme> wordForm;
+    for (const auto &phoneme : changedWordForm)
+    {
+        if (phoneme.IsSpace)
+        {
+            wordForms.emplace_back(wordForm);
+            wordForm.clear();
+        }
+        else
+        {
+            wordForm.emplace_back(phoneme);
+        }
+    }
+    wordForms.emplace_back(wordForm);
+
+    for (const auto &w : wordForms)
+    {
+        if (w.empty())
+            isSoundDuplication = true;
+        else if (w.size() == 1)
+        {
+            if (w[0].Manner <= MAX_CONSONANT_MANNER)
+                isSoundDuplication = true;
+        }
+        else
+        {
+            // 境界条件のチェック
+            if ((w[0].Manner <= MAX_CONSONANT_MANNER && w[1].Manner <= MAX_CONSONANT_MANNER) ||
+                (w.back().Manner <= MAX_CONSONANT_MANNER && w[w.size() - 2].Manner <= MAX_CONSONANT_MANNER))
+            {
+                isSoundDuplication = true;
+            }
+            else
+            {
+                // 3連続のチェック
+                for (size_t j = 0; j + 2 < w.size(); ++j)
+                {
+                    bool isConsonant = (w[j].Manner <= MAX_CONSONANT_MANNER &&
+                                        w[j + 1].Manner <= MAX_CONSONANT_MANNER &&
+                                        w[j + 2].Manner <= MAX_CONSONANT_MANNER);
+                    bool isVowel = (w[j].Manner > MAX_CONSONANT_MANNER &&
+                                    w[j + 1].Manner > MAX_CONSONANT_MANNER &&
+                                    w[j + 2].Manner > MAX_CONSONANT_MANNER);
+                    if (isConsonant || isVowel)
+                    {
+                        isSoundDuplication = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return isSoundDuplication;
+}
+
+/**
  * @brief 音韻変化を言語に適用
  *
  * @param language 言語
@@ -120,9 +190,6 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
  */
 void ApplyPhonologicalChange(Language &language, const PhonologicalChange &phonologicalChange, const bool isProhibitSoundDuplication, const bool isProhibitMinimalPair)
 {
-    // 子音と母音の境界（定数化してループ外で定義）
-    constexpr int MAX_CONSONANT_MANNER = 3;
-
     // 変更が発生した単語を記録する一時的なマップ（インプレース更新用）
     std::map<int, Word> phonologicalChangedWords;
 
@@ -169,42 +236,7 @@ void ApplyPhonologicalChange(Language &language, const PhonologicalChange &phono
         // 子音・母音の重複禁止チェック (isSoundDuplication)
         if (isProhibitSoundDuplication)
         {
-            bool isSoundDuplication = false;
-            if (changedWordForm.empty())
-                isSoundDuplication = true;
-            else if (changedWordForm.size() == 1)
-            {
-                if (changedWordForm[0].Manner <= MAX_CONSONANT_MANNER)
-                    isSoundDuplication = true;
-            }
-            else
-            {
-                // 境界条件のチェック
-                if ((changedWordForm[0].Manner <= MAX_CONSONANT_MANNER && changedWordForm[1].Manner <= MAX_CONSONANT_MANNER) ||
-                    (changedWordForm.back().Manner <= MAX_CONSONANT_MANNER && changedWordForm[changedWordForm.size() - 2].Manner <= MAX_CONSONANT_MANNER))
-                {
-                    isSoundDuplication = true;
-                }
-                else
-                {
-                    // 3連続のチェック
-                    for (size_t j = 0; j + 2 < changedWordForm.size(); ++j)
-                    {
-                        bool isConsonant = (changedWordForm[j].Manner <= MAX_CONSONANT_MANNER &&
-                                            changedWordForm[j + 1].Manner <= MAX_CONSONANT_MANNER &&
-                                            changedWordForm[j + 2].Manner <= MAX_CONSONANT_MANNER);
-                        bool isVowel = (changedWordForm[j].Manner > MAX_CONSONANT_MANNER &&
-                                        changedWordForm[j + 1].Manner > MAX_CONSONANT_MANNER &&
-                                        changedWordForm[j + 2].Manner > MAX_CONSONANT_MANNER);
-                        if (isConsonant || isVowel)
-                        {
-                            isSoundDuplication = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (isSoundDuplication)
+            if (CheckSoundDuplication(changedWordForm))
                 continue; // 違反していればこの単語の変化は破棄
         }
 
