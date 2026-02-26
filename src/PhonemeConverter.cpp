@@ -1,4 +1,5 @@
 #include "..\\include\PhonemeConverter.h"
+#include "Random.h"
 
 PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::string>> &phonemeTable)
 {
@@ -103,4 +104,12 @@ std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonem
     }
 
     return str;
+}
+
+Phoneme PhonemeConverter::GetRandom() const
+{
+    const int randomIndex = getRandomInt(0, static_cast<int>(PhonemeMap.size()));
+    auto it = PhonemeMap.begin();
+    std::advance(it, randomIndex);
+    return it->second;
 }

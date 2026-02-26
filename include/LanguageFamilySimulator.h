@@ -45,6 +45,3 @@ private:
     bool ApplyDifference(const LanguageDifference &diff);
     bool ApplyDifferences(const std::vector<LanguageDifference> &diffs);
 };
-
-PhonologicalChange makepPhonologicalChangeRandom(const Phoneme &beforePhoneme, const std::vector<std::vector<std::string>> &table, const double pRemovePhoneme);
-Phoneme getRandomSoundFromTable(const std::vector<std::vector<std::string>> &table);

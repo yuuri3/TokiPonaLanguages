@@ -1,4 +1,4 @@
-#include "..\\include\LanguageFamilySimulator.h"
+#include "LanguageFamilySimulator.h"
 #include <set>
 #include <fstream>
 #include <sstream>
@@ -38,33 +38,201 @@ namespace
             return "Unknown";
         }
     }
-}
 
-std::map<std::string, Language> setProtoLanguageOnMap(
-    const std::vector<std::string> &geometryData,
-    const std::string &startPlace,
-    const Language &protoLanguage)
-{
-    std::map<std::string, Language> languageOnGeometry;
-
-    for (const std::string &place : geometryData)
+    /**
+     * @brief 祖語をセット
+     *
+     * @param geometryData 地理データ
+     * @param startPlace 祖語を配置する地域
+     * @param protoLanguage 祖語
+     * @return std::map<std::string, Language>
+     */
+    std::map<std::string, Language> setProtoLanguageOnMap(
+        const std::vector<std::string> &geometryData,
+        const std::string &startPlace,
+        const Language &protoLanguage)
     {
-        // 1番目の要素をitem、2番目を空文字で初期化してペアを作成
-        Language language;
-        language.Strength = 0.0;
-        language.Words = {};
+        std::map<std::string, Language> languageOnGeometry;
 
-        // もし1番目の要素がtargetAと一致したら、2番目をreplacementBにする
-        if (place == startPlace)
+        for (const std::string &place : geometryData)
         {
-            language = protoLanguage;
+            // 1番目の要素をitem、2番目を空文字で初期化してペアを作成
+            Language language;
+            language.Strength = 0.0;
+            language.Words = {};
+
+            // もし1番目の要素がtargetAと一致したら、2番目をreplacementBにする
+            if (place == startPlace)
+            {
+                language = protoLanguage;
+            }
+
+            // 位置を設定
+            languageOnGeometry[place] = language;
         }
 
-        // 位置を設定
-        languageOnGeometry[place] = language;
+        return languageOnGeometry;
     }
 
-    return languageOnGeometry;
+    /**
+     * @brief 音韻の制限
+     *
+     * @param changedWordForm
+     * @return true
+     * @return false
+     */
+    bool CheckSoundDuplication(const std::vector<Phoneme> &changedWordForm)
+    {
+        // 子音と母音の境界
+        constexpr int MAX_CONSONANT_MANNER = 3;
+
+        bool isSoundDuplication = false;
+
+        std::vector<std::vector<Phoneme>> wordForms;
+        std::vector<Phoneme> wordForm;
+        for (const auto &phoneme : changedWordForm)
+        {
+            if (phoneme.IsSpace)
+            {
+                wordForms.emplace_back(wordForm);
+                wordForm.clear();
+            }
+            else
+            {
+                wordForm.emplace_back(phoneme);
+            }
+        }
+        wordForms.emplace_back(wordForm);
+
+        for (const auto &w : wordForms)
+        {
+            if (w.empty())
+                isSoundDuplication = true;
+            else if (w.size() == 1)
+            {
+                if (w[0].Manner <= MAX_CONSONANT_MANNER)
+                    isSoundDuplication = true;
+            }
+            else
+            {
+                // 境界条件のチェック
+                if ((w[0].Manner <= MAX_CONSONANT_MANNER && w[1].Manner <= MAX_CONSONANT_MANNER) ||
+                    (w.back().Manner <= MAX_CONSONANT_MANNER && w[w.size() - 2].Manner <= MAX_CONSONANT_MANNER))
+                {
+                    isSoundDuplication = true;
+                }
+                else
+                {
+                    // 3連続のチェック
+                    for (size_t j = 0; j + 2 < w.size(); ++j)
+                    {
+                        bool isConsonant = (w[j].Manner <= MAX_CONSONANT_MANNER &&
+                                            w[j + 1].Manner <= MAX_CONSONANT_MANNER &&
+                                            w[j + 2].Manner <= MAX_CONSONANT_MANNER);
+                        bool isVowel = (w[j].Manner > MAX_CONSONANT_MANNER &&
+                                        w[j + 1].Manner > MAX_CONSONANT_MANNER &&
+                                        w[j + 2].Manner > MAX_CONSONANT_MANNER);
+                        if (isConsonant || isVowel)
+                        {
+                            isSoundDuplication = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return isSoundDuplication;
+    }
+
+    /**
+     * 変化規則をランダムに生成
+     * @param beforePlace 変化前音素
+     * @param beforeMannar 変化前音素
+     * @param table 音素表
+     * @param pRemovePhoneme 音が脱落する確率
+     */
+    PhonologicalChange makepPhonologicalChangeRandom(const Phoneme &beforePhon, const std::vector<std::vector<std::string>> &phonemeTable, const double pRemoveSound)
+    {
+        int randomPhoneticEnvironment = getRandomInt(0, 2);
+
+        PhonologicalChange randomPhonologicalChange;
+        randomPhonologicalChange.BeforePhoneme = beforePhon;
+        randomPhonologicalChange.IsRemove = getWithProbability(pRemoveSound);
+        switch (randomPhoneticEnvironment)
+        {
+        case 0:
+            randomPhonologicalChange.PhoneticEnvironment = PhoneticEnvironment::Start;
+            break;
+        case 1:
+            randomPhonologicalChange.PhoneticEnvironment = PhoneticEnvironment::Middle;
+            break;
+        case 2:
+            randomPhonologicalChange.PhoneticEnvironment = PhoneticEnvironment::End;
+            break;
+
+        default:
+            break;
+        }
+        randomPhonologicalChange.AfterPhoneme = beforePhon;
+        moveRandomOnTable(randomPhonologicalChange.AfterPhoneme.Manner, randomPhonologicalChange.AfterPhoneme.Place, phonemeTable);
+        return randomPhonologicalChange;
+    }
+
+    /**
+     * @brief 音素表から、音素をランダムに1つ選択する
+     * @param phonemeTable 音素表
+     * @return 音素
+     */
+    Phoneme getRandomSoundFromTable(const std::vector<std::vector<std::string>> &phonemeTable)
+    {
+        const auto converter = PhonemeConverter::Create(phonemeTable);
+        return converter.GetRandom();
+    }
+
+    /**
+     * @brief 音韻変化を適用する
+     *
+     * @param wordForm 語形
+     * @param changedWordForm 変化語の語形
+     * @param phonologicalChange 音韻変化
+     */
+    bool ChangeWordSound(const std::vector<Phoneme> &wordForm, std::vector<Phoneme> &changedWordForm, const PhonologicalChange &phonologicalChange)
+    {
+        changedWordForm.reserve(wordForm.size());
+        bool isChanged = false;
+
+        for (size_t soundPosition = 0; soundPosition < wordForm.size(); ++soundPosition)
+        {
+            const auto &sound = wordForm[soundPosition];
+
+            // 変化条件の判定
+            bool isSoundEqualToBeforePhoneme = (sound == phonologicalChange.BeforePhoneme);
+            if (isSoundEqualToBeforePhoneme)
+            {
+                if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Start && !(soundPosition == 0 || wordForm[soundPosition - 1].IsSpace))
+                    isSoundEqualToBeforePhoneme = false;
+                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::End && !(soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace))
+                    isSoundEqualToBeforePhoneme = false;
+                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Middle && (soundPosition == 0 || wordForm[soundPosition - 1].IsSpace || soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace))
+                    isSoundEqualToBeforePhoneme = false;
+            }
+
+            if (isSoundEqualToBeforePhoneme)
+            {
+                isChanged = true;
+                if (!phonologicalChange.IsRemove)
+                {
+                    changedWordForm.push_back(phonologicalChange.AfterPhoneme);
+                }
+            }
+            else
+            {
+                changedWordForm.push_back(sound);
+            }
+        }
+
+        return isChanged;
+    }
 }
 
 /**
@@ -111,76 +279,6 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
 }
 
 /**
- * @brief 音韻の制限
- *
- * @param changedWordForm
- * @return true
- * @return false
- */
-bool CheckSoundDuplication(const std::vector<Phoneme> &changedWordForm)
-{
-    // 子音と母音の境界
-    constexpr int MAX_CONSONANT_MANNER = 3;
-
-    bool isSoundDuplication = false;
-
-    std::vector<std::vector<Phoneme>> wordForms;
-    std::vector<Phoneme> wordForm;
-    for (const auto &phoneme : changedWordForm)
-    {
-        if (phoneme.IsSpace)
-        {
-            wordForms.emplace_back(wordForm);
-            wordForm.clear();
-        }
-        else
-        {
-            wordForm.emplace_back(phoneme);
-        }
-    }
-    wordForms.emplace_back(wordForm);
-
-    for (const auto &w : wordForms)
-    {
-        if (w.empty())
-            isSoundDuplication = true;
-        else if (w.size() == 1)
-        {
-            if (w[0].Manner <= MAX_CONSONANT_MANNER)
-                isSoundDuplication = true;
-        }
-        else
-        {
-            // 境界条件のチェック
-            if ((w[0].Manner <= MAX_CONSONANT_MANNER && w[1].Manner <= MAX_CONSONANT_MANNER) ||
-                (w.back().Manner <= MAX_CONSONANT_MANNER && w[w.size() - 2].Manner <= MAX_CONSONANT_MANNER))
-            {
-                isSoundDuplication = true;
-            }
-            else
-            {
-                // 3連続のチェック
-                for (size_t j = 0; j + 2 < w.size(); ++j)
-                {
-                    bool isConsonant = (w[j].Manner <= MAX_CONSONANT_MANNER &&
-                                        w[j + 1].Manner <= MAX_CONSONANT_MANNER &&
-                                        w[j + 2].Manner <= MAX_CONSONANT_MANNER);
-                    bool isVowel = (w[j].Manner > MAX_CONSONANT_MANNER &&
-                                    w[j + 1].Manner > MAX_CONSONANT_MANNER &&
-                                    w[j + 2].Manner > MAX_CONSONANT_MANNER);
-                    if (isConsonant || isVowel)
-                    {
-                        isSoundDuplication = true;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    return isSoundDuplication;
-}
-
-/**
  * @brief 音韻変化を言語に適用
  *
  * @param language 言語
@@ -196,41 +294,10 @@ void ApplyPhonologicalChange(Language &language, const PhonologicalChange &phono
     // 1. 音韻変化の適用と音素重複チェックを同時に行う
     for (auto &[wordID, word] : language.Words)
     {
-        bool isChanged = false;
         std::vector<Phoneme> changedWordForm;
         changedWordForm.reserve(word.Form.size());
 
-        for (size_t soundPosition = 0; soundPosition < word.Form.size(); ++soundPosition)
-        {
-            const auto &sound = word.Form[soundPosition];
-
-            // 変化条件の判定
-            bool isSoundEqualToBeforePhoneme = (sound == phonologicalChange.BeforePhoneme);
-            if (isSoundEqualToBeforePhoneme)
-            {
-                if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Start && !(soundPosition == 0 || word.Form[soundPosition - 1].IsSpace))
-                    isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::End && !(soundPosition == word.Form.size() - 1 || word.Form[soundPosition + 1].IsSpace))
-                    isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment == PhoneticEnvironment::Middle && (soundPosition == 0 || word.Form[soundPosition - 1].IsSpace || soundPosition == word.Form.size() - 1 || word.Form[soundPosition + 1].IsSpace))
-                    isSoundEqualToBeforePhoneme = false;
-            }
-
-            if (isSoundEqualToBeforePhoneme)
-            {
-                isChanged = true;
-                if (!phonologicalChange.IsRemove)
-                {
-                    changedWordForm.push_back(phonologicalChange.AfterPhoneme);
-                }
-            }
-            else
-            {
-                changedWordForm.push_back(sound);
-            }
-        }
-
-        if (!isChanged)
+        if (!ChangeWordSound(word.Form, changedWordForm, phonologicalChange))
             continue;
 
         // 子音・母音の重複禁止チェック (isSoundDuplication)
@@ -313,40 +380,6 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
 }
 
 /**
- * 変化規則をランダムに生成
- * @param beforePlace 変化前音素
- * @param beforeMannar 変化前音素
- * @param table 音素表
- * @param pRemovePhoneme 音が脱落する確率
- */
-PhonologicalChange makepPhonologicalChangeRandom(const Phoneme &beforePhon, const std::vector<std::vector<std::string>> &phonemeTable, const double pRemoveSound)
-{
-    int randomPhoneticEnvironment = getRandomInt(0, 2);
-
-    PhonologicalChange randomPhonologicalChange;
-    randomPhonologicalChange.BeforePhoneme = beforePhon;
-    randomPhonologicalChange.IsRemove = getWithProbability(pRemoveSound);
-    switch (randomPhoneticEnvironment)
-    {
-    case 0:
-        randomPhonologicalChange.PhoneticEnvironment = PhoneticEnvironment::Start;
-        break;
-    case 1:
-        randomPhonologicalChange.PhoneticEnvironment = PhoneticEnvironment::Middle;
-        break;
-    case 2:
-        randomPhonologicalChange.PhoneticEnvironment = PhoneticEnvironment::End;
-        break;
-
-    default:
-        break;
-    }
-    randomPhonologicalChange.AfterPhoneme = beforePhon;
-    moveRandomOnTable(randomPhonologicalChange.AfterPhoneme.Manner, randomPhonologicalChange.AfterPhoneme.Place, phonemeTable);
-    return randomPhonologicalChange;
-}
-
-/**
  * 単語を借用
  *
  * @param nLoanword 借用回数
@@ -418,46 +451,6 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
             }
         }
     }
-}
-
-/**
- * @brief 音素表から、音素をランダムに1つ選択する
- * @param phonemeTable 音素表
- * @return 音素
- */
-Phoneme getRandomSoundFromTable(const std::vector<std::vector<std::string>> &phonemeTable)
-{
-    // 1. 空ではないセルの「座標」をリストに貯める
-    std::vector<Phoneme> phonemeLiist;
-    phonemeLiist.reserve(phonemeTable.size() * phonemeTable[0].size());
-
-    for (int row = 0; row < (int)phonemeTable.size(); ++row)
-    {
-        for (int collum = 0; collum < (int)phonemeTable[row].size(); ++collum)
-        {
-            if (!phonemeTable[row][collum].empty())
-            {
-                Phoneme phoneme;
-                phoneme.IsSpace = false;
-                phoneme.Manner = row;
-                phoneme.Place = collum;
-                phonemeLiist.push_back({phoneme});
-            }
-        }
-    }
-
-    // 候補が一つもない場合
-    if (phonemeLiist.empty())
-    {
-        Phoneme phoneme;
-        phoneme.IsSpace = true;
-        phoneme.Manner = -1;
-        phoneme.Place = -1;
-        return phoneme;
-    }
-
-    // 座標リストのインデックスをランダムに選択
-    return phonemeLiist[getRandomInt(0, phonemeLiist.size() - 1)];
 }
 
 /**
