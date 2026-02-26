@@ -18,8 +18,11 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     // * 訳語
     layout->addWidget(new QLabel("訳語", this));
 
-    Translations = new QTableWidget(this);
-    layout->addWidget(Translations);
+    TranslationLayout = new QVBoxLayout(this);
+    layout->addLayout(TranslationLayout);
+
+    std::vector<std::pair<std::string, std::string>> translations = {{"", ""}};
+    DisplayTranslations(TranslationLayout, translations);
 
     // * タグ
     layout->addWidget(new QLabel("タグ", this));
@@ -101,22 +104,14 @@ void EditWordDialog::UpdateDialog()
         Entry->setText(QString::fromStdString(converter.ConvertToString(form)));
 
         // 訳語
-        const auto translations = language->Words[*WordID].Translations;
-        std::vector<std::vector<std::string>> translationsData;
-        std::vector<std::string> translationsLine;
-        for (const auto &[title, forms] : translations)
+        std::vector<std::pair<std::string, std::string>> translations;
+        for (const auto &[title, forms] : language->Words[*WordID].Translations)
         {
-
-            translationsLine.emplace_back(title);
-            for (const auto &f : forms)
-            {
-                translationsLine.emplace_back(f);
-            }
-
-            translationsData.emplace_back(translationsLine);
-            translationsLine.clear();
+            std::string formsStr = JoinStrs(forms, ",");
+            translations.emplace_back(title, formsStr);
         }
-        DisplayTable(Translations, translationsData);
+        translations.emplace_back("", "");
+        DisplayTranslations(TranslationLayout, translations);
 
         // タグ
         const auto tags = language->Words[*WordID].Tags;
@@ -166,5 +161,29 @@ void EditWordDialog::UpdateDialog()
             relationsLine.clear();
         }
         DisplayTable(Relations, relationsData);
+    }
+}
+
+/**
+ * @brief 訳語を表示
+ *
+ * @param layout
+ * @param translations
+ */
+void EditWordDialog::DisplayTranslations(QVBoxLayout *layout, const std::vector<std::pair<std::string, std::string>> &translations)
+{
+    ClearLayout(layout);
+    for (const auto &[title, value] : translations)
+    {
+        QHBoxLayout *subLayout = new QHBoxLayout(this);
+
+        auto titleLine = new QLineEdit(this);
+        titleLine->setText(QString::fromStdString(title));
+        subLayout->addWidget(titleLine);
+        auto valueLine = new QLineEdit(this);
+        valueLine->setText(QString::fromStdString(value));
+        subLayout->addWidget(valueLine);
+
+        layout->addLayout(subLayout);
     }
 }

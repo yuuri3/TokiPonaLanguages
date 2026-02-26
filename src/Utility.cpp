@@ -178,3 +178,49 @@ void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string
 
     table->resizeColumnsToContents();
 }
+
+/**
+ * @brief 文字列を結合
+ *
+ * @param elements 文字列の配列
+ * @param delimiter 区切り文字
+ * @return std::string
+ */
+std::string JoinStrs(const std::vector<std::string> &elements, const std::string &delimiter)
+{
+    std::stringstream ss;
+    for (size_t i = 0; i < elements.size(); ++i)
+    {
+        ss << elements[i];
+        if (i != elements.size() - 1)
+        {
+            ss << delimiter; // 最後の要素以外に区切り文字を入れる
+        }
+    }
+    return ss.str();
+}
+
+/**
+ * @brief レイアウトの中身を消去
+ *
+ * @param layout レイアウト
+ */
+void ClearLayout(QLayout *layout)
+{
+    if (!layout)
+        return;
+
+    while (QLayoutItem *item = layout->takeAt(0))
+    {
+        if (QWidget *widget = item->widget())
+        {
+            widget->setParent(nullptr);
+            widget->deleteLater();
+        }
+        else if (QLayout *childLayout = item->layout())
+        {
+            ClearLayout(childLayout);
+        }
+        delete item;
+    }
+}

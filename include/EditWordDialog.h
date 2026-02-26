@@ -22,7 +22,7 @@ private slots:
 
 private:
     QLineEdit *Entry;
-    QTableWidget *Translations;
+    QVBoxLayout *TranslationLayout;
     QTableWidget *Tags;
     QTableWidget *Contents;
     QTableWidget *Variations;
@@ -34,4 +34,5 @@ private:
     std::optional<int> WordID;
 
     void UpdateDialog();
+    void DisplayTranslations(QVBoxLayout *layout, const std::vector<std::pair<std::string, std::string>> &translations);
 };
