@@ -24,6 +24,7 @@ add_library(src
     EditPeriodDialog.cpp
     EditGeometryDialog.cpp
     EditWordDialog.cpp
+    ../include/LanguageFamilySimulator.h
     ../include/Utility.h
     ../include/MainWindow.h
     ../include/UnimplementedDialog.h

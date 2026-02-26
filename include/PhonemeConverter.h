@@ -15,4 +15,5 @@ struct PhonemeConverter
     std::vector<Phoneme> ConvertToPhoneme(const std::string &str);
     std::string ConvertToString(const std::vector<Phoneme> &Phonemes);
     Language convertToLanguage(const std::vector<std::string> &strs);
+    Phoneme GetRandom() const;
 };
