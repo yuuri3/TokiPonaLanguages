@@ -224,3 +224,20 @@ void ClearLayout(QLayout *layout)
         delete item;
     }
 }
+
+/**
+ * @brief ウィジェットを安全に削除
+ *
+ * @param widget 削除対象のウィジェット
+ */
+void DeleteWidget(QWidget *widget)
+{
+    if (!widget)
+        return;
+
+    // 1. 親ウィジェットとの紐付けを解除して画面から消す
+    widget->setParent(nullptr);
+
+    // 2. イベントループの安全なタイミングでメモリを解放する
+    widget->deleteLater();
+}

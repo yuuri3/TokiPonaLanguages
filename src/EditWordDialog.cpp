@@ -28,7 +28,7 @@ EditWordDialog::EditWordDialog(QWidget *parent)
 
     //   * 訳語追加ボタン
     AddTranslationButton = new QPushButton("訳語追加", this);
-    connect(AddTranslationButton, &QPushButton::clicked, this, &EditWordDialog::AddTranslations);
+    connect(AddTranslationButton, &QPushButton::clicked, this, &EditWordDialog::AddTranslationButtonPushed);
     translationsTitleLayout->addWidget(AddTranslationButton);
 
     // * タグ
@@ -182,33 +182,73 @@ void EditWordDialog::DisplayTranslations(QVBoxLayout *layout, const std::vector<
     ClearLayout(layout);
     for (const auto &[title, value] : translations)
     {
-        QHBoxLayout *subLayout = new QHBoxLayout(this);
-
-        auto titleLine = new QLineEdit(this);
-        titleLine->setText(QString::fromStdString(title));
-        subLayout->addWidget(titleLine);
-        auto valueLine = new QLineEdit(this);
-        valueLine->setText(QString::fromStdString(value));
-        subLayout->addWidget(valueLine);
-
-        layout->addLayout(subLayout);
+        AddTranslations(layout, title, value);
     }
+}
+
+/**
+ * @brief 訳語行追加
+ *
+ */
+void EditWordDialog::AddTranslationButtonPushed()
+{
+    AddTranslations(TranslationLayout, "", "");
 }
 
 /**
  * @brief 訳語追加
  *
  */
-void EditWordDialog::AddTranslations()
+void EditWordDialog::AddTranslations(QVBoxLayout *layout, std::string title, std::string value)
 {
-    QHBoxLayout *subLayout = new QHBoxLayout(this);
+    QWidget *rowContainer = new QWidget(this);
+    QHBoxLayout *subLayout = new QHBoxLayout(rowContainer);
+    subLayout->setContentsMargins(0, 0, 0, 0);
 
     auto titleLine = new QLineEdit(this);
     titleLine->setText(QString::fromStdString(""));
+    titleLine->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(titleLine, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::TranslationLineClicked);
     subLayout->addWidget(titleLine);
+
     auto valueLine = new QLineEdit(this);
     valueLine->setText(QString::fromStdString(""));
     subLayout->addWidget(valueLine);
+    valueLine->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(valueLine, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::TranslationLineClicked);
+    subLayout->addWidget(valueLine);
 
-    TranslationLayout->addLayout(subLayout);
+    TranslationLayout->addWidget(rowContainer);
+}
+
+/**
+ * @brief 訳語編集メニューを表示
+ *
+ */
+void EditWordDialog::TranslationLineClicked(const QPoint &pos)
+{
+    // 送信元（右クリックされたQLineEdit）を取得
+    QLineEdit *senderLineEdit = qobject_cast<QLineEdit *>(sender());
+    if (!senderLineEdit)
+        return;
+
+    QMenu menu(this);
+    QAction *addAction = menu.addAction("追加");
+    QAction *removeAction = menu.addAction("削除");
+
+    QAction *selectedAction = menu.exec(senderLineEdit->mapToGlobal(pos));
+
+    if (selectedAction == addAction)
+    {
+        AddTranslations(TranslationLayout, "", "");
+    }
+    else if (selectedAction == removeAction)
+    {
+        QWidget *rowContainer = senderLineEdit->parentWidget();
+
+        if (rowContainer && rowContainer != this)
+        {
+            DeleteWidget(rowContainer);
+        }
+    }
 }

@@ -18,7 +18,8 @@ public:
              std::optional<int> wordID);
 
 private slots:
-    void AddTranslations();
+    void AddTranslationButtonPushed();
+    void TranslationLineClicked(const QPoint &pos);
     void Unimplemented();
 
 private:
@@ -36,5 +37,6 @@ private:
     std::optional<int> WordID;
 
     void UpdateDialog();
+    void AddTranslations(QVBoxLayout *layout, std::string title, std::string value);
     void DisplayTranslations(QVBoxLayout *layout, const std::vector<std::pair<std::string, std::string>> &translations);
 };
