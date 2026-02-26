@@ -398,7 +398,7 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
             auto languageIterator1 = Languages.find(adjucent.first);
             auto languageIterator2 = Languages.find(adjucent.second);
             if (languageIterator1 == Languages.end() || languageIterator2 == Languages.end())
-                return;
+                continue;
 
             Language &language1 = languageIterator1->second;
             Language &language2 = languageIterator2->second;
@@ -429,7 +429,7 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
                         LanguageFamily_.languageDifference.emplace_back(dif);
                     }
                 }
-                return;
+                continue;
             }
 
             auto *referenceLanguage = (language1.Strength > language2.Strength) ? &language1 : &language2;
