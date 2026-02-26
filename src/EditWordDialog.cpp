@@ -27,7 +27,8 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     DisplayLine(Translations, translations, TWO_WIDTHS);
 
     //   * 訳語追加ボタン
-    AddTranslationButton = new QPushButton("訳語追加", this);
+    AddTranslationButton = new QPushButton("追加", this);
+    AddTranslationButton->setFixedWidth(BUTTON_WIDTH);
     connect(AddTranslationButton, &QPushButton::clicked, this, &EditWordDialog::AddTranslationButtonPushed);
     translationsTitleLayout->addWidget(AddTranslationButton);
 
@@ -43,7 +44,8 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     DisplayLine(Tags, tags, ONE_WIDTH);
 
     //   * タグ追加ボタン
-    AddTagsButton = new QPushButton("タグ追加", this);
+    AddTagsButton = new QPushButton("追加", this);
+    AddTagsButton->setFixedWidth(BUTTON_WIDTH);
     connect(AddTagsButton, &QPushButton::clicked, this, &EditWordDialog::AddTagsButtonPushed);
     tagsTitleLayout->addWidget(AddTagsButton);
 
@@ -59,7 +61,8 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     DisplayLine(Contents, contents, TWO_WIDTHS);
 
     //   * 自由記述追加ボタン
-    AddContentsButton = new QPushButton("自由記述追加", this);
+    AddContentsButton = new QPushButton("追加", this);
+    AddContentsButton->setFixedWidth(BUTTON_WIDTH);
     connect(AddContentsButton, &QPushButton::clicked, this, &EditWordDialog::AddContentsButtonPushed);
     contentsTitleLayout->addWidget(AddContentsButton);
 
@@ -75,7 +78,8 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     DisplayLine(Variations, variations, TWO_WIDTHS);
 
     //   * 変化形追加ボタン
-    AddVariationsButton = new QPushButton("変化形追加", this);
+    AddVariationsButton = new QPushButton("追加", this);
+    AddVariationsButton->setFixedWidth(BUTTON_WIDTH);
     connect(AddVariationsButton, &QPushButton::clicked, this, &EditWordDialog::AddVariationsButtonPushed);
     variationsTitleLayout->addWidget(AddVariationsButton);
 
@@ -91,7 +95,7 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     DisplayLine(Relations, relations, TWO_WIDTHS);
 
     //   * 関連語追加ボタン
-    AddRelationsButton = new QPushButton("関連語追加", this);
+    AddRelationsButton = new QPushButton("追加", this);
     connect(AddRelationsButton, &QPushButton::clicked, this, &EditWordDialog::AddRelationsButtonPushed);
     RelationsTitleLayout->addWidget(AddRelationsButton);
 }
@@ -312,8 +316,8 @@ void EditWordDialog::ClickLine(const QPoint &pos)
 
     if (selectedAction == addAction)
     {
-        int rowCount = senderLineEdit->parent()->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly).size();
-        auto widths = (rowCount = 1) ? ONE_WIDTH : TWO_WIDTHS;
+        int rowCount = senderLineEdit->parentWidget()->layout()->count();
+        auto widths = (rowCount == 1) ? ONE_WIDTH : TWO_WIDTHS;
         std::vector<std::string> newLine(rowCount, "");
         AddLine(qobject_cast<QWidget *>(senderLineEdit->parent()->parent()), newLine, widths);
     }

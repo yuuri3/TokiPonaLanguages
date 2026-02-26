@@ -29,6 +29,7 @@ private slots:
 private:
     const std::vector<int> TWO_WIDTHS = {50, 200};
     const std::vector<int> ONE_WIDTH = {50};
+    const int BUTTON_WIDTH = 50;
 
     QLineEdit *Entry;
     QWidget *Translations;
