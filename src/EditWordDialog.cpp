@@ -28,6 +28,7 @@ EditWordDialog::EditWordDialog(QWidget *parent)
 
     //   * 訳語追加ボタン
     AddTranslationButton = new QPushButton("訳語追加", this);
+    connect(AddTranslationButton, &QPushButton::clicked, this, &EditWordDialog::AddTranslations);
     translationsTitleLayout->addWidget(AddTranslationButton);
 
     // * タグ
@@ -192,4 +193,22 @@ void EditWordDialog::DisplayTranslations(QVBoxLayout *layout, const std::vector<
 
         layout->addLayout(subLayout);
     }
+}
+
+/**
+ * @brief 訳語追加
+ *
+ */
+void EditWordDialog::AddTranslations()
+{
+    QHBoxLayout *subLayout = new QHBoxLayout(this);
+
+    auto titleLine = new QLineEdit(this);
+    titleLine->setText(QString::fromStdString(""));
+    subLayout->addWidget(titleLine);
+    auto valueLine = new QLineEdit(this);
+    valueLine->setText(QString::fromStdString(""));
+    subLayout->addWidget(valueLine);
+
+    TranslationLayout->addLayout(subLayout);
 }

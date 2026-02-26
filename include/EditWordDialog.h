@@ -18,6 +18,7 @@ public:
              std::optional<int> wordID);
 
 private slots:
+    void AddTranslations();
     void Unimplemented();
 
 private:
