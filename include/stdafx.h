@@ -22,3 +22,4 @@
 #include <QFileInfo>
 #include <QCloseEvent>
 #include <QApplication>
+#include <QLabel>

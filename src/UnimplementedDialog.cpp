@@ -1,5 +1,4 @@
 #include "UnimplementedDialog.h"
-#include <QLabel>
 
 UnimplementedDialog::UnimplementedDialog(QWidget *parent)
 {

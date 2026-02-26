@@ -4,6 +4,8 @@
 #include "Utility.h"
 #include "stdafx.h"
 #include "EditLanguageWindow.h"
+#include "EditPeriodDialog.h"
+#include "EditGeometryDialog.h"
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -13,6 +15,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    isLanguagesSaved = true;
+
     const auto appName = QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName();
     setWindowTitle(appName);
 
@@ -135,6 +139,8 @@ void MainWindow::Simulate()
     {
         DisplayLanguageFamily();
     }
+
+    isLanguagesSaved = false;
 }
 
 /**
@@ -170,6 +176,7 @@ void MainWindow::SaveFile()
             "実行エラー",
             "保存するファイルがありません。");
     }
+    isLanguagesSaved = true;
 }
 
 /**
@@ -189,6 +196,8 @@ void MainWindow::OpenFile()
     languageFamily.Import(fileName.toStdString());
     simulator = LanguageFamilySimulator::Create(languageFamily);
     DisplayLanguageFamily();
+
+    isLanguagesSaved = true;
 }
 
 void MainWindow::NewFile()
@@ -196,6 +205,8 @@ void MainWindow::NewFile()
     WarningUnsaveFile();
     simulator = LanguageFamilySimulator::Create();
     DisplayLanguageFamily();
+
+    isLanguagesSaved = true;
 }
 
 /**
@@ -243,21 +254,21 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     // メニューを表示し、選ばれたアクションを取得
     QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
 
+    const int row = mainTable->currentRow();
+    const int column = mainTable->currentColumn();
+    const std::string place = mainTable->item(0, column)->text().toStdString();
+    const int period = row;
     if (selectedAction == editAction)
     {
-        const int row = mainTable->currentRow();
-        const int column = mainTable->currentColumn();
-        const std::string place = mainTable->item(0, column)->text().toStdString();
-        const int period = row;
         EditLanguage(place, period);
     }
     else if (selectedAction == editPeriod)
     {
-        Unimplemented();
+        EditPeriod(place, period);
     }
     else if (selectedAction == editGeography)
     {
-        Unimplemented();
+        EditGeometry(place, period);
     }
 }
 
@@ -268,7 +279,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
  */
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (!simulator)
+    if (!simulator || isLanguagesSaved)
     {
         event->accept();
         return;
@@ -316,6 +327,8 @@ void MainWindow::EditLanguage(const std::string place, const int period)
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
+
+    isLanguagesSaved = false;
 }
 
 /**
@@ -335,4 +348,37 @@ void MainWindow::ShowVersion()
 void MainWindow::ShowQtLicense()
 {
     QApplication::aboutQt();
+}
+
+/**
+ * @brief 時間軸編集
+ *
+ * @param place 地域
+ * @param period 時代
+ */
+void MainWindow::EditPeriod(const std::string place, const int period)
+{
+    EditPeriodDialog subWindow(this);
+    subWindow.SetPlace(place);
+    subWindow.SetPeriod(period);
+    subWindow.exec();
+
+    isLanguagesSaved = false;
+}
+
+/**
+ * @brief 地理編集
+ *
+ * @param place 地域
+ * @param period 時代
+ */
+void MainWindow::EditGeometry(const std::string place, const int period)
+{
+    EditGeometryDialog subWindow(this);
+    subWindow.SetLanguages(std::make_shared<LanguageFamily>(simulator->LanguageFamily_));
+    subWindow.SetPlace(place);
+    subWindow.SetPeriod(period);
+    subWindow.exec();
+
+    isLanguagesSaved = false;
 }

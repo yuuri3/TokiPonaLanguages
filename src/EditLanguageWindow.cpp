@@ -1,5 +1,6 @@
 #include "EditLanguageWindow.h"
 #include "UnimplementedDialog.h"
+#include "EditWordDialog.h"
 
 EditLanguageWindow::EditLanguageWindow(QWidget *parent)
 {
@@ -148,6 +149,27 @@ void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
 
     if (selectedAction == editAction)
     {
-        Unimplemented();
+        auto simulator = LanguageFamilySimulator::Create(*Languages);
+        if (!simulator)
+        {
+            return;
+        }
+        auto language = simulator->CalculateLanguage(*Place, *Period);
+        if (!language)
+        {
+            return;
+        }
+
+        const int row = mainTable->currentRow();
+        const int column = mainTable->currentColumn();
+        auto languages = Languages;
+        auto place = Place;
+        auto period = Period;
+        auto it = std::next(language->Words.begin(), row);
+        int wordID = it->first - 1;
+
+        EditWordDialog subWindow(this);
+        subWindow.Set(languages, place, period, wordID);
+        subWindow.exec();
     }
 }

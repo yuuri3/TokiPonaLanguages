@@ -144,17 +144,23 @@ void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string
     table->setRowCount(0);
     table->setColumnCount(0);
 
+    int rows = data.size();
+    int cols = 0;
+
+    for (const auto &row : data)
+    {
+        cols = std::max(cols, static_cast<int>(row.size()));
+    }
+
     if (!data.empty())
     {
-        int rows = data.size();
-        int cols = data[0].size();
         table->setRowCount(rows);
         table->setColumnCount(cols);
 
         // 3. データの流し込み
         for (int i = 0; i < rows; ++i)
         {
-            for (int j = 0; j < cols; ++j)
+            for (int j = 0; j < data[i].size(); ++j)
             {
                 // std::string から QString へ変換してセット
                 QString content = QString::fromStdString(data[i][j]);
