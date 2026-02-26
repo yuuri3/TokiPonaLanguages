@@ -64,10 +64,20 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     contentsTitleLayout->addWidget(AddContentsButton);
 
     // * 変化形
-    layout->addWidget(new QLabel("変化形", this));
+    QHBoxLayout *variationsTitleLayout = new QHBoxLayout(this);
+    variationsTitleLayout->addWidget(new QLabel("変化形", this));
+    layout->addLayout(variationsTitleLayout);
 
-    Variations = new QTableWidget(this);
+    Variations = new QWidget(this);
     layout->addWidget(Variations);
+
+    std::vector<std::vector<std::string>> variations = {{"", ""}};
+    DisplayLine(Variations, variations);
+
+    //   * 変化形追加ボタン
+    AddVariationsButton = new QPushButton("自由記述追加", this);
+    connect(AddVariationsButton, &QPushButton::clicked, this, &EditWordDialog::AddVariationsButtonPushed);
+    variationsTitleLayout->addWidget(AddVariationsButton);
 
     // * 関連語
     layout->addWidget(new QLabel("関連語", this));
@@ -159,19 +169,13 @@ void EditWordDialog::UpdateDialog()
         DisplayLine(Contents, contentsData);
 
         // 変化形
-        const auto variations = language->Words[*WordID].Variations;
         std::vector<std::vector<std::string>> variationsData;
-        std::vector<std::string> variationsLine;
-        for (const auto &[title, variation] : variations)
+        for (const auto &[title, variation] : language->Words[*WordID].Variations)
         {
-
-            variationsLine.emplace_back(title);
-            variationsLine.emplace_back(converter.ConvertToString(variation));
-
-            variationsData.emplace_back(variationsLine);
-            variationsLine.clear();
+            variationsData.push_back({title, converter.ConvertToString(variation)});
         }
-        DisplayTable(Variations, variationsData);
+        variationsData.push_back({"", ""});
+        DisplayLine(Variations, variationsData);
 
         // 関連語
         const auto relations = language->Words[*WordID].Relations;
@@ -230,6 +234,15 @@ void EditWordDialog::AddTagsButtonPushed()
 void EditWordDialog::AddContentsButtonPushed()
 {
     AddLine(Contents, {"", ""});
+}
+
+/**
+ * @brief 変化形追加ボタンクリック
+ *
+ */
+void EditWordDialog::AddVariationsButtonPushed()
+{
+    AddLine(Variations, {"", ""});
 }
 
 /**

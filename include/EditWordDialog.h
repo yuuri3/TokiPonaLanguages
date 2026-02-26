@@ -22,6 +22,7 @@ private slots:
     void ClickLine(const QPoint &pos);
     void AddTagsButtonPushed();
     void AddContentsButtonPushed();
+    void AddVariationsButtonPushed();
     void Unimplemented();
 
 private:
@@ -32,7 +33,8 @@ private:
     QPushButton *AddTagsButton;
     QWidget *Contents;
     QPushButton *AddContentsButton;
-    QTableWidget *Variations;
+    QWidget *Variations;
+    QPushButton *AddVariationsButton;
     QTableWidget *Relations;
 
     std::shared_ptr<LanguageFamily> Languages;
