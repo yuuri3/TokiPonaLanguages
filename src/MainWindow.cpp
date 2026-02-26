@@ -167,6 +167,10 @@ void MainWindow::SaveFile()
             QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
             "CSV Files (*.log);;All Files (*)");
 
+        if (fileName.isEmpty())
+        {
+            return;
+        }
         simulator->LanguageFamily_.Export(fileName.toStdString());
     }
     else
@@ -302,7 +306,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (msgBox.clickedButton() == saveButton)
     {
         SaveFile();
-        event->accept();
+        if (isLanguagesSaved)
+        {
+            event->accept();
+        }
+        else
+        {
+            event->ignore();
+        }
     }
     else if (msgBox.clickedButton() == discardButton)
     {
