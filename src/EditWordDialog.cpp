@@ -313,12 +313,7 @@ void EditWordDialog::Click1Col(const QPoint &pos)
     }
     else if (selectedAction == removeAction)
     {
-        QWidget *rowContainer = senderLineEdit->parentWidget();
-
-        if (rowContainer && rowContainer != this)
-        {
-            DeleteWidget(rowContainer);
-        }
+        DeleteWidget(senderLineEdit);
     }
 }
 
