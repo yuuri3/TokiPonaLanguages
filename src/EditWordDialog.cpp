@@ -24,7 +24,7 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addLayout(TranslationLayout);
 
     std::vector<std::pair<std::string, std::string>> translations = {{"", ""}};
-    DisplayTranslations(TranslationLayout, translations);
+    Display2Cols(TranslationLayout, translations);
 
     //   * 訳語追加ボタン
     AddTranslationButton = new QPushButton("訳語追加", this);
@@ -32,10 +32,20 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     translationsTitleLayout->addWidget(AddTranslationButton);
 
     // * タグ
-    layout->addWidget(new QLabel("タグ", this));
+    QHBoxLayout *tagsTitleLayout = new QHBoxLayout(this);
+    tagsTitleLayout->addWidget(new QLabel("タグ", this));
+    layout->addLayout(tagsTitleLayout);
 
-    Tags = new QTableWidget(this);
-    layout->addWidget(Tags);
+    TagsLayout = new QVBoxLayout(this);
+    layout->addLayout(TagsLayout);
+
+    std::vector<std::string> tags = {""};
+    Display1Col(TagsLayout, tags);
+
+    //   * タグ追加ボタン
+    AddTagsButton = new QPushButton("タグ追加", this);
+    connect(AddTagsButton, &QPushButton::clicked, this, &EditWordDialog::AddTagsButtonPushed);
+    tagsTitleLayout->addWidget(AddTagsButton);
 
     // * 自由記述
     layout->addWidget(new QLabel("自由記述", this));
@@ -118,11 +128,12 @@ void EditWordDialog::UpdateDialog()
             translations.emplace_back(title, formsStr);
         }
         translations.emplace_back("", "");
-        DisplayTranslations(TranslationLayout, translations);
+        Display2Cols(TranslationLayout, translations);
 
         // タグ
-        const auto tags = language->Words[*WordID].Tags;
-        DisplayTable(Tags, {tags});
+        auto tags = language->Words[*WordID].Tags;
+        tags.emplace_back("");
+        Display1Col(TagsLayout, tags);
 
         // 自由記述
         const auto contents = language->Words[*WordID].Contents;
@@ -172,17 +183,32 @@ void EditWordDialog::UpdateDialog()
 }
 
 /**
+ * @brief 1列のデータを表示
+ *
+ * @param layout
+ * @param values
+ */
+void EditWordDialog::Display1Col(QVBoxLayout *layout, std::vector<std::string> values)
+{
+    ClearLayout(layout);
+    for (const auto &line : values)
+    {
+        Add1Col(layout, line);
+    }
+}
+
+/**
  * @brief 訳語を表示
  *
  * @param layout
  * @param translations
  */
-void EditWordDialog::DisplayTranslations(QVBoxLayout *layout, const std::vector<std::pair<std::string, std::string>> &translations)
+void EditWordDialog::Display2Cols(QVBoxLayout *layout, const std::vector<std::pair<std::string, std::string>> &translations)
 {
     ClearLayout(layout);
     for (const auto &[title, value] : translations)
     {
-        AddTranslations(layout, title, value);
+        Add2Cols(layout, title, value);
     }
 }
 
@@ -192,14 +218,38 @@ void EditWordDialog::DisplayTranslations(QVBoxLayout *layout, const std::vector<
  */
 void EditWordDialog::AddTranslationButtonPushed()
 {
-    AddTranslations(TranslationLayout, "", "");
+    Add2Cols(TranslationLayout, "", "");
+}
+
+/**
+ * @brief タグ追加ボタンクリック
+ *
+ */
+void EditWordDialog::AddTagsButtonPushed()
+{
+    Add1Col(TagsLayout, "");
+}
+
+/**
+ * @brief レイアウトに行追加
+ *
+ * @param layout
+ * @param value
+ */
+void EditWordDialog::Add1Col(QVBoxLayout *layout, std::string value)
+{
+    QLineEdit *lineEdit = new QLineEdit(this);
+    lineEdit->setText(QString::fromStdString(value));
+    lineEdit->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(lineEdit, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::Click1Col);
+    layout->addWidget(lineEdit);
 }
 
 /**
  * @brief 訳語追加
  *
  */
-void EditWordDialog::AddTranslations(QVBoxLayout *layout, std::string title, std::string value)
+void EditWordDialog::Add2Cols(QVBoxLayout *layout, std::string title, std::string value)
 {
     QWidget *rowContainer = new QWidget(this);
     QHBoxLayout *subLayout = new QHBoxLayout(rowContainer);
@@ -208,24 +258,20 @@ void EditWordDialog::AddTranslations(QVBoxLayout *layout, std::string title, std
     auto titleLine = new QLineEdit(this);
     titleLine->setText(QString::fromStdString(""));
     titleLine->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(titleLine, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::TranslationLineClicked);
+    connect(titleLine, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::Click2Cols);
     subLayout->addWidget(titleLine);
 
     auto valueLine = new QLineEdit(this);
     valueLine->setText(QString::fromStdString(""));
     subLayout->addWidget(valueLine);
     valueLine->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(valueLine, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::TranslationLineClicked);
+    connect(valueLine, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::Click2Cols);
     subLayout->addWidget(valueLine);
 
     TranslationLayout->addWidget(rowContainer);
 }
 
-/**
- * @brief 訳語編集メニューを表示
- *
- */
-void EditWordDialog::TranslationLineClicked(const QPoint &pos)
+void EditWordDialog::Click1Col(const QPoint &pos)
 {
     // 送信元（右クリックされたQLineEdit）を取得
     QLineEdit *senderLineEdit = qobject_cast<QLineEdit *>(sender());
@@ -240,7 +286,39 @@ void EditWordDialog::TranslationLineClicked(const QPoint &pos)
 
     if (selectedAction == addAction)
     {
-        AddTranslations(TranslationLayout, "", "");
+        Add1Col(qobject_cast<QVBoxLayout *>(senderLineEdit->parent()), "");
+    }
+    else if (selectedAction == removeAction)
+    {
+        QWidget *rowContainer = senderLineEdit->parentWidget();
+
+        if (rowContainer && rowContainer != this)
+        {
+            DeleteWidget(rowContainer);
+        }
+    }
+}
+
+/**
+ * @brief 訳語編集メニューを表示
+ *
+ */
+void EditWordDialog::Click2Cols(const QPoint &pos)
+{
+    // 送信元（右クリックされたQLineEdit）を取得
+    QLineEdit *senderLineEdit = qobject_cast<QLineEdit *>(sender());
+    if (!senderLineEdit)
+        return;
+
+    QMenu menu(this);
+    QAction *addAction = menu.addAction("追加");
+    QAction *removeAction = menu.addAction("削除");
+
+    QAction *selectedAction = menu.exec(senderLineEdit->mapToGlobal(pos));
+
+    if (selectedAction == addAction)
+    {
+        Add2Cols(qobject_cast<QVBoxLayout *>(senderLineEdit->parent()), "", "");
     }
     else if (selectedAction == removeAction)
     {

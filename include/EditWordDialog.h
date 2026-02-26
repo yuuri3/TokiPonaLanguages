@@ -19,14 +19,17 @@ public:
 
 private slots:
     void AddTranslationButtonPushed();
-    void TranslationLineClicked(const QPoint &pos);
+    void Click1Col(const QPoint &pos);
+    void Click2Cols(const QPoint &pos);
+    void AddTagsButtonPushed();
     void Unimplemented();
 
 private:
     QLineEdit *Entry;
     QVBoxLayout *TranslationLayout;
     QPushButton *AddTranslationButton;
-    QTableWidget *Tags;
+    QVBoxLayout *TagsLayout;
+    QPushButton *AddTagsButton;
     QTableWidget *Contents;
     QTableWidget *Variations;
     QTableWidget *Relations;
@@ -37,6 +40,8 @@ private:
     std::optional<int> WordID;
 
     void UpdateDialog();
-    void AddTranslations(QVBoxLayout *layout, std::string title, std::string value);
-    void DisplayTranslations(QVBoxLayout *layout, const std::vector<std::pair<std::string, std::string>> &translations);
+    void Add1Col(QVBoxLayout *layout, std::string value);
+    void Add2Cols(QVBoxLayout *layout, std::string title, std::string value);
+    void Display1Col(QVBoxLayout *layout, std::vector<std::string> values);
+    void Display2Cols(QVBoxLayout *layout, const std::vector<std::pair<std::string, std::string>> &translations);
 };
