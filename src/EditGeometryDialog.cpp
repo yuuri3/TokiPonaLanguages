@@ -7,8 +7,8 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
-    mainTable = new QTableWidget(this);
-    layout->addWidget(mainTable);
+    MainTable_ = new QTableWidget(this);
+    layout->addWidget(MainTable_);
 }
 
 /**
@@ -18,7 +18,7 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
  */
 void EditGeometryDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
 {
-    Languages = languages;
+    Languages_ = languages;
     UpdateTable();
 }
 
@@ -29,7 +29,7 @@ void EditGeometryDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
  */
 void EditGeometryDialog::SetPlace(const std::string &place)
 {
-    Place = place;
+    Place_ = place;
     UpdateTable();
 }
 
@@ -40,7 +40,7 @@ void EditGeometryDialog::SetPlace(const std::string &place)
  */
 void EditGeometryDialog::SetPeriod(const int period)
 {
-    Period = period;
+    Period_ = period;
     UpdateTable();
 }
 
@@ -60,8 +60,8 @@ void EditGeometryDialog::Unimplemented()
  */
 void EditGeometryDialog::UpdateTable()
 {
-    if (Languages && Place && Period)
+    if (Languages_ && Place_ && Period_)
     {
-        DisplayTable(mainTable, Languages->Geography);
+        DisplayTable(MainTable_, Languages_->Geography_);
     }
 }

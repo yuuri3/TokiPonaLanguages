@@ -10,7 +10,7 @@
 struct Language
 {
     // 影響度、大きい方から小さいほうへ単語が借用される
-    double Strength;
+    double Strength_;
     // 語彙
-    std::map<int, Word> Words;
+    std::map<int, Word> Words_;
 };

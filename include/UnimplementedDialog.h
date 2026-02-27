@@ -14,5 +14,5 @@ private slots:
     void OkButtonClicked();
 
 private:
-    QPushButton *OKButton;
+    QPushButton *OKButton_;
 };

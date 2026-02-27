@@ -65,28 +65,28 @@ SimulationDialog::SimulationDialog(QWidget *parent) : QDialog(parent)
     QFormLayout *formLayout = new QFormLayout();
 
     // 借用回数
-    nLoanwordSpin = CreateNSpin(this, 3);
-    formLayout->addRow("借用回数:", nLoanwordSpin);
+    NLoanwordSpin_ = CreateNSpin(this, 3);
+    formLayout->addRow("借用回数:", NLoanwordSpin_);
 
     // 音韻変化率
-    pPhonologicalChangeSpin = CreatePSpin(this, 0.3);
-    formLayout->addRow("音韻変化率:", pPhonologicalChangeSpin);
+    PPhonologicalChangeSpin_ = CreatePSpin(this, 0.3);
+    formLayout->addRow("音韻変化率:", PPhonologicalChangeSpin_);
 
     // 音韻脱落率
-    pPhonologicalLossSpin = CreatePSpin(this, 0.3);
-    formLayout->addRow("音韻脱落率:", pPhonologicalLossSpin);
+    PPhonologicalLossSpin_ = CreatePSpin(this, 0.3);
+    formLayout->addRow("音韻脱落率:", PPhonologicalLossSpin_);
 
     // 祖語ファイルパス
-    protoLanguagePath = CreateLineEdit(this, "data/ProtoLanguage.csv");
-    formLayout->addRow("祖語ファイルパス:", protoLanguagePath);
+    ProtoLanguagePath_ = CreateLineEdit(this, "data/ProtoLanguage.csv");
+    formLayout->addRow("祖語ファイルパス:", ProtoLanguagePath_);
 
     // 音素表ファイルパス
-    phonemeTablePath = CreateLineEdit(this, "data/Phoneme.csv");
-    formLayout->addRow("音素表ファイルパス:", phonemeTablePath);
+    PhonemeTablePath_ = CreateLineEdit(this, "data/Phoneme.csv");
+    formLayout->addRow("音素表ファイルパス:", PhonemeTablePath_);
 
     // 地理ファイルパス
-    geometryPath = CreateLineEdit(this, "data/Geometry.csv");
-    formLayout->addRow("地理ファイルパス:", geometryPath);
+    GeometryPath_ = CreateLineEdit(this, "data/Geometry.csv");
+    formLayout->addRow("地理ファイルパス:", GeometryPath_);
 
     mainLayout->addLayout(formLayout);
 
@@ -95,18 +95,18 @@ SimulationDialog::SimulationDialog(QWidget *parent) : QDialog(parent)
 
     // --- ボタンエリア ---
     QHBoxLayout *buttonLayout = new QHBoxLayout();
-    cancelButton = new QPushButton("キャンセル", this);
-    runButton = new QPushButton("実行開始", this);
-    runButton->setDefault(true); // Enterキー対応
+    CancelButton_ = new QPushButton("キャンセル", this);
+    RunButton_ = new QPushButton("実行開始", this);
+    RunButton_->setDefault(true); // Enterキー対応
 
     buttonLayout->addStretch();
-    buttonLayout->addWidget(cancelButton);
-    buttonLayout->addWidget(runButton);
+    buttonLayout->addWidget(CancelButton_);
+    buttonLayout->addWidget(RunButton_);
     mainLayout->addLayout(buttonLayout);
 
     // --- シグナルとスロットの接続 ---
-    connect(cancelButton, &QPushButton::clicked, this, &SimulationDialog::reject);
-    connect(runButton, &QPushButton::clicked, this, &SimulationDialog::accept);
+    connect(CancelButton_, &QPushButton::clicked, this, &SimulationDialog::reject);
+    connect(RunButton_, &QPushButton::clicked, this, &SimulationDialog::accept);
 }
 
 /**
@@ -124,14 +124,14 @@ void SimulationDialog::reject()
  */
 void SimulationDialog::accept()
 {
-    simulator = evolution(nLoanwordSpin->value(),
-                          pPhonologicalChangeSpin->value(),
-                          pPhonologicalLossSpin->value(),
-                          protoLanguagePath->text().toStdString(),
-                          phonemeTablePath->text().toStdString(),
-                          geometryPath->text().toStdString(),
-                          "ignore/hoge.csv");
-    if (!simulator)
+    Simulator_ = evolution(NLoanwordSpin_->value(),
+                           PPhonologicalChangeSpin_->value(),
+                           PPhonologicalLossSpin_->value(),
+                           ProtoLanguagePath_->text().toStdString(),
+                           PhonemeTablePath_->text().toStdString(),
+                           GeometryPath_->text().toStdString(),
+                           "ignore/hoge.csv");
+    if (!Simulator_)
     {
         QMessageBox::critical(
             this,
@@ -148,5 +148,5 @@ void SimulationDialog::accept()
  */
 std::optional<LanguageFamilySimulator> SimulationDialog::GetSimulator()
 {
-    return simulator;
+    return Simulator_;
 }

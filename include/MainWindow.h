@@ -22,28 +22,28 @@ private slots:
     void ShowQtLicense();
 
 private:
-    QMenuBar *menuBar;
+    QMenuBar *MenuBar_;
 
-    QMenu *fileMenu;
-    QMenu *editMenu;
-    QMenu *simulationMenu;
-    QMenu *helpMenu;
+    QMenu *FileMenu_;
+    QMenu *EditMenu_;
+    QMenu *SimulationMenu_;
+    QMenu *HelpMenu_;
 
-    std::optional<LanguageFamilySimulator> simulator = std::nullopt;
+    std::optional<LanguageFamilySimulator> Simulator_ = std::nullopt;
 
-    QAction *simulateAction;
-    QAction *newFileAction;
-    QAction *openFileAction;
-    QAction *saveFileAction;
-    QAction *phonologicalChangeAction;
-    QAction *loanwordAction;
-    QAction *helpAction;
-    QAction *versionAction;
-    QAction *QtAction;
+    QAction *SimulateAction_;
+    QAction *NewFileAction_;
+    QAction *OpenFileAction_;
+    QAction *SaveFileAction_;
+    QAction *PhonologicalChangeAction_;
+    QAction *LoanwordAction_;
+    QAction *HelpAction_;
+    QAction *VersionAction_;
+    QAction *QtAction_;
 
-    QTableWidget *mainTable;
+    QTableWidget *MainTable_;
 
-    bool isLanguagesSaved;
+    bool IsLanguagesSaved_;
 
     void DisplayLanguageFamily();
     void WarningUnsaveFile();

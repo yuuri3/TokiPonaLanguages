@@ -9,33 +9,33 @@ EditLanguageWindow::EditLanguageWindow(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     //   * 単語表示
-    mainTable = new QTableWidget(this);
-    layout->addWidget(mainTable);
+    MainTable_ = new QTableWidget(this);
+    layout->addWidget(MainTable_);
 
-    mainTable->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(mainTable, &QTableWidget::customContextMenuRequested,
+    MainTable_->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(MainTable_, &QTableWidget::customContextMenuRequested,
             this, &EditLanguageWindow::ShowContextMenu);
 
     //   * 検索バー
     QHBoxLayout *searchLayout = new QHBoxLayout();
 
-    searchLineEdit = new QLineEdit(this);
-    searchLineEdit->setPlaceholderText("検索ワードを入力...");
+    SearchLineEdit_ = new QLineEdit(this);
+    SearchLineEdit_->setPlaceholderText("検索ワードを入力...");
 
-    searchButton = new QPushButton("検索", this);
+    SearchButton_ = new QPushButton("検索", this);
 
-    connect(searchButton, &QPushButton::clicked, this, &EditLanguageWindow::Unimplemented);
+    connect(SearchButton_, &QPushButton::clicked, this, &EditLanguageWindow::Unimplemented);
 
-    searchLayout->addWidget(searchLineEdit);
-    searchLayout->addWidget(searchButton);
+    searchLayout->addWidget(SearchLineEdit_);
+    searchLayout->addWidget(SearchButton_);
 
     layout->addLayout(searchLayout);
 
     //   * 単語追加ボタン
-    addWordButton = new QPushButton("単語追加", this);
+    AddWordButton_ = new QPushButton("単語追加", this);
 
-    connect(addWordButton, &QPushButton::clicked, this, &EditLanguageWindow::Unimplemented);
-    layout->addWidget(addWordButton);
+    connect(AddWordButton_, &QPushButton::clicked, this, &EditLanguageWindow::Unimplemented);
+    layout->addWidget(AddWordButton_);
 }
 
 /**
@@ -45,7 +45,7 @@ EditLanguageWindow::EditLanguageWindow(QWidget *parent)
  */
 void EditLanguageWindow::SetLanguages(std::shared_ptr<LanguageFamily> languages)
 {
-    Languages = languages;
+    Languages_ = languages;
     UpdateTable();
 }
 
@@ -56,7 +56,7 @@ void EditLanguageWindow::SetLanguages(std::shared_ptr<LanguageFamily> languages)
  */
 void EditLanguageWindow::SetPlace(const std::string &place)
 {
-    Place = place;
+    Place_ = place;
     UpdateTable();
 }
 
@@ -67,7 +67,7 @@ void EditLanguageWindow::SetPlace(const std::string &place)
  */
 void EditLanguageWindow::SetPeriod(const int period)
 {
-    Period = period;
+    Period_ = period;
     UpdateTable();
 }
 
@@ -77,14 +77,14 @@ void EditLanguageWindow::SetPeriod(const int period)
  */
 void EditLanguageWindow::UpdateTable()
 {
-    if (Languages && Place && Period)
+    if (Languages_ && Place_ && Period_)
     {
-        auto simulator = LanguageFamilySimulator::Create(*Languages);
+        auto simulator = LanguageFamilySimulator::Create(*Languages_);
         if (!simulator)
         {
             return;
         }
-        auto language = simulator->CalculateLanguage(*Place, *Period);
+        auto language = simulator->CalculateLanguage(*Place_, *Period_);
         if (!language)
         {
             return;
@@ -92,18 +92,18 @@ void EditLanguageWindow::UpdateTable()
 
         std::vector<std::vector<std::string>> wordData;
         std::vector<std::string> line;
-        PhonemeConverter converter = PhonemeConverter::Create(Languages->PhonemeTable);
+        PhonemeConverter converter = PhonemeConverter::Create(Languages_->PhonemeTable_);
 
         line.emplace_back("単語");
         line.emplace_back("訳語");
         wordData.emplace_back(line);
         line.clear();
 
-        for (const auto &[ID, word] : language->Words)
+        for (const auto &[ID, word] : language->Words_)
         {
-            line.emplace_back(converter.ConvertToString(word.Form));
+            line.emplace_back(converter.ConvertToString(word.Form_));
             std::string translations;
-            for (const auto [_, translation] : word.Translations)
+            for (const auto [_, translation] : word.Translations_)
             {
                 for (const auto &t : translation)
                 {
@@ -116,7 +116,7 @@ void EditLanguageWindow::UpdateTable()
             line.clear();
         }
 
-        DisplayTable(mainTable, wordData);
+        DisplayTable(MainTable_, wordData);
     }
 }
 
@@ -136,10 +136,10 @@ void EditLanguageWindow::Unimplemented()
  */
 void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
 {
-    if (Languages && Place && Period)
+    if (Languages_ && Place_ && Period_)
     {
         // クリックされた位置のアイテムを取得
-        QTableWidgetItem *item = mainTable->itemAt(pos);
+        QTableWidgetItem *item = MainTable_->itemAt(pos);
         if (!item)
             return; // セルのない場所なら何もしない
 
@@ -147,7 +147,7 @@ void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
         QAction *editAction = menu.addAction("編集");
 
         // メニューを表示し、選ばれたアクションを取得
-        QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
+        QAction *selectedAction = menu.exec(MainTable_->viewport()->mapToGlobal(pos));
 
         if (selectedAction == editAction)
         {
@@ -158,12 +158,12 @@ void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
             }
             else
             {
-                auto simulator = LanguageFamilySimulator::Create(*Languages);
+                auto simulator = LanguageFamilySimulator::Create(*Languages_);
                 if (!simulator)
                 {
                     return;
                 }
-                language = simulator->CalculateLanguage(*Place, *Period);
+                language = simulator->CalculateLanguage(*Place_, *Period_);
                 Language_ = language;
                 if (!language)
                 {
@@ -171,14 +171,14 @@ void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
                 }
             }
 
-            const int row = mainTable->currentRow();
-            const int column = mainTable->currentColumn();
-            auto it = std::next(language->Words.begin(), row);
+            const int row = MainTable_->currentRow();
+            const int column = MainTable_->currentColumn();
+            auto it = std::next(language->Words_.begin(), row);
             int wordID = it->first - 1;
 
             EditWordDialog subWindow(this);
             subWindow.SetLanguage(*language);
-            subWindow.Set(*Languages, *Place, *Period, wordID);
+            subWindow.Set(*Languages_, *Place_, *Period_, wordID);
             subWindow.exec();
         }
     }

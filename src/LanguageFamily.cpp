@@ -82,46 +82,46 @@ void LanguageFamily::Export(const std::string &filename)
 
     // 2. Map
     file << "Map:\n";
-    for (const auto &row : Geography)
+    for (const auto &row : Geography_)
     {
         file << "  - " << formatYamlList(row) << "\n";
     }
 
     // 3. PhoneticsMap
     file << "PhoneticsMap:\n";
-    for (const auto &row : PhonemeTable)
+    for (const auto &row : PhonemeTable_)
     {
         file << "  - " << formatYamlList(row) << "\n";
     }
 
     // 4. LanguageDifferences
     file << "LanguageDifferences:\n";
-    for (const auto &diff : languageDifference)
+    for (const auto &diff : languageDifference_)
     {
-        file << "  - Section: " << diff.Period << "\n";
-        file << "    Type: " << static_cast<int>(diff.Type) << "\n";
+        file << "  - Section: " << diff.Period_ << "\n";
+        file << "    Type: " << static_cast<int>(diff.Type_) << "\n";
 
         file << "    IntParam:\n";
-        for (const auto &i : diff.IntParam)
+        for (const auto &i : diff.IntParam_)
             file << "      - " << i << "\n";
 
         file << "    DoubleParam:\n";
-        for (const auto &d : diff.DoubleParam)
+        for (const auto &d : diff.DoubleParam_)
             file << "      - " << d << "\n";
 
         file << "    StringParam:\n";
-        for (const auto &s : diff.StringParam)
+        for (const auto &s : diff.StringParam_)
             file << "      - " << s << "\n";
 
         file << "    SoundChange:\n";
         file << "      Before:\n";
-        file << "        Place: " << diff.PhonologicalChanges.BeforePhoneme.Place << "\n";
-        file << "        Mannar: " << diff.PhonologicalChanges.BeforePhoneme.Manner << "\n";
+        file << "        Place: " << diff.PhonologicalChanges_.BeforePhoneme_.Place_ << "\n";
+        file << "        Mannar: " << diff.PhonologicalChanges_.BeforePhoneme_.Manner_ << "\n";
         file << "      After:\n";
-        file << "        Place: " << diff.PhonologicalChanges.AfterPhoneme.Place << "\n";
-        file << "        Mannar: " << diff.PhonologicalChanges.AfterPhoneme.Manner << "\n";
-        file << "      Condition: " << static_cast<int>(diff.PhonologicalChanges.PhoneticEnvironment) << "\n";
-        file << "      IsRemove: " << diff.PhonologicalChanges.IsRemove << "\n";
+        file << "        Place: " << diff.PhonologicalChanges_.AfterPhoneme_.Place_ << "\n";
+        file << "        Mannar: " << diff.PhonologicalChanges_.AfterPhoneme_.Manner_ << "\n";
+        file << "      Condition: " << static_cast<int>(diff.PhonologicalChanges_.PhoneticEnvironment_) << "\n";
+        file << "      IsRemove: " << diff.PhonologicalChanges_.IsRemove_ << "\n";
     }
 
     file.close();
@@ -142,19 +142,19 @@ bool LanguageFamily::Import(const std::string &filename)
 
     enum Mode
     {
-        Map_,
-        PhonemeTable_,
-        LanguageDifferences_,
+        Mode_Map,
+        Mode_PhonemeTable,
+        Mode_LanguageDifferences,
     };
 
     enum SubMode
     {
-        Type_,
-        Period_,
-        IntParam_,
-        DoubleParam_,
-        StringParam_,
-        PhonologicalChanges_,
+        SubMode_Type,
+        SubMode_Period,
+        SubMode_IntParam,
+        SubMode_DoubleParam,
+        SubMode_StringParam,
+        SubMode_PhonologicalChanges,
     };
 
     Mode mode;
@@ -169,66 +169,66 @@ bool LanguageFamily::Import(const std::string &filename)
         {
             if (line == "Map:")
             {
-                mode = Mode::Map_;
-                Geography.clear();
+                mode = Mode::Mode_Map;
+                Geography_.clear();
                 continue;
             }
             else if (line == "PhoneticsMap:")
             {
-                mode = Mode::PhonemeTable_;
-                PhonemeTable.clear();
+                mode = Mode::Mode_PhonemeTable;
+                PhonemeTable_.clear();
                 continue;
             }
             else if (line == "LanguageDifferences:")
             {
-                mode = Mode::LanguageDifferences_;
-                languageDifference.clear();
+                mode = Mode::Mode_LanguageDifferences;
+                languageDifference_.clear();
                 continue;
             }
 
-            if (mode == Mode::Map_)
+            if (mode == Mode::Mode_Map)
             {
-                Geography.emplace_back(parseYamlList(line));
+                Geography_.emplace_back(parseYamlList(line));
             }
-            else if (mode == Mode::PhonemeTable_)
+            else if (mode == Mode::Mode_PhonemeTable)
             {
-                PhonemeTable.emplace_back(parseYamlList(line));
+                PhonemeTable_.emplace_back(parseYamlList(line));
             }
-            else if (mode == Mode::LanguageDifferences_)
+            else if (mode == Mode::Mode_LanguageDifferences)
             {
                 auto [memberName, memberValue] = splitByColon(line);
                 if (memberName == "- Section")
                 {
                     if (isDifferenceSection)
                     {
-                        languageDifference.emplace_back(dif);
+                        languageDifference_.emplace_back(dif);
                         dif = LanguageDifference();
                     }
                     else
                     {
                         isDifferenceSection = true;
                     }
-                    dif.Period = std::stoi(memberValue);
+                    dif.Period_ = std::stoi(memberValue);
                     continue;
                 }
                 else if (memberName == "Type")
                 {
-                    dif.Type = static_cast<LanguageDifferenceType>(std::stoi(memberValue));
+                    dif.Type_ = static_cast<LanguageDifferenceType>(std::stoi(memberValue));
                     continue;
                 }
                 else if (line == "    IntParam:")
                 {
-                    subMode = SubMode::IntParam_;
+                    subMode = SubMode::SubMode_IntParam;
                     continue;
                 }
                 else if (line == "    DoubleParam:")
                 {
-                    subMode = SubMode::DoubleParam_;
+                    subMode = SubMode::SubMode_DoubleParam;
                     continue;
                 }
                 else if (line == "    StringParam:")
                 {
-                    subMode = SubMode::StringParam_;
+                    subMode = SubMode::SubMode_StringParam;
                     continue;
                 }
                 else if (line == "    SoundChange:")
@@ -257,26 +257,26 @@ bool LanguageFamily::Import(const std::string &filename)
                     std::tie(memberName, memberValue) = splitByColon(line);
                     const bool isRemove = static_cast<bool>(std::stoi(memberValue));
 
-                    dif.PhonologicalChanges.BeforePhoneme.Place = beforePlace;
-                    dif.PhonologicalChanges.BeforePhoneme.Manner = beforeManner;
-                    dif.PhonologicalChanges.AfterPhoneme.Place = afterPlace;
-                    dif.PhonologicalChanges.AfterPhoneme.Manner = afterManner;
-                    dif.PhonologicalChanges.PhoneticEnvironment = phoneticEnvironment;
-                    dif.PhonologicalChanges.IsRemove = isRemove;
+                    dif.PhonologicalChanges_.BeforePhoneme_.Place_ = beforePlace;
+                    dif.PhonologicalChanges_.BeforePhoneme_.Manner_ = beforeManner;
+                    dif.PhonologicalChanges_.AfterPhoneme_.Place_ = afterPlace;
+                    dif.PhonologicalChanges_.AfterPhoneme_.Manner_ = afterManner;
+                    dif.PhonologicalChanges_.PhoneticEnvironment_ = phoneticEnvironment;
+                    dif.PhonologicalChanges_.IsRemove_ = isRemove;
                     continue;
                 }
 
-                if (subMode == SubMode::IntParam_)
+                if (subMode == SubMode::SubMode_IntParam)
                 {
-                    dif.IntParam.emplace_back(std::stoi(line.substr(8)));
+                    dif.IntParam_.emplace_back(std::stoi(line.substr(8)));
                 }
-                else if (subMode == SubMode::DoubleParam_)
+                else if (subMode == SubMode::SubMode_DoubleParam)
                 {
-                    dif.DoubleParam.emplace_back(std::stod(line.substr(8)));
+                    dif.DoubleParam_.emplace_back(std::stod(line.substr(8)));
                 }
-                else if (subMode == SubMode::StringParam_)
+                else if (subMode == SubMode::SubMode_StringParam)
                 {
-                    dif.StringParam.emplace_back(line.substr(8));
+                    dif.StringParam_.emplace_back(line.substr(8));
                 }
             }
             else
@@ -291,7 +291,7 @@ bool LanguageFamily::Import(const std::string &filename)
         file.close();
         return false;
     }
-    languageDifference.emplace_back(dif);
+    languageDifference_.emplace_back(dif);
     file.close();
     return true;
 }

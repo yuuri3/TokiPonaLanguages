@@ -15,73 +15,73 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    isLanguagesSaved = true;
+    IsLanguagesSaved_ = true;
 
     const auto appName = QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName();
     setWindowTitle(appName);
 
     // * メニューバー
-    menuBar = new QMenuBar(this);
-    setMenuBar(menuBar);
-    menuBar->setStyleSheet("QMenuBar { border-bottom: 1px solid #B0B0B0; }");
-    QHBoxLayout *menuLayout = new QHBoxLayout(menuBar);
+    MenuBar_ = new QMenuBar(this);
+    setMenuBar(MenuBar_);
+    MenuBar_->setStyleSheet("QMenuBar { border-bottom: 1px solid #B0B0B0; }");
+    QHBoxLayout *menuLayout = new QHBoxLayout(MenuBar_);
 
     //   * ファイルメニュー
-    fileMenu = menuBar->addMenu("ファイル");
+    FileMenu_ = MenuBar_->addMenu("ファイル");
 
     //     * 新規作成
-    newFileAction = new QAction("新規作成", this);
-    fileMenu->addAction(newFileAction);
-    connect(newFileAction, &QAction::triggered, this, &MainWindow::NewFile);
+    NewFileAction_ = new QAction("新規作成", this);
+    FileMenu_->addAction(NewFileAction_);
+    connect(NewFileAction_, &QAction::triggered, this, &MainWindow::NewFile);
 
     //     * ファイルを開く
-    openFileAction = new QAction("ファイルを開く", this);
-    fileMenu->addAction(openFileAction);
-    connect(openFileAction, &QAction::triggered, this, &MainWindow::OpenFile);
+    OpenFileAction_ = new QAction("ファイルを開く", this);
+    FileMenu_->addAction(OpenFileAction_);
+    connect(OpenFileAction_, &QAction::triggered, this, &MainWindow::OpenFile);
 
     //     * ファイル保存
-    saveFileAction = new QAction("ファイル保存", this);
-    fileMenu->addAction(saveFileAction);
-    connect(saveFileAction, &QAction::triggered, this, &MainWindow::SaveFile);
+    SaveFileAction_ = new QAction("ファイル保存", this);
+    FileMenu_->addAction(SaveFileAction_);
+    connect(SaveFileAction_, &QAction::triggered, this, &MainWindow::SaveFile);
 
     //   * 編集メニュー
-    editMenu = menuBar->addMenu("編集");
+    EditMenu_ = MenuBar_->addMenu("編集");
 
     //     * 音韻変化
-    phonologicalChangeAction = new QAction("音韻変化", this);
-    editMenu->addAction(phonologicalChangeAction);
-    connect(phonologicalChangeAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+    PhonologicalChangeAction_ = new QAction("音韻変化", this);
+    EditMenu_->addAction(PhonologicalChangeAction_);
+    connect(PhonologicalChangeAction_, &QAction::triggered, this, &MainWindow::Unimplemented);
 
     //     * 借用
-    loanwordAction = new QAction("借用", this);
-    editMenu->addAction(loanwordAction);
-    connect(loanwordAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+    LoanwordAction_ = new QAction("借用", this);
+    EditMenu_->addAction(LoanwordAction_);
+    connect(LoanwordAction_, &QAction::triggered, this, &MainWindow::Unimplemented);
 
     //   * シミュレーションメニュー
-    simulationMenu = menuBar->addMenu("シミュレーション");
+    SimulationMenu_ = MenuBar_->addMenu("シミュレーション");
 
     //     * シミュレーション
-    simulateAction = new QAction("シミュレーション", this);
-    simulationMenu->addAction(simulateAction);
-    connect(simulateAction, &QAction::triggered, this, &MainWindow::Simulate);
+    SimulateAction_ = new QAction("シミュレーション", this);
+    SimulationMenu_->addAction(SimulateAction_);
+    connect(SimulateAction_, &QAction::triggered, this, &MainWindow::Simulate);
 
     //   * ヘルプメニュー
-    helpMenu = menuBar->addMenu("ヘルプ");
+    HelpMenu_ = MenuBar_->addMenu("ヘルプ");
 
     //     * ヘルプ
-    helpAction = new QAction("ヘルプ", this);
-    helpMenu->addAction(helpAction);
-    connect(helpAction, &QAction::triggered, this, &MainWindow::Unimplemented);
+    HelpAction_ = new QAction("ヘルプ", this);
+    HelpMenu_->addAction(HelpAction_);
+    connect(HelpAction_, &QAction::triggered, this, &MainWindow::Unimplemented);
 
     //     * バージョン情報
-    versionAction = new QAction("バージョン情報", this);
-    helpMenu->addAction(versionAction);
-    connect(versionAction, &QAction::triggered, this, &MainWindow::ShowVersion);
+    VersionAction_ = new QAction("バージョン情報", this);
+    HelpMenu_->addAction(VersionAction_);
+    connect(VersionAction_, &QAction::triggered, this, &MainWindow::ShowVersion);
 
     //     * Qt ライセンス
-    QtAction = new QAction("Qt ライセンス", this);
-    helpMenu->addAction(QtAction);
-    connect(QtAction, &QAction::triggered, this, &MainWindow::ShowQtLicense);
+    QtAction_ = new QAction("Qt ライセンス", this);
+    HelpMenu_->addAction(QtAction_);
+    connect(QtAction_, &QAction::triggered, this, &MainWindow::ShowQtLicense);
 
     // * セントラル
     QWidget *centralWidget = new QWidget(this);
@@ -90,11 +90,11 @@ MainWindow::MainWindow(QWidget *parent)
     QHBoxLayout *layout = new QHBoxLayout(centralWidget);
 
     //   * メインテーブル
-    mainTable = new QTableWidget(this);
-    layout->addWidget(mainTable);
+    MainTable_ = new QTableWidget(this);
+    layout->addWidget(MainTable_);
 
-    mainTable->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(mainTable, &QTableWidget::customContextMenuRequested,
+    MainTable_->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(MainTable_, &QTableWidget::customContextMenuRequested,
             this, &MainWindow::ShowContextMenu);
 
     // レイアウト調整
@@ -134,13 +134,13 @@ void MainWindow::Simulate()
     WarningUnsaveFile();
     SimulationDialog sub(this);
     sub.exec();
-    simulator = sub.GetSimulator();
-    if (simulator)
+    Simulator_ = sub.GetSimulator();
+    if (Simulator_)
     {
         DisplayLanguageFamily();
     }
 
-    isLanguagesSaved = false;
+    IsLanguagesSaved_ = false;
 }
 
 /**
@@ -149,8 +149,8 @@ void MainWindow::Simulate()
  */
 void MainWindow::DisplayLanguageFamily()
 {
-    const auto table = simulator->ToStringLanguageFamily();
-    DisplayTable(mainTable, table);
+    const auto table = Simulator_->ToStringLanguageFamily();
+    DisplayTable(MainTable_, table);
 }
 
 /**
@@ -159,7 +159,7 @@ void MainWindow::DisplayLanguageFamily()
  */
 void MainWindow::SaveFile()
 {
-    if (simulator)
+    if (Simulator_)
     {
         QString fileName = QFileDialog::getSaveFileName(
             this,
@@ -171,7 +171,7 @@ void MainWindow::SaveFile()
         {
             return;
         }
-        simulator->LanguageFamily_.Export(fileName.toStdString());
+        Simulator_->LanguageFamily_.Export(fileName.toStdString());
     }
     else
     {
@@ -180,7 +180,7 @@ void MainWindow::SaveFile()
             "実行エラー",
             "保存するファイルがありません。");
     }
-    isLanguagesSaved = true;
+    IsLanguagesSaved_ = true;
 }
 
 /**
@@ -198,19 +198,19 @@ void MainWindow::OpenFile()
     );
     LanguageFamily languageFamily;
     languageFamily.Import(fileName.toStdString());
-    simulator = LanguageFamilySimulator::Create(languageFamily);
+    Simulator_ = LanguageFamilySimulator::Create(languageFamily);
     DisplayLanguageFamily();
 
-    isLanguagesSaved = true;
+    IsLanguagesSaved_ = true;
 }
 
 void MainWindow::NewFile()
 {
     WarningUnsaveFile();
-    simulator = LanguageFamilySimulator::Create();
+    Simulator_ = LanguageFamilySimulator::Create();
     DisplayLanguageFamily();
 
-    isLanguagesSaved = true;
+    IsLanguagesSaved_ = true;
 }
 
 /**
@@ -219,7 +219,7 @@ void MainWindow::NewFile()
  */
 void MainWindow::WarningUnsaveFile()
 {
-    if (simulator)
+    if (Simulator_)
     {
         const auto reply = QMessageBox::warning(
             this,
@@ -234,7 +234,7 @@ void MainWindow::WarningUnsaveFile()
                 QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
                 "CSV Files (*.log);;All Files (*)");
 
-            simulator->LanguageFamily_.Export(fileName.toStdString());
+            Simulator_->LanguageFamily_.Export(fileName.toStdString());
         }
     }
 }
@@ -246,7 +246,7 @@ void MainWindow::WarningUnsaveFile()
 void MainWindow::ShowContextMenu(const QPoint &pos)
 {
     // クリックされた位置のアイテムを取得
-    QTableWidgetItem *item = mainTable->itemAt(pos);
+    QTableWidgetItem *item = MainTable_->itemAt(pos);
     if (!item)
         return; // セルのない場所なら何もしない
 
@@ -256,11 +256,11 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     QAction *editGeography = menu.addAction("地理編集");
 
     // メニューを表示し、選ばれたアクションを取得
-    QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
+    QAction *selectedAction = menu.exec(MainTable_->viewport()->mapToGlobal(pos));
 
-    const int row = mainTable->currentRow();
-    const int column = mainTable->currentColumn();
-    const std::string place = mainTable->item(0, column)->text().toStdString();
+    const int row = MainTable_->currentRow();
+    const int column = MainTable_->currentColumn();
+    const std::string place = MainTable_->item(0, column)->text().toStdString();
     const int period = row;
     if (selectedAction == editAction)
     {
@@ -283,7 +283,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
  */
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (!simulator || isLanguagesSaved)
+    if (!Simulator_ || IsLanguagesSaved_)
     {
         event->accept();
         return;
@@ -306,7 +306,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (msgBox.clickedButton() == saveButton)
     {
         SaveFile();
-        if (isLanguagesSaved)
+        if (IsLanguagesSaved_)
         {
             event->accept();
         }
@@ -334,12 +334,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::EditLanguage(const std::string place, const int period)
 {
     EditLanguageWindow subWindow(this);
-    subWindow.SetLanguages(std::make_shared<LanguageFamily>(simulator->LanguageFamily_));
+    subWindow.SetLanguages(std::make_shared<LanguageFamily>(Simulator_->LanguageFamily_));
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
 
-    isLanguagesSaved = false;
+    IsLanguagesSaved_ = false;
 }
 
 /**
@@ -374,7 +374,7 @@ void MainWindow::EditPeriod(const std::string place, const int period)
     subWindow.SetPeriod(period);
     subWindow.exec();
 
-    isLanguagesSaved = false;
+    IsLanguagesSaved_ = false;
 }
 
 /**
@@ -386,10 +386,10 @@ void MainWindow::EditPeriod(const std::string place, const int period)
 void MainWindow::EditGeometry(const std::string place, const int period)
 {
     EditGeometryDialog subWindow(this);
-    subWindow.SetLanguages(std::make_shared<LanguageFamily>(simulator->LanguageFamily_));
+    subWindow.SetLanguages(std::make_shared<LanguageFamily>(Simulator_->LanguageFamily_));
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
 
-    isLanguagesSaved = false;
+    IsLanguagesSaved_ = false;
 }

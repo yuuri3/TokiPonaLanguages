@@ -16,10 +16,10 @@ private slots:
     void Unimplemented();
 
 private:
-    std::optional<std::string> Place;
-    std::optional<int> Period;
+    std::optional<std::string> Place_;
+    std::optional<int> Period_;
 
-    QPushButton *addUpButton;
-    QPushButton *addDownButton;
-    QPushButton *removeButton;
+    QPushButton *AddUpButton_;
+    QPushButton *AddDownButton_;
+    QPushButton *RemoveButton_;
 };

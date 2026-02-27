@@ -10,9 +10,9 @@
 Word Word::Add(const Word &word) const
 {
     Word result;
-    result.Form.reserve(Form.size() + word.Form.size());
-    result.Form.insert(result.Form.end(), Form.begin(), Form.end());
-    result.Form.insert(result.Form.end(), word.Form.begin(), word.Form.end());
+    result.Form_.reserve(Form_.size() + word.Form_.size());
+    result.Form_.insert(result.Form_.end(), Form_.begin(), Form_.end());
+    result.Form_.insert(result.Form_.end(), word.Form_.begin(), word.Form_.end());
 
     return result;
 }

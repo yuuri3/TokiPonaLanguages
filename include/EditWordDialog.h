@@ -32,22 +32,22 @@ private:
     const std::vector<int> ONE_WIDTH = {50};
     const int BUTTON_WIDTH = 50;
 
-    QLineEdit *Entry;
-    QWidget *Translations;
-    QPushButton *AddTranslationButton;
-    QWidget *Tags;
-    QPushButton *AddTagsButton;
-    QWidget *Contents;
-    QPushButton *AddContentsButton;
-    QWidget *Variations;
-    QPushButton *AddVariationsButton;
-    QWidget *Relations;
-    QPushButton *AddRelationsButton;
+    QLineEdit *Entry_;
+    QWidget *Translations_;
+    QPushButton *AddTranslationButton_;
+    QWidget *Tags_;
+    QPushButton *AddTagsButton_;
+    QWidget *Contents_;
+    QPushButton *AddContentsButton_;
+    QWidget *Variations_;
+    QPushButton *AddVariationsButton_;
+    QWidget *Relations_;
+    QPushButton *AddRelationsButton_;
 
-    std::optional<LanguageFamily> Languages;
-    std::optional<std::string> Place;
-    std::optional<int> Period;
-    std::optional<int> WordID;
+    std::optional<LanguageFamily> Languages_;
+    std::optional<std::string> Place_;
+    std::optional<int> Period_;
+    std::optional<int> WordID_;
     std::optional<Language> Language_;
 
     void UpdateDialog();

@@ -15,21 +15,21 @@ struct Word
     //   ID
     int ID;
     //   form
-    std::vector<Phoneme> Form;
+    std::vector<Phoneme> Form_;
     // translation <title,form>
-    std::map<std::string, std::vector<std::string>> Translations;
+    std::map<std::string, std::vector<std::string>> Translations_;
     // tags
-    std::vector<std::string> Tags;
+    std::vector<std::string> Tags_;
     // contents <title,text>
-    std::map<std::string, std::string> Contents;
+    std::map<std::string, std::string> Contents_;
     // variations <title,form>
-    std::map<std::string, std::vector<Phoneme>> Variations;
+    std::map<std::string, std::vector<Phoneme>> Variations_;
     // relations <title,entry>
-    std::map<std::string, int> Relations;
+    std::map<std::string, int> Relations_;
 
     bool operator==(const Word &other) const
     {
-        return Form == other.Form;
+        return Form_ == other.Form_;
     }
 
     bool operator!=(const Word &other) const
@@ -39,7 +39,7 @@ struct Word
 
     bool operator<(const Word &other) const
     {
-        return Form < other.Form;
+        return Form_ < other.Form_;
     }
 
     Word Add(const Word &word) const;

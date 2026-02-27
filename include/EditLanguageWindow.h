@@ -19,15 +19,15 @@ private slots:
     void ShowContextMenu(const QPoint &pos);
 
 private:
-    std::shared_ptr<LanguageFamily> Languages;
-    std::optional<std::string> Place;
-    std::optional<int> Period;
+    std::shared_ptr<LanguageFamily> Languages_;
+    std::optional<std::string> Place_;
+    std::optional<int> Period_;
     std::optional<Language> Language_;
 
-    QTableWidget *mainTable;
-    QLineEdit *searchLineEdit;
-    QPushButton *searchButton;
-    QPushButton *addWordButton;
+    QTableWidget *MainTable_;
+    QLineEdit *SearchLineEdit_;
+    QPushButton *SearchButton_;
+    QPushButton *AddWordButton_;
 
     void UpdateTable();
 };

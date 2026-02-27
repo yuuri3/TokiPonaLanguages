@@ -12,11 +12,11 @@
 LanguageDifference LanguageDifference::CreateAddWord(const std::string &place, const int period, const int wordID, const std::string &wordForm)
 {
     LanguageDifference diff;
-    diff.Period = period;
-    diff.Type = LanguageDifferenceType::AddWord;
-    diff.StringParam.emplace_back(place);
-    diff.IntParam.emplace_back(wordID);
-    diff.StringParam.emplace_back(wordForm);
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::AddWord;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.StringParam_.emplace_back(wordForm);
     return diff;
 }
 
@@ -31,10 +31,10 @@ LanguageDifference LanguageDifference::CreateAddWord(const std::string &place, c
 LanguageDifference LanguageDifference::CreateChangeStrength(const std::string &place, const int period, const double strength)
 {
     LanguageDifference diff;
-    diff.Period = period;
-    diff.Type = LanguageDifferenceType::ChangeStrength;
-    diff.StringParam.emplace_back(place);
-    diff.DoubleParam.emplace_back(strength);
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::ChangeStrength;
+    diff.StringParam_.emplace_back(place);
+    diff.DoubleParam_.emplace_back(strength);
     return diff;
 }
 
@@ -49,10 +49,10 @@ LanguageDifference LanguageDifference::CreateChangeStrength(const std::string &p
 LanguageDifference LanguageDifference::CreatePhonologicalChange(const std::string &place, const int period, const PhonologicalChange phonologicalChange)
 {
     LanguageDifference diff;
-    diff.Period = period;
-    diff.Type = LanguageDifferenceType::PhonologicalChange;
-    diff.StringParam.emplace_back(place);
-    diff.PhonologicalChanges = phonologicalChange;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::PhonologicalChange;
+    diff.StringParam_.emplace_back(place);
+    diff.PhonologicalChanges_ = phonologicalChange;
     return diff;
 }
 
@@ -69,12 +69,12 @@ LanguageDifference LanguageDifference::CreatePhonologicalChange(const std::strin
 LanguageDifference LanguageDifference::CreateLoanword(const std::string &place1, const std::string &place2, const int period, const int wordID1, const int wordID2)
 {
     LanguageDifference diff;
-    diff.Period = period;
-    diff.Type = LanguageDifferenceType::Loanword;
-    diff.StringParam.emplace_back(place1);
-    diff.IntParam.emplace_back(wordID1);
-    diff.StringParam.emplace_back(place2);
-    diff.IntParam.emplace_back(wordID2);
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::Loanword;
+    diff.StringParam_.emplace_back(place1);
+    diff.IntParam_.emplace_back(wordID1);
+    diff.StringParam_.emplace_back(place2);
+    diff.IntParam_.emplace_back(wordID2);
     return diff;
 }
 
@@ -90,11 +90,11 @@ LanguageDifference LanguageDifference::CreateLoanword(const std::string &place1,
 LanguageDifference LanguageDifference::CreateAddCompound(const std::string &place, const int period, const int wordID, const std::vector<int> wordIDs)
 {
     LanguageDifference diff;
-    diff.Period = period;
-    diff.Type = LanguageDifferenceType::AddCompound;
-    diff.StringParam.emplace_back(place);
-    diff.IntParam.emplace_back(wordID);
-    diff.IntParam.insert(diff.IntParam.end(), wordIDs.begin(), wordIDs.end());
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::AddCompound;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.insert(diff.IntParam_.end(), wordIDs.begin(), wordIDs.end());
     return diff;
 }
 
@@ -109,9 +109,9 @@ LanguageDifference LanguageDifference::CreateAddCompound(const std::string &plac
 LanguageDifference LanguageDifference::CreateObsoleteWord(const std::string &place, const int period, const int wordID)
 {
     LanguageDifference diff;
-    diff.Period = period;
-    diff.Type = LanguageDifferenceType::ObsoleteWord;
-    diff.StringParam.emplace_back(place);
-    diff.IntParam.emplace_back(wordID);
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::ObsoleteWord;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
     return diff;
 }
