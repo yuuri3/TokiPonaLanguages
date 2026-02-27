@@ -11,9 +11,9 @@ PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::str
         {
             const std::string &item = phonemeTable[row][column];
             Phoneme phoneme;
-            phoneme.Manner = row;
-            phoneme.Place = column;
-            converter.PhonemeMap[item] = phoneme;
+            phoneme.Manner_ = row;
+            phoneme.Place_ = column;
+            converter.PhonemeMap_[item] = phoneme;
         }
     }
     return converter;
@@ -35,8 +35,8 @@ std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
         if (charPosition + phonemeCharCount <= str.length())
         {
             std::string PhonemeStr = str.substr(charPosition, phonemeCharCount);
-            auto it = PhonemeMap.find(PhonemeStr);
-            if (it != PhonemeMap.end())
+            auto it = PhonemeMap_.find(PhonemeStr);
+            if (it != PhonemeMap_.end())
             {
                 convertedPhoneme.push_back(it->second);
                 charPosition += phonemeCharCount;
@@ -45,9 +45,9 @@ std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
             if (PhonemeStr == " ")
             {
                 Phoneme space;
-                space.IsSpace = true;
-                space.Manner = -1;
-                space.Place = -1;
+                space.IsSpace_ = true;
+                space.Manner_ = -1;
+                space.Place_ = -1;
                 convertedPhoneme.emplace_back(space);
                 charPosition += phonemeCharCount;
                 isMatch = true;
@@ -71,11 +71,11 @@ Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &str
     for (const auto &str : strs)
     {
         Word word;
-        word.Form = ConvertToPhoneme(str);
-        convertedLanguage.Words[wordID] = word;
+        word.Form_ = ConvertToPhoneme(str);
+        convertedLanguage.Words_[wordID] = word;
         wordID++;
     }
-    convertedLanguage.Strength = 0.0;
+    convertedLanguage.Strength_ = 0.0;
     return convertedLanguage;
 }
 
@@ -90,14 +90,14 @@ std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonem
 
     for (const auto &phoneme : phonemes)
     {
-        for (const auto &[keyString, valuePhoneme] : PhonemeMap)
+        for (const auto &[keyString, valuePhoneme] : PhonemeMap_)
         {
             if (phoneme == valuePhoneme)
             {
                 str += keyString;
             }
         }
-        if (phoneme.IsSpace)
+        if (phoneme.IsSpace_)
         {
             str += " ";
         }
@@ -108,8 +108,8 @@ std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonem
 
 Phoneme PhonemeConverter::GetRandom() const
 {
-    const int randomIndex = getRandomInt(0, static_cast<int>(PhonemeMap.size()));
-    auto it = PhonemeMap.begin();
+    const int randomIndex = getRandomInt(0, static_cast<int>(PhonemeMap_.size()));
+    auto it = PhonemeMap_.begin();
     std::advance(it, randomIndex);
     return it->second;
 }

@@ -18,15 +18,15 @@ public:
     void accept() override;
 
 private:
-    QSpinBox *nLoanwordSpin;
-    QDoubleSpinBox *pPhonologicalChangeSpin;
-    QDoubleSpinBox *pPhonologicalLossSpin;
-    QLineEdit *protoLanguagePath;
-    QLineEdit *phonemeTablePath;
-    QLineEdit *geometryPath;
+    QSpinBox *NLoanwordSpin_;
+    QDoubleSpinBox *PPhonologicalChangeSpin_;
+    QDoubleSpinBox *PPhonologicalLossSpin_;
+    QLineEdit *ProtoLanguagePath_;
+    QLineEdit *PhonemeTablePath_;
+    QLineEdit *GeometryPath_;
 
-    std::optional<LanguageFamilySimulator> simulator;
+    std::optional<LanguageFamilySimulator> Simulator_;
 
-    QPushButton *runButton;
-    QPushButton *cancelButton;
+    QPushButton *RunButton_;
+    QPushButton *CancelButton_;
 };

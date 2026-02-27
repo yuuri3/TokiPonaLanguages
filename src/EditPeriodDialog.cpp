@@ -8,17 +8,17 @@ EditPeriodDialog::EditPeriodDialog(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     // TODO ボタン名は検討
-    addUpButton = new QPushButton("上に追加", this);
-    connect(addUpButton, &QPushButton::clicked, this, &EditPeriodDialog::Unimplemented);
-    layout->addWidget(addUpButton);
+    AddUpButton_ = new QPushButton("上に追加", this);
+    connect(AddUpButton_, &QPushButton::clicked, this, &EditPeriodDialog::Unimplemented);
+    layout->addWidget(AddUpButton_);
 
-    addDownButton = new QPushButton("下に追加", this);
-    connect(addDownButton, &QPushButton::clicked, this, &EditPeriodDialog::Unimplemented);
-    layout->addWidget(addDownButton);
+    AddDownButton_ = new QPushButton("下に追加", this);
+    connect(AddDownButton_, &QPushButton::clicked, this, &EditPeriodDialog::Unimplemented);
+    layout->addWidget(AddDownButton_);
 
-    removeButton = new QPushButton("削除", this);
-    connect(removeButton, &QPushButton::clicked, this, &EditPeriodDialog::Unimplemented);
-    layout->addWidget(removeButton);
+    RemoveButton_ = new QPushButton("削除", this);
+    connect(RemoveButton_, &QPushButton::clicked, this, &EditPeriodDialog::Unimplemented);
+    layout->addWidget(RemoveButton_);
 }
 
 /**
@@ -28,7 +28,7 @@ EditPeriodDialog::EditPeriodDialog(QWidget *parent)
  */
 void EditPeriodDialog::SetPlace(const std::string &place)
 {
-    Place = place;
+    Place_ = place;
 }
 
 /**
@@ -38,7 +38,7 @@ void EditPeriodDialog::SetPlace(const std::string &place)
  */
 void EditPeriodDialog::SetPeriod(const int period)
 {
-    Period = period;
+    Period_ = period;
 }
 
 /**

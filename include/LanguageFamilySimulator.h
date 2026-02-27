@@ -16,11 +16,11 @@ struct LanguageFamilySimulator
     // 語族
     LanguageFamily LanguageFamily_;
     // 時代
-    int Period = 0;
+    int Period_ = 0;
     // 地理と言語の対応（シミュレーション用）
-    std::map<std::string, Language> Languages;
+    std::map<std::string, Language> Languages_;
     // 祖語（シミュレーション用）
-    Language ProtoLanguage;
+    Language ProtoLanguage_;
 
     static std::optional<LanguageFamilySimulator> Create();
     static std::optional<LanguageFamilySimulator> Create(LanguageFamily languageFamily);

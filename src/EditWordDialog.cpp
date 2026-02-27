@@ -11,93 +11,88 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     // * 見出し語
     layout->addWidget(new QLabel("見出し語", this));
 
-    Entry = new QLineEdit(this);
-    Entry->setText("テスト単語");
-    layout->addWidget(Entry);
+    Entry_ = new QLineEdit(this);
+    Entry_->setText("テスト単語");
+    layout->addWidget(Entry_);
 
     // * 訳語
     QHBoxLayout *translationsTitleLayout = new QHBoxLayout(this);
     translationsTitleLayout->addWidget(new QLabel("訳語", this));
     layout->addLayout(translationsTitleLayout);
 
-    Translations = new QWidget(this);
-    layout->addWidget(Translations);
+    Translations_ = new QWidget(this);
+    layout->addWidget(Translations_);
 
     std::vector<std::vector<std::string>> translations = {{"", ""}};
-    DisplayLine(Translations, translations, TWO_WIDTHS);
 
     //   * 訳語追加ボタン
-    AddTranslationButton = new QPushButton("追加", this);
-    AddTranslationButton->setFixedWidth(BUTTON_WIDTH);
-    connect(AddTranslationButton, &QPushButton::clicked, this, &EditWordDialog::AddTranslationButtonPushed);
-    translationsTitleLayout->addWidget(AddTranslationButton);
+    AddTranslationButton_ = new QPushButton("追加", this);
+    AddTranslationButton_->setFixedWidth(BUTTON_WIDTH);
+    connect(AddTranslationButton_, &QPushButton::clicked, this, &EditWordDialog::AddTranslationButtonPushed);
+    translationsTitleLayout->addWidget(AddTranslationButton_);
 
     // * タグ
     QHBoxLayout *tagsTitleLayout = new QHBoxLayout(this);
     tagsTitleLayout->addWidget(new QLabel("タグ", this));
     layout->addLayout(tagsTitleLayout);
 
-    Tags = new QWidget(this);
-    layout->addWidget(Tags);
+    Tags_ = new QWidget(this);
+    layout->addWidget(Tags_);
 
     std::vector<std::vector<std::string>> tags = {{""}};
-    DisplayLine(Tags, tags, ONE_WIDTH);
 
     //   * タグ追加ボタン
-    AddTagsButton = new QPushButton("追加", this);
-    AddTagsButton->setFixedWidth(BUTTON_WIDTH);
-    connect(AddTagsButton, &QPushButton::clicked, this, &EditWordDialog::AddTagsButtonPushed);
-    tagsTitleLayout->addWidget(AddTagsButton);
+    AddTagsButton_ = new QPushButton("追加", this);
+    AddTagsButton_->setFixedWidth(BUTTON_WIDTH);
+    connect(AddTagsButton_, &QPushButton::clicked, this, &EditWordDialog::AddTagsButtonPushed);
+    tagsTitleLayout->addWidget(AddTagsButton_);
 
     // * 自由記述
     QHBoxLayout *contentsTitleLayout = new QHBoxLayout(this);
     contentsTitleLayout->addWidget(new QLabel("自由記述", this));
     layout->addLayout(contentsTitleLayout);
 
-    Contents = new QWidget(this);
-    layout->addWidget(Contents);
+    Contents_ = new QWidget(this);
+    layout->addWidget(Contents_);
 
     std::vector<std::vector<std::string>> contents = {{"", ""}};
-    DisplayLine(Contents, contents, TWO_WIDTHS);
 
     //   * 自由記述追加ボタン
-    AddContentsButton = new QPushButton("追加", this);
-    AddContentsButton->setFixedWidth(BUTTON_WIDTH);
-    connect(AddContentsButton, &QPushButton::clicked, this, &EditWordDialog::AddContentsButtonPushed);
-    contentsTitleLayout->addWidget(AddContentsButton);
+    AddContentsButton_ = new QPushButton("追加", this);
+    AddContentsButton_->setFixedWidth(BUTTON_WIDTH);
+    connect(AddContentsButton_, &QPushButton::clicked, this, &EditWordDialog::AddContentsButtonPushed);
+    contentsTitleLayout->addWidget(AddContentsButton_);
 
     // * 変化形
     QHBoxLayout *variationsTitleLayout = new QHBoxLayout(this);
     variationsTitleLayout->addWidget(new QLabel("変化形", this));
     layout->addLayout(variationsTitleLayout);
 
-    Variations = new QWidget(this);
-    layout->addWidget(Variations);
+    Variations_ = new QWidget(this);
+    layout->addWidget(Variations_);
 
     std::vector<std::vector<std::string>> variations = {{"", ""}};
-    DisplayLine(Variations, variations, TWO_WIDTHS);
 
     //   * 変化形追加ボタン
-    AddVariationsButton = new QPushButton("追加", this);
-    AddVariationsButton->setFixedWidth(BUTTON_WIDTH);
-    connect(AddVariationsButton, &QPushButton::clicked, this, &EditWordDialog::AddVariationsButtonPushed);
-    variationsTitleLayout->addWidget(AddVariationsButton);
+    AddVariationsButton_ = new QPushButton("追加", this);
+    AddVariationsButton_->setFixedWidth(BUTTON_WIDTH);
+    connect(AddVariationsButton_, &QPushButton::clicked, this, &EditWordDialog::AddVariationsButtonPushed);
+    variationsTitleLayout->addWidget(AddVariationsButton_);
 
     // * 関連語
     QHBoxLayout *RelationsTitleLayout = new QHBoxLayout(this);
     RelationsTitleLayout->addWidget(new QLabel("関連語", this));
     layout->addLayout(RelationsTitleLayout);
 
-    Relations = new QWidget(this);
-    layout->addWidget(Relations);
+    Relations_ = new QWidget(this);
+    layout->addWidget(Relations_);
 
     std::vector<std::vector<std::string>> relations = {{"", ""}};
-    DisplayLine(Relations, relations, TWO_WIDTHS);
 
     //   * 関連語追加ボタン
-    AddRelationsButton = new QPushButton("追加", this);
-    connect(AddRelationsButton, &QPushButton::clicked, this, &EditWordDialog::AddRelationsButtonPushed);
-    RelationsTitleLayout->addWidget(AddRelationsButton);
+    AddRelationsButton_ = new QPushButton("追加", this);
+    connect(AddRelationsButton_, &QPushButton::clicked, this, &EditWordDialog::AddRelationsButtonPushed);
+    RelationsTitleLayout->addWidget(AddRelationsButton_);
 }
 
 /**
@@ -118,15 +113,26 @@ void EditWordDialog::Unimplemented()
  * @param period 時代
  * @param wordID 単語ID
  */
-void EditWordDialog::Set(std::shared_ptr<LanguageFamily> languages,
-                         std::optional<std::string> place,
-                         std::optional<int> period,
-                         std::optional<int> wordID)
+void EditWordDialog::Set(const LanguageFamily &languages,
+                         const std::string &place,
+                         const int period,
+                         const int wordID)
 {
-    Languages = languages;
-    Place = place;
-    Period = period;
-    WordID = wordID;
+    Languages_ = languages;
+    Place_ = place;
+    Period_ = period;
+    WordID_ = wordID;
+    UpdateDialog();
+}
+
+/**
+ * @brief 選択した言語をセット
+ *
+ * @param language
+ */
+void EditWordDialog::SetLanguage(const Language &language)
+{
+    Language_ = language;
     UpdateDialog();
 }
 
@@ -136,72 +142,80 @@ void EditWordDialog::Set(std::shared_ptr<LanguageFamily> languages,
  */
 void EditWordDialog::UpdateDialog()
 {
-    if (Languages && Place && Period && WordID)
+    if (Languages_ && Place_ && Period_ && WordID_)
     {
-        auto simulator = LanguageFamilySimulator::Create(*Languages);
-        if (!simulator)
+        std::optional<Language> language;
+        if (Language_)
         {
-            return;
+            language = Language_;
         }
-        auto language = simulator->CalculateLanguage(*Place, *Period);
-        if (!language)
+        else
         {
-            return;
+            auto simulator = LanguageFamilySimulator::Create(*Languages_);
+            if (!simulator)
+            {
+                return;
+            }
+            language = simulator->CalculateLanguage(*Place_, *Period_);
+            if (!language)
+            {
+                return;
+            }
         }
-        PhonemeConverter converter = PhonemeConverter::Create(Languages->PhonemeTable);
+        PhonemeConverter converter = PhonemeConverter::Create(Languages_->PhonemeTable_);
 
         // 語形
-        const auto form = language->Words[*WordID].Form;
-        Entry->setText(QString::fromStdString(converter.ConvertToString(form)));
+        const auto form = language->Words_[*WordID_].Form_;
+        Entry_->setText(QString::fromStdString(converter.ConvertToString(form)));
 
         // 訳語
         std::vector<std::vector<std::string>> translations;
-        for (const auto &[title, forms] : language->Words[*WordID].Translations)
+        for (const auto &[title, forms] : language->Words_[*WordID_].Translations_)
         {
             std::string formsStr = JoinStrs(forms, ",");
             translations.push_back({title, formsStr});
         }
         translations.push_back({"", ""});
-        DisplayLine(Translations, translations, TWO_WIDTHS);
+        DisplayLine(Translations_, translations, TWO_WIDTHS);
 
         // タグ
         std::vector<std::vector<std::string>> tags;
-        for (const auto &tag : language->Words[*WordID].Tags)
+        for (const auto &tag : language->Words_[*WordID_].Tags_)
         {
             tags.push_back({tag});
         }
         tags.push_back({""});
-        DisplayLine(Tags, tags, ONE_WIDTH);
+        DisplayLine(Tags_, tags, ONE_WIDTH);
 
         // 自由記述
         std::vector<std::vector<std::string>> contentsData;
-        for (const auto &[title, content] : language->Words[*WordID].Contents)
+        for (const auto &[title, content] : language->Words_[*WordID_].Contents_)
         {
             contentsData.push_back({title, content});
         }
         contentsData.push_back({"", ""});
-        DisplayLine(Contents, contentsData, TWO_WIDTHS);
+        DisplayLine(Contents_, contentsData, TWO_WIDTHS);
 
         // 変化形
         std::vector<std::vector<std::string>> variationsData;
-        for (const auto &[title, variation] : language->Words[*WordID].Variations)
+        for (const auto &[title, variation] : language->Words_[*WordID_].Variations_)
         {
             variationsData.push_back({title, converter.ConvertToString(variation)});
         }
         variationsData.push_back({"", ""});
-        DisplayLine(Variations, variationsData, TWO_WIDTHS);
+        DisplayLine(Variations_, variationsData, TWO_WIDTHS);
 
         // 関連語
         std::vector<std::vector<std::string>> relationsData;
-        for (const auto &[title, relatedWordID] : language->Words[*WordID].Relations)
+        for (const auto &[title, relatedWordID] : language->Words_[*WordID_].Relations_)
         {
-            if (language->Words.count(relatedWordID) == 1)
+            if (language->Words_.count(relatedWordID) == 1)
             {
-                relationsData.push_back({title, converter.ConvertToString(language->Words[relatedWordID].Form)});
+                relationsData.push_back({title, converter.ConvertToString(language->Words_[relatedWordID].Form_)});
             }
         }
         relationsData.push_back({"", ""});
-        DisplayLine(Relations, relationsData, TWO_WIDTHS);
+        DisplayLine(Relations_, relationsData, TWO_WIDTHS);
     }
 }
 
@@ -226,7 +240,7 @@ void EditWordDialog::DisplayLine(QWidget *widget, const std::vector<std::vector<
  */
 void EditWordDialog::AddTranslationButtonPushed()
 {
-    AddLine(Translations, {"", ""}, TWO_WIDTHS);
+    AddLine(Translations_, {"", ""}, TWO_WIDTHS);
 }
 
 /**
@@ -235,7 +249,7 @@ void EditWordDialog::AddTranslationButtonPushed()
  */
 void EditWordDialog::AddTagsButtonPushed()
 {
-    AddLine(Tags, {""}, ONE_WIDTH);
+    AddLine(Tags_, {""}, ONE_WIDTH);
 }
 
 /**
@@ -244,7 +258,7 @@ void EditWordDialog::AddTagsButtonPushed()
  */
 void EditWordDialog::AddContentsButtonPushed()
 {
-    AddLine(Contents, {"", ""}, TWO_WIDTHS);
+    AddLine(Contents_, {"", ""}, TWO_WIDTHS);
 }
 
 /**
@@ -253,7 +267,7 @@ void EditWordDialog::AddContentsButtonPushed()
  */
 void EditWordDialog::AddVariationsButtonPushed()
 {
-    AddLine(Variations, {"", ""}, TWO_WIDTHS);
+    AddLine(Variations_, {"", ""}, TWO_WIDTHS);
 }
 
 /**
@@ -262,7 +276,7 @@ void EditWordDialog::AddVariationsButtonPushed()
  */
 void EditWordDialog::AddRelationsButtonPushed()
 {
-    AddLine(Relations, {"", ""}, TWO_WIDTHS);
+    AddLine(Relations_, {"", ""}, TWO_WIDTHS);
 }
 
 /**

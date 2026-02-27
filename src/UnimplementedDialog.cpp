@@ -10,9 +10,9 @@ UnimplementedDialog::UnimplementedDialog(QWidget *parent)
     QLabel *warningText = new QLabel("機能未実装です", this);
     layout->addWidget(warningText);
 
-    OKButton = new QPushButton("OK", this);
-    layout->addWidget(OKButton);
-    connect(OKButton, &QPushButton::clicked, this, &UnimplementedDialog::OkButtonClicked);
+    OKButton_ = new QPushButton("OK", this);
+    layout->addWidget(OKButton_);
+    connect(OKButton_, &QPushButton::clicked, this, &UnimplementedDialog::OkButtonClicked);
 
     // レイアウト調整
     constexpr int BUTTON_HEIGHT = 30;
@@ -23,7 +23,7 @@ UnimplementedDialog::UnimplementedDialog(QWidget *parent)
     layout->setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN);
     layout->setSpacing(BUTTON_SPACE);
 
-    OKButton->setFixedSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+    OKButton_->setFixedSize(BUTTON_WIDTH, BUTTON_HEIGHT);
 
     this->setFixedSize(sizeHint());
 }

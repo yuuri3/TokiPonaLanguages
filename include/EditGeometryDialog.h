@@ -18,11 +18,11 @@ private slots:
     void Unimplemented();
 
 private:
-    std::shared_ptr<LanguageFamily> Languages;
-    std::optional<std::string> Place;
-    std::optional<int> Period;
+    std::shared_ptr<LanguageFamily> Languages_;
+    std::optional<std::string> Place_;
+    std::optional<int> Period_;
 
-    QTableWidget *mainTable;
+    QTableWidget *MainTable_;
 
     void UpdateTable();
 };

@@ -7,15 +7,15 @@
 struct Phoneme
 {
     // 無音フラグ
-    bool IsSpace = false;
+    bool IsSpace_ = false;
     // 調音方法
-    int Manner;
+    int Manner_;
     // 調音部位
-    int Place;
+    int Place_;
 
     bool operator==(const Phoneme &other) const
     {
-        return (Manner == other.Manner && Place == other.Place);
+        return (Manner_ == other.Manner_ && Place_ == other.Place_);
     }
 
     bool operator!=(const Phoneme &other) const
@@ -25,8 +25,8 @@ struct Phoneme
 
     bool operator<(const Phoneme &other) const
     {
-        if (Manner != other.Manner)
-            return Manner < other.Manner;
-        return Place < other.Place;
+        if (Manner_ != other.Manner_)
+            return Manner_ < other.Manner_;
+        return Place_ < other.Place_;
     }
 };

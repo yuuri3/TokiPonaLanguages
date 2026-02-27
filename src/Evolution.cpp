@@ -24,15 +24,15 @@ std::optional<LanguageFamilySimulator> evolution(
     auto protoLanguage = converter.convertToLanguage(protoLanguageData[0]);
 
     LanguageFamilySimulator simulator;
-    simulator.LanguageFamily_.Geography = geographyData;
-    simulator.LanguageFamily_.PhonemeTable = phonemeTableData;
+    simulator.LanguageFamily_.Geography_ = geographyData;
+    simulator.LanguageFamily_.PhonemeTable_ = phonemeTableData;
     simulator.SetProtoLanguageOnGeography("0", protoLanguage);
 
     if (nLoanword == 0)
     {
         return std::nullopt;
     }
-    if (protoLanguage.Words.empty())
+    if (protoLanguage.Words_.empty())
     {
         return std::nullopt;
     }

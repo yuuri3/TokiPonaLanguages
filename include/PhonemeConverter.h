@@ -9,7 +9,7 @@
  */
 struct PhonemeConverter
 {
-    std::map<std::string, Phoneme> PhonemeMap;
+    std::map<std::string, Phoneme> PhonemeMap_;
     PhonemeConverter static Create(const std::vector<std::vector<std::string>> &phonemeTable);
 
     std::vector<Phoneme> ConvertToPhoneme(const std::string &str);

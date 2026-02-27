@@ -11,17 +11,17 @@
 struct LanguageDifference
 {
     // タイプ
-    LanguageDifferenceType Type;
+    LanguageDifferenceType Type_;
     // 時代
-    int Period;
+    int Period_;
     // 整数パラメータ
-    std::vector<int> IntParam;
+    std::vector<int> IntParam_;
     // 実数パラメータ
-    std::vector<double> DoubleParam;
+    std::vector<double> DoubleParam_;
     // 文字列パラメータ
-    std::vector<std::string> StringParam;
+    std::vector<std::string> StringParam_;
     // 音韻変化（あとで消す）
-    PhonologicalChange PhonologicalChanges;
+    PhonologicalChange PhonologicalChanges_;
 
     static LanguageDifference CreateAddWord(const std::string &place, const int period, const int wordID, const std::string &wordForm);
     static LanguageDifference CreateChangeStrength(const std::string &place, const int period, const double strength);
