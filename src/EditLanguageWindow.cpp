@@ -136,40 +136,50 @@ void EditLanguageWindow::Unimplemented()
  */
 void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
 {
-    // クリックされた位置のアイテムを取得
-    QTableWidgetItem *item = mainTable->itemAt(pos);
-    if (!item)
-        return; // セルのない場所なら何もしない
-
-    QMenu menu(this);
-    QAction *editAction = menu.addAction("編集");
-
-    // メニューを表示し、選ばれたアクションを取得
-    QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
-
-    if (selectedAction == editAction)
+    if (Languages && Place && Period)
     {
-        auto simulator = LanguageFamilySimulator::Create(*Languages);
-        if (!simulator)
-        {
-            return;
-        }
-        auto language = simulator->CalculateLanguage(*Place, *Period);
-        if (!language)
-        {
-            return;
-        }
+        // クリックされた位置のアイテムを取得
+        QTableWidgetItem *item = mainTable->itemAt(pos);
+        if (!item)
+            return; // セルのない場所なら何もしない
 
-        const int row = mainTable->currentRow();
-        const int column = mainTable->currentColumn();
-        auto languages = Languages;
-        auto place = Place;
-        auto period = Period;
-        auto it = std::next(language->Words.begin(), row);
-        int wordID = it->first - 1;
+        QMenu menu(this);
+        QAction *editAction = menu.addAction("編集");
 
-        EditWordDialog subWindow(this);
-        subWindow.Set(languages, place, period, wordID);
-        subWindow.exec();
+        // メニューを表示し、選ばれたアクションを取得
+        QAction *selectedAction = menu.exec(mainTable->viewport()->mapToGlobal(pos));
+
+        if (selectedAction == editAction)
+        {
+            std::optional<Language> language;
+            if (Language_)
+            {
+                language = Language_;
+            }
+            else
+            {
+                auto simulator = LanguageFamilySimulator::Create(*Languages);
+                if (!simulator)
+                {
+                    return;
+                }
+                language = simulator->CalculateLanguage(*Place, *Period);
+                Language_ = language;
+                if (!language)
+                {
+                    return;
+                }
+            }
+
+            const int row = mainTable->currentRow();
+            const int column = mainTable->currentColumn();
+            auto it = std::next(language->Words.begin(), row);
+            int wordID = it->first - 1;
+
+            EditWordDialog subWindow(this);
+            subWindow.SetLanguage(*language);
+            subWindow.Set(*Languages, *Place, *Period, wordID);
+            subWindow.exec();
+        }
     }
 }

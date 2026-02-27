@@ -22,6 +22,7 @@ private:
     std::shared_ptr<LanguageFamily> Languages;
     std::optional<std::string> Place;
     std::optional<int> Period;
+    std::optional<Language> Language_;
 
     QTableWidget *mainTable;
     QLineEdit *searchLineEdit;

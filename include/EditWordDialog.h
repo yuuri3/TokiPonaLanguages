@@ -12,10 +12,11 @@ class EditWordDialog : public QDialog
 public:
     EditWordDialog(QWidget *parent = nullptr);
     ~EditWordDialog() = default;
-    void Set(std::shared_ptr<LanguageFamily> languages,
-             std::optional<std::string> place,
-             std::optional<int> period,
-             std::optional<int> wordID);
+    void Set(const LanguageFamily &languages,
+             const std::string &place,
+             const int period,
+             const int wordID);
+    void SetLanguage(const Language &language);
 
 private slots:
     void AddTranslationButtonPushed();
@@ -43,10 +44,11 @@ private:
     QWidget *Relations;
     QPushButton *AddRelationsButton;
 
-    std::shared_ptr<LanguageFamily> Languages;
+    std::optional<LanguageFamily> Languages;
     std::optional<std::string> Place;
     std::optional<int> Period;
     std::optional<int> WordID;
+    std::optional<Language> Language_;
 
     void UpdateDialog();
     void AddLine(QWidget *widget, const std::vector<std::string> &values, const std::vector<int> &widths);

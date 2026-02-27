@@ -118,15 +118,26 @@ void EditWordDialog::Unimplemented()
  * @param period 時代
  * @param wordID 単語ID
  */
-void EditWordDialog::Set(std::shared_ptr<LanguageFamily> languages,
-                         std::optional<std::string> place,
-                         std::optional<int> period,
-                         std::optional<int> wordID)
+void EditWordDialog::Set(const LanguageFamily &languages,
+                         const std::string &place,
+                         const int period,
+                         const int wordID)
 {
     Languages = languages;
     Place = place;
     Period = period;
     WordID = wordID;
+    UpdateDialog();
+}
+
+/**
+ * @brief 選択した言語をセット
+ *
+ * @param language
+ */
+void EditWordDialog::SetLanguage(const Language &language)
+{
+    Language_ = language;
     UpdateDialog();
 }
 
@@ -138,15 +149,23 @@ void EditWordDialog::UpdateDialog()
 {
     if (Languages && Place && Period && WordID)
     {
-        auto simulator = LanguageFamilySimulator::Create(*Languages);
-        if (!simulator)
+        std::optional<Language> language;
+        if (Language_)
         {
-            return;
+            language = Language_;
         }
-        auto language = simulator->CalculateLanguage(*Place, *Period);
-        if (!language)
+        else
         {
-            return;
+            auto simulator = LanguageFamilySimulator::Create(*Languages);
+            if (!simulator)
+            {
+                return;
+            }
+            language = simulator->CalculateLanguage(*Place, *Period);
+            if (!language)
+            {
+                return;
+            }
         }
         PhonemeConverter converter = PhonemeConverter::Create(Languages->PhonemeTable);
 
