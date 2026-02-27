@@ -24,7 +24,6 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Translations);
 
     std::vector<std::vector<std::string>> translations = {{"", ""}};
-    DisplayLine(Translations, translations, TWO_WIDTHS);
 
     //   * 訳語追加ボタン
     AddTranslationButton = new QPushButton("追加", this);
@@ -41,7 +40,6 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Tags);
 
     std::vector<std::vector<std::string>> tags = {{""}};
-    DisplayLine(Tags, tags, ONE_WIDTH);
 
     //   * タグ追加ボタン
     AddTagsButton = new QPushButton("追加", this);
@@ -58,7 +56,6 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Contents);
 
     std::vector<std::vector<std::string>> contents = {{"", ""}};
-    DisplayLine(Contents, contents, TWO_WIDTHS);
 
     //   * 自由記述追加ボタン
     AddContentsButton = new QPushButton("追加", this);
@@ -75,7 +72,6 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Variations);
 
     std::vector<std::vector<std::string>> variations = {{"", ""}};
-    DisplayLine(Variations, variations, TWO_WIDTHS);
 
     //   * 変化形追加ボタン
     AddVariationsButton = new QPushButton("追加", this);
@@ -92,7 +88,6 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     layout->addWidget(Relations);
 
     std::vector<std::vector<std::string>> relations = {{"", ""}};
-    DisplayLine(Relations, relations, TWO_WIDTHS);
 
     //   * 関連語追加ボタン
     AddRelationsButton = new QPushButton("追加", this);
