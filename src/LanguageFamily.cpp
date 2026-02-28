@@ -148,7 +148,7 @@ std::optional<Language> LanguageFamily::CalculateLanguage(const std::string plac
  *
  * @return const std::vector<std::vector<std::string>>
  */
-const std::vector<std::vector<std::string>> LanguageFamily::ToString()
+const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
 {
     int currentPeriod = 0;
     std::vector<std::vector<std::string>> result;

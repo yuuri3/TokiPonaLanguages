@@ -35,5 +35,4 @@ struct LanguageFamilySimulator
     void ChangeLanguageStrengthRandom(const double pChangeStrength);
     bool HasAllPlaceLanguage();
     void ToNextPeriod();
-    std::vector<std::vector<std::string>> ToStringLanguageFamily();
 };

@@ -29,7 +29,8 @@ private:
     QMenu *SimulationMenu_;
     QMenu *HelpMenu_;
 
-    std::optional<LanguageFamilySimulator> Simulator_ = std::nullopt;
+    // std::optional<LanguageFamilySimulator> Simulator_ = std::nullopt;
+    std::optional<LanguageFamily> Languages_ = std::nullopt;
 
     QAction *SimulateAction_;
     QAction *NewFileAction_;
@@ -45,7 +46,7 @@ private:
 
     bool IsLanguagesSaved_;
 
-    void DisplayLanguageFamily();
+    void DisplayLanguageFamily(const LanguageFamily &languages);
     void WarningUnsaveFile();
     void EditLanguage(const std::string place, const int period);
     void EditPeriod(const std::string place, const int period);
