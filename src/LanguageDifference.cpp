@@ -338,10 +338,8 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
             std::tie(memberName, memberValue) = splitByColon(line);
             const bool isRemove = static_cast<bool>(std::stoi(memberValue));
 
-            dif.PhonologicalChanges_.BeforePhoneme_.Place_ = beforePlace;
-            dif.PhonologicalChanges_.BeforePhoneme_.Manner_ = beforeManner;
-            dif.PhonologicalChanges_.AfterPhoneme_.Place_ = afterPlace;
-            dif.PhonologicalChanges_.AfterPhoneme_.Manner_ = afterManner;
+            dif.PhonologicalChanges_.BeforePhoneme_ = Phoneme::Create(beforePlace, beforeManner);
+            dif.PhonologicalChanges_.AfterPhoneme_ = Phoneme::Create(afterPlace, afterManner);
             dif.PhonologicalChanges_.PhoneticEnvironment_ = phoneticEnvironment;
             dif.PhonologicalChanges_.IsRemove_ = isRemove;
 
@@ -394,11 +392,11 @@ void LanguageDifference::Export(std::ofstream &file) const
 
     file << "    SoundChange:\n";
     file << "      Before:\n";
-    file << "        Place: " << GetPhonologicalChange().BeforePhoneme_.Place_ << "\n";
-    file << "        Mannar: " << GetPhonologicalChange().BeforePhoneme_.Manner_ << "\n";
+    file << "        Place: " << GetPhonologicalChange().BeforePhoneme_.GetPlace() << "\n";
+    file << "        Mannar: " << GetPhonologicalChange().BeforePhoneme_.GetManner() << "\n";
     file << "      After:\n";
-    file << "        Place: " << GetPhonologicalChange().AfterPhoneme_.Place_ << "\n";
-    file << "        Mannar: " << GetPhonologicalChange().AfterPhoneme_.Manner_ << "\n";
+    file << "        Place: " << GetPhonologicalChange().AfterPhoneme_.GetPlace() << "\n";
+    file << "        Mannar: " << GetPhonologicalChange().AfterPhoneme_.GetManner() << "\n";
     file << "      Condition: " << static_cast<int>(GetPhonologicalChange().PhoneticEnvironment_) << "\n";
     file << "      IsRemove: " << GetPhonologicalChange().IsRemove_ << "\n";
 }

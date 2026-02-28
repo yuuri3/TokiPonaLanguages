@@ -102,8 +102,11 @@ namespace
         default:
             break;
         }
-        randomPhonologicalChange.AfterPhoneme_ = beforePhon;
-        moveRandomOnTable(randomPhonologicalChange.AfterPhoneme_.Manner_, randomPhonologicalChange.AfterPhoneme_.Place_, phonemeTable);
+
+        int afterManner = beforePhon.GetManner();
+        int afterPlace = beforePhon.GetPlace();
+        moveRandomOnTable(afterManner, afterPlace, phonemeTable);
+        randomPhonologicalChange.AfterPhoneme_ = Phoneme::Create(afterPlace, afterManner);
         return randomPhonologicalChange;
     }
 

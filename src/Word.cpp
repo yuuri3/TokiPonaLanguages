@@ -39,14 +39,14 @@ namespace
                 isSoundDuplication = true;
             else if (w.size() == 1)
             {
-                if (w[0].Manner_ <= MAX_CONSONANT_MANNER)
+                if (w[0].IsConsonant())
                     isSoundDuplication = true;
             }
             else
             {
                 // 境界条件のチェック
-                if ((w[0].Manner_ <= MAX_CONSONANT_MANNER && w[1].Manner_ <= MAX_CONSONANT_MANNER) ||
-                    (w.back().Manner_ <= MAX_CONSONANT_MANNER && w[w.size() - 2].Manner_ <= MAX_CONSONANT_MANNER))
+                if ((w[0].IsConsonant() && w[1].IsConsonant()) ||
+                    (w.back().IsConsonant() && w[w.size() - 2].IsConsonant()))
                 {
                     isSoundDuplication = true;
                 }
@@ -55,12 +55,12 @@ namespace
                     // 3連続のチェック
                     for (size_t j = 0; j + 2 < w.size(); ++j)
                     {
-                        bool isConsonant = (w[j].Manner_ <= MAX_CONSONANT_MANNER &&
-                                            w[j + 1].Manner_ <= MAX_CONSONANT_MANNER &&
-                                            w[j + 2].Manner_ <= MAX_CONSONANT_MANNER);
-                        bool isVowel = (w[j].Manner_ > MAX_CONSONANT_MANNER &&
-                                        w[j + 1].Manner_ > MAX_CONSONANT_MANNER &&
-                                        w[j + 2].Manner_ > MAX_CONSONANT_MANNER);
+                        bool isConsonant = (w[j].IsConsonant() &&
+                                            w[j + 1].IsConsonant() &&
+                                            w[j + 2].IsConsonant());
+                        bool isVowel = (w[j].IsVowel() &&
+                                        w[j + 1].IsVowel() &&
+                                        w[j + 2].IsVowel());
                         if (isConsonant || isVowel)
                         {
                             isSoundDuplication = true;

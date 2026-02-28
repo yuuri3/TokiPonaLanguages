@@ -10,9 +10,7 @@ PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::str
         for (int column = 0; column < (int)phonemeTable[row].size(); ++column)
         {
             const std::string &item = phonemeTable[row][column];
-            Phoneme phoneme;
-            phoneme.Manner_ = row;
-            phoneme.Place_ = column;
+            Phoneme phoneme = Phoneme::Create(column, row);
             converter.PhonemeMap_[item] = phoneme;
         }
     }
