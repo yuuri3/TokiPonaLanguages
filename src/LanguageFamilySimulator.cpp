@@ -359,3 +359,13 @@ std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create(LanguageF
 
     return simulator;
 }
+
+/**
+ * @brief 語族をゲット
+ *
+ * @return const LanguageFamily
+ */
+const LanguageFamily LanguageFamilySimulator::GetLanguages() const
+{
+    return LanguageFamily_;
+}

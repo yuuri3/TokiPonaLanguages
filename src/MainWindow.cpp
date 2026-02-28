@@ -137,7 +137,7 @@ void MainWindow::Simulate()
     auto simulator = sub.GetSimulator();
     if (simulator)
     {
-        Languages_ = simulator->LanguageFamily_;
+        Languages_ = simulator->GetLanguages();
         DisplayLanguageFamily(*Languages_);
     }
 

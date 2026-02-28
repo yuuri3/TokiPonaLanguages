@@ -23,9 +23,12 @@ std::optional<LanguageFamilySimulator> evolution(
     auto converter = PhonemeConverter::Create(phonemeTableData);
     auto protoLanguage = converter.convertToLanguage(protoLanguageData[0]);
 
-    LanguageFamilySimulator simulator;
-    simulator.LanguageFamily_ = LanguageFamily::Create(geographyData, phonemeTableData);
-    simulator.SetProtoLanguageOnGeography("0", protoLanguage);
+    auto simulator = LanguageFamilySimulator::Create(LanguageFamily::Create(geographyData, phonemeTableData));
+    if (!simulator)
+    {
+        return std::nullopt;
+    }
+    simulator->SetProtoLanguageOnGeography("0", protoLanguage);
 
     if (nLoanword == 0)
     {
@@ -37,15 +40,15 @@ std::optional<LanguageFamilySimulator> evolution(
     }
     while (true)
     {
-        simulator.ToNextPeriod();
+        simulator->ToNextPeriod();
         // 言語の影響度を変化させる。
-        simulator.ChangeLanguageStrengthRandom(1.0);
+        simulator->ChangeLanguageStrengthRandom(1.0);
         // 借用
-        simulator.LoanwordRandom(nLoanword, 0.5);
+        simulator->LoanwordRandom(nLoanword, 0.5);
         // 音韻変化
-        simulator.PhonologicalChangeRandom(pPhonologicalChange, pSoundLoss);
+        simulator->PhonologicalChangeRandom(pPhonologicalChange, pSoundLoss);
         // 各位置に言語があれば終了
-        if (simulator.HasAllPlaceLanguage())
+        if (simulator->HasAllPlaceLanguage())
         {
             break;
         }

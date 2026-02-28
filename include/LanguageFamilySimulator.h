@@ -13,8 +13,11 @@
  */
 struct LanguageFamilySimulator
 {
+private:
     // 語族
     LanguageFamily LanguageFamily_;
+
+public:
     // 時代
     int Period_ = 0;
     // 地理と言語の対応（シミュレーション用）
@@ -35,4 +38,5 @@ struct LanguageFamilySimulator
     void ChangeLanguageStrengthRandom(const double pChangeStrength);
     bool HasAllPlaceLanguage();
     void ToNextPeriod();
+    const LanguageFamily GetLanguages() const;
 };
