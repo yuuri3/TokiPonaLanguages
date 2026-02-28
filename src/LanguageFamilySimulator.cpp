@@ -128,7 +128,7 @@ void LanguageFamilySimulator::SetProtoLanguageOnGeography(
     const std::string &startPlace,
     const Language &protoLanguage)
 {
-    Languages_ = setProtoLanguageOnMap(getNonEmptyStrings(LanguageFamily_.Geography_), startPlace, protoLanguage);
+    Languages_ = setProtoLanguageOnMap(getNonEmptyStrings(LanguageFamily_.GetGeography()), startPlace, protoLanguage);
     ProtoLanguage_ = protoLanguage;
 
     // ログ
@@ -216,7 +216,7 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
  */
 void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double pLoanword)
 {
-    const auto geographyAdjacentData = getAdjacencies(LanguageFamily_.Geography_);
+    const auto geographyAdjacentData = getAdjacencies(LanguageFamily_.GetGeography());
     for (int i = 0; i < nLoanword; i++)
     {
         // 借用率 は現在固定
@@ -310,7 +310,7 @@ void LanguageFamilySimulator::ChangeLanguageStrengthRandom(const double pChangeS
  */
 bool LanguageFamilySimulator::HasAllPlaceLanguage()
 {
-    const auto places = getNonEmptyStrings(LanguageFamily_.Geography_);
+    const auto places = getNonEmptyStrings(LanguageFamily_.GetGeography());
     for (const auto &place : places)
     {
         // find を使うことで「存在チェック」と「データアクセス」を1回で済ませる
@@ -341,7 +341,7 @@ void LanguageFamilySimulator::ToNextPeriod()
  */
 bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
 {
-    const auto places = getNonEmptyStrings(LanguageFamily_.Geography_);
+    const auto places = getNonEmptyStrings(LanguageFamily_.GetGeography());
     PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable_);
 
     switch (diff.GetType())
@@ -505,9 +505,7 @@ std::optional<Language> LanguageFamilySimulator::CalculateLanguage(const std::st
 std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create()
 {
     LanguageFamilySimulator simulator;
-    simulator.LanguageFamily_.languageDifference_ = {};
-    simulator.LanguageFamily_.Geography_ = {{""}};
-    simulator.LanguageFamily_.PhonemeTable_ = {{""}};
+    simulator.LanguageFamily_ = LanguageFamily::Create({{""}}, {{""}});
     simulator.Period_ = 0;
     simulator.Languages_.clear();
     simulator.ProtoLanguage_ = Language();
@@ -550,7 +548,7 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
 
     auto converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable_);
 
-    for (const auto &place : getNonEmptyStrings(LanguageFamily_.Geography_))
+    for (const auto &place : getNonEmptyStrings(LanguageFamily_.GetGeography()))
     {
         line.emplace_back(place);
     }
@@ -562,7 +560,7 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
         if (diff.GetPeriod() != currentPeriod)
         {
             currentPeriod = diff.GetPeriod();
-            for (const auto &place : getNonEmptyStrings(LanguageFamily_.Geography_))
+            for (const auto &place : getNonEmptyStrings(LanguageFamily_.GetGeography()))
             {
                 if (Languages_.count(place) == 0 || Languages_[place].Empty())
                 {
@@ -582,7 +580,7 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
         }
     }
 
-    for (const auto &place : getNonEmptyStrings(LanguageFamily_.Geography_))
+    for (const auto &place : getNonEmptyStrings(LanguageFamily_.GetGeography()))
     {
         if (Languages_.count(place) == 0 || Languages_[place].Empty())
         {

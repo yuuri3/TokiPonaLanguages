@@ -62,6 +62,32 @@ namespace
 }
 
 /**
+ * @brief 空の語族を作成
+ *
+ * @param geography 地理
+ * @param phonemeTable 音韻
+ * @return LanguageFamily
+ */
+LanguageFamily LanguageFamily::Create(const std::vector<std::vector<std::string>> &geography, const std::vector<std::vector<std::string>> &phonemeTable)
+{
+    LanguageFamily languages;
+    languages.languageDifference_ = {};
+    languages.Geography_ = geography;
+    languages.PhonemeTable_ = phonemeTable;
+    return languages;
+}
+
+/**
+ * @brief 地理を取得
+ *
+ * @return const std::vector<std::vector<std::string>>
+ */
+const std::vector<std::vector<std::string>> LanguageFamily::GetGeography() const
+{
+    return Geography_;
+}
+
+/**
  * @brief 差分をファイル出力
  *
  */
