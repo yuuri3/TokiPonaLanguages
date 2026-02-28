@@ -331,23 +331,6 @@ void LanguageFamilySimulator::ToNextPeriod()
     Period_++;
 }
 
-std::optional<Language> LanguageFamilySimulator::CalculateLanguage(const std::string place, const int period)
-{
-    for (const auto &diff : LanguageFamily_.GetDifference())
-    {
-        if (diff.GetPeriod() > period)
-        {
-            return Languages_.at(place);
-        }
-        const auto converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
-        if (!LanguageUtility::ApplyDifference(diff, Languages_, converter))
-        {
-            return std::nullopt;
-        }
-    }
-    return Languages_.at(place);
-}
-
 /**
  * @brief インスタンス生成
  *

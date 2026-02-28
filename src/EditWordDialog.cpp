@@ -151,12 +151,7 @@ void EditWordDialog::UpdateDialog()
         }
         else
         {
-            auto simulator = LanguageFamilySimulator::Create(*Languages_);
-            if (!simulator)
-            {
-                return;
-            }
-            language = simulator->CalculateLanguage(*Place_, *Period_);
+            language = Languages_->CalculateLanguage(*Place_, *Period_);
             if (!language)
             {
                 return;

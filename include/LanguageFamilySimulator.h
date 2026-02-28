@@ -36,5 +36,4 @@ struct LanguageFamilySimulator
     bool HasAllPlaceLanguage();
     void ToNextPeriod();
     std::vector<std::vector<std::string>> ToStringLanguageFamily();
-    std::optional<Language> CalculateLanguage(const std::string place, const int period);
 };
