@@ -16,13 +16,12 @@ struct LanguageFamilySimulator
 private:
     // 語族
     LanguageFamily LanguageFamily_;
-
-public:
     // 時代
     int Period_ = 0;
     // 地理と言語の対応（シミュレーション用）
     std::map<std::string, Language> Languages_;
 
+public:
     static std::optional<LanguageFamilySimulator> Create();
     static std::optional<LanguageFamilySimulator> Create(LanguageFamily languageFamily);
     void SetProtoLanguageOnGeography(
