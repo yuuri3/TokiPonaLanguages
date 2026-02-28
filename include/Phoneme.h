@@ -6,8 +6,11 @@
  */
 struct Phoneme
 {
+private:
     // 無音フラグ
     bool IsSpace_ = false;
+
+public:
     // 調音方法
     int Manner_;
     // 調音部位
@@ -29,4 +32,7 @@ struct Phoneme
             return Manner_ < other.Manner_;
         return Place_ < other.Place_;
     }
+
+    const bool IsSpace() const;
+    static Phoneme MakeSpace();
 };

@@ -21,7 +21,7 @@ namespace
         std::vector<Phoneme> wordForm;
         for (const auto &phoneme : changedWordForm)
         {
-            if (phoneme.IsSpace_)
+            if (phoneme.IsSpace())
             {
                 wordForms.emplace_back(wordForm);
                 wordForm.clear();
@@ -93,11 +93,11 @@ namespace
             bool isSoundEqualToBeforePhoneme = (sound == phonologicalChange.BeforePhoneme_);
             if (isSoundEqualToBeforePhoneme)
             {
-                if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::Start && !(soundPosition == 0 || wordForm[soundPosition - 1].IsSpace_))
+                if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::Start && !(soundPosition == 0 || wordForm[soundPosition - 1].IsSpace()))
                     isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::End && !(soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace_))
+                else if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::End && !(soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace()))
                     isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::Middle && (soundPosition == 0 || wordForm[soundPosition - 1].IsSpace_ || soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace_))
+                else if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::Middle && (soundPosition == 0 || wordForm[soundPosition - 1].IsSpace() || soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace()))
                     isSoundEqualToBeforePhoneme = false;
             }
 

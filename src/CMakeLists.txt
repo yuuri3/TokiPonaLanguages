@@ -14,6 +14,7 @@ add_library(src
     Language.cpp
     LanguageFamily.cpp
     LanguageFamilySimulator.cpp
+    Phoneme.cpp
     PhonemeConverter.cpp
     Random.cpp
     Utility.cpp
@@ -27,6 +28,7 @@ add_library(src
     EditWordDialog.cpp
     ../include/Language.h
     ../include/LanguageFamilySimulator.h
+    ../include/Phoneme.h
     ../include/PhonemeConverter.h
     ../include/Utility.h
     ../include/MainWindow.h

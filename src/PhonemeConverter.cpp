@@ -44,11 +44,7 @@ std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str) 
             }
             if (PhonemeStr == " ")
             {
-                Phoneme space;
-                space.IsSpace_ = true;
-                space.Manner_ = -1;
-                space.Place_ = -1;
-                convertedPhoneme.emplace_back(space);
+                convertedPhoneme.emplace_back(Phoneme::MakeSpace());
                 charPosition += phonemeCharCount;
                 isMatch = true;
             }
@@ -94,7 +90,7 @@ std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonem
                 str += keyString;
             }
         }
-        if (phoneme.IsSpace_)
+        if (phoneme.IsSpace())
         {
             str += " ";
         }

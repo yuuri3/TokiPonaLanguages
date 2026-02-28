@@ -22,7 +22,7 @@ namespace
         std::vector<Phoneme> wordForm;
         for (const auto &phoneme : changedWordForm)
         {
-            if (phoneme.IsSpace_)
+            if (phoneme.IsSpace())
             {
                 wordForms.emplace_back(wordForm);
                 wordForm.clear();
@@ -72,51 +72,6 @@ namespace
             }
         }
         return isSoundDuplication;
-    }
-
-    /**
-     * @brief 音韻変化を適用する
-     *
-     * @param wordForm 語形
-     * @param changedWordForm 変化語の語形
-     * @param phonologicalChange 音韻変化
-     */
-    bool ChangeWordSound(const std::vector<Phoneme> &wordForm, std::vector<Phoneme> &changedWordForm, const PhonologicalChange &phonologicalChange)
-    {
-        changedWordForm.reserve(wordForm.size());
-        bool isChanged = false;
-
-        for (size_t soundPosition = 0; soundPosition < wordForm.size(); ++soundPosition)
-        {
-            const auto &sound = wordForm[soundPosition];
-
-            // 変化条件の判定
-            bool isSoundEqualToBeforePhoneme = (sound == phonologicalChange.BeforePhoneme_);
-            if (isSoundEqualToBeforePhoneme)
-            {
-                if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::Start && !(soundPosition == 0 || wordForm[soundPosition - 1].IsSpace_))
-                    isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::End && !(soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace_))
-                    isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::Middle && (soundPosition == 0 || wordForm[soundPosition - 1].IsSpace_ || soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace_))
-                    isSoundEqualToBeforePhoneme = false;
-            }
-
-            if (isSoundEqualToBeforePhoneme)
-            {
-                isChanged = true;
-                if (!phonologicalChange.IsRemove_)
-                {
-                    changedWordForm.push_back(phonologicalChange.AfterPhoneme_);
-                }
-            }
-            else
-            {
-                changedWordForm.push_back(sound);
-            }
-        }
-
-        return isChanged;
     }
 }
 
