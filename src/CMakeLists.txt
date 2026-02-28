@@ -11,6 +11,7 @@ add_library(src
   SHARED
     Evolution.cpp
     LanguageDifference.cpp
+    Language.cpp
     LanguageFamily.cpp
     LanguageFamilySimulator.cpp
     PhonemeConverter.cpp
@@ -24,6 +25,7 @@ add_library(src
     EditPeriodDialog.cpp
     EditGeometryDialog.cpp
     EditWordDialog.cpp
+    ../include/Language.h
     ../include/LanguageFamilySimulator.h
     ../include/Utility.h
     ../include/MainWindow.h

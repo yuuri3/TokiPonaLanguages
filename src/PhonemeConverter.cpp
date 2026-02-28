@@ -67,6 +67,7 @@ std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
 Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &strs)
 {
     Language convertedLanguage;
+    convertedLanguage.Reset();
     int wordID = 0;
     for (const auto &str : strs)
     {
@@ -75,7 +76,6 @@ Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &str
         convertedLanguage.Words_[wordID] = word;
         wordID++;
     }
-    convertedLanguage.Strength_ = 0.0;
     return convertedLanguage;
 }
 
