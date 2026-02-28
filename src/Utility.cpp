@@ -200,6 +200,18 @@ std::string JoinStrs(const std::vector<std::string> &elements, const std::string
     return ss.str();
 }
 
+// 前後のスペースを除去。 スペースのみのセルは空文字列とする。
+std::string EraseSpace(std::string str)
+{
+    size_t firstNoSpacePosotion = str.find_first_not_of(" ");
+    size_t lastNoSpacePosition = str.find_last_not_of(" ");
+
+    if (firstNoSpacePosotion != std::string::npos)
+        return str.substr(firstNoSpacePosotion, (lastNoSpacePosition - firstNoSpacePosotion + 1));
+    else
+        return "";
+}
+
 /**
  * @brief レイアウトの中身を消去
  *

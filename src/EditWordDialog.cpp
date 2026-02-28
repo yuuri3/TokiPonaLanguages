@@ -164,13 +164,19 @@ void EditWordDialog::UpdateDialog()
         }
         PhonemeConverter converter = PhonemeConverter::Create(Languages_->PhonemeTable_);
 
+        const auto word = language->GetWord(*WordID_);
+        if (!word)
+        {
+            return;
+        }
+
         // 語形
-        const auto form = language->Words_[*WordID_].Form_;
+        const auto form = word->GetForm();
         Entry_->setText(QString::fromStdString(converter.ConvertToString(form)));
 
         // 訳語
         std::vector<std::vector<std::string>> translations;
-        for (const auto &[title, forms] : language->Words_[*WordID_].Translations_)
+        for (const auto &[title, forms] : word->GetTranslations())
         {
             std::string formsStr = JoinStrs(forms, ",");
             translations.push_back({title, formsStr});
@@ -180,7 +186,7 @@ void EditWordDialog::UpdateDialog()
 
         // タグ
         std::vector<std::vector<std::string>> tags;
-        for (const auto &tag : language->Words_[*WordID_].Tags_)
+        for (const auto &tag : word->GetTags())
         {
             tags.push_back({tag});
         }
@@ -189,7 +195,7 @@ void EditWordDialog::UpdateDialog()
 
         // 自由記述
         std::vector<std::vector<std::string>> contentsData;
-        for (const auto &[title, content] : language->Words_[*WordID_].Contents_)
+        for (const auto &[title, content] : word->GetContents())
         {
             contentsData.push_back({title, content});
         }
@@ -198,7 +204,7 @@ void EditWordDialog::UpdateDialog()
 
         // 変化形
         std::vector<std::vector<std::string>> variationsData;
-        for (const auto &[title, variation] : language->Words_[*WordID_].Variations_)
+        for (const auto &[title, variation] : word->GetVariations())
         {
             variationsData.push_back({title, converter.ConvertToString(variation)});
         }
@@ -207,11 +213,12 @@ void EditWordDialog::UpdateDialog()
 
         // 関連語
         std::vector<std::vector<std::string>> relationsData;
-        for (const auto &[title, relatedWordID] : language->Words_[*WordID_].Relations_)
+        for (const auto &[title, relatedWordID] : word->GetRealtions())
         {
-            if (language->Words_.count(relatedWordID) == 1)
+            const auto relatedWord = language->GetWord(relatedWordID);
+            if (relatedWord)
             {
-                relationsData.push_back({title, converter.ConvertToString(language->Words_[relatedWordID].Form_)});
+                relationsData.push_back({title, converter.ConvertToString(relatedWord->GetForm())});
             }
         }
         relationsData.push_back({"", ""});
