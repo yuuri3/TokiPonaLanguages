@@ -62,6 +62,6 @@ void EditGeometryDialog::UpdateTable()
 {
     if (Languages_ && Place_ && Period_)
     {
-        DisplayTable(MainTable_, Languages_->GetGeography());
+        DisplayTable(MainTable_, Languages_->GetGeography(), true);
     }
 }

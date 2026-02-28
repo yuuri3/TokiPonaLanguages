@@ -138,7 +138,7 @@ std::vector<std::string> getNonEmptyStrings(const std::vector<std::vector<std::s
  * @param table 表
  * @param data データ
  */
-void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string>> &data)
+void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string>> &data, const bool IsEdit)
 {
     table->clear();
     table->setRowCount(0);
@@ -171,9 +171,11 @@ void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string
 
     table->verticalHeader()->setVisible(false);
     table->horizontalHeader()->setVisible(false);
-    table->resizeColumnsToContents();
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    if (!IsEdit)
+    {
+        table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    }
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
     table->resizeColumnsToContents();
