@@ -197,7 +197,10 @@ void Language::ApplyPhonologicalChange(const PhonologicalChange &phonologicalCha
     }
 
     // 3. 最終的な反映（一括代入）
-    Words_ = phonologicalChangedWords;
+    for (auto &[wordID, phonologicalChangedWord] : phonologicalChangedWords)
+    {
+        Words_[wordID] = std::move(phonologicalChangedWord);
+    }
 }
 
 /**
