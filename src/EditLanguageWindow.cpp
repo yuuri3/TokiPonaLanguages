@@ -99,8 +99,10 @@ void EditLanguageWindow::UpdateTable()
         wordData.emplace_back(line);
         line.clear();
 
-        for (const auto &[ID, word] : language->Words_)
+        for (int i = 0; i < language->CountWord(); i++)
         {
+            const auto [_, word] = language->GetNthWord(i);
+
             line.emplace_back(converter.ConvertToString(word.Form_));
             std::string translations;
             for (const auto [_, translation] : word.Translations_)
@@ -173,8 +175,12 @@ void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
 
             const int row = MainTable_->currentRow();
             const int column = MainTable_->currentColumn();
-            auto it = std::next(language->Words_.begin(), row);
-            int wordID = it->first - 1;
+
+            if (row - 1 >= language->CountWord())
+            {
+                return;
+            }
+            const auto [wordID, _] = language->GetNthWord(row - 1);
 
             EditWordDialog subWindow(this);
             subWindow.SetLanguage(*language);

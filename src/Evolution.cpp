@@ -32,7 +32,7 @@ std::optional<LanguageFamilySimulator> evolution(
     {
         return std::nullopt;
     }
-    if (protoLanguage.Words_.empty())
+    if (protoLanguage.Empty())
     {
         return std::nullopt;
     }

@@ -197,10 +197,7 @@ void Language::ApplyPhonologicalChange(const PhonologicalChange &phonologicalCha
     }
 
     // 3. 最終的な反映（一括代入）
-    for (auto &[wordID, phonologicalChangedWord] : phonologicalChangedWords)
-    {
-        Words_[wordID] = std::move(phonologicalChangedWord);
-    }
+    Words_ = phonologicalChangedWords;
 }
 
 /**
@@ -218,6 +215,89 @@ void Language::ApplyDifference(const LanguageDifference &dif)
     case LanguageDifferenceType::PhonologicalChange:
         ApplyPhonologicalChange(dif.PhonologicalChanges_, true, true);
         break;
+    case LanguageDifferenceType::AddCompound:
+    {
+        Word compound;
+        // IntParam[1]以降に合成元の単語IDリストが格納されている
+        for (size_t i = 1; i < dif.IntParam_.size(); ++i)
+        {
+            auto itPart = Words_.find(dif.IntParam_[i]);
+            if (itPart != Words_.end())
+            {
+                compound = compound.Add(itPart->second);
+            }
+        }
+        Words_[dif.IntParam_[0]] = std::move(compound);
+        break;
+    }
+    case LanguageDifferenceType::ObsoleteWord:
+    {
+        const auto wordID = dif.IntParam_[0];
+
+        Words_.erase(wordID);
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
+/**
+ * @brief 単語を追加
+ *
+ * @param dif 差分
+ * @param form 語形
+ */
+void Language::AddWord(const LanguageDifference &dif, const std::vector<Phoneme> &form)
+{
+    Word word;
+    word.Form_ = form;
+    Words_[dif.IntParam_[0]] = word;
+}
+
+/**
+ * @brief 単語を追加
+ *
+ * @param form 語形
+ */
+void Language::AddWord(const std::vector<Phoneme> &form)
+{
+    int lastWordID;
+    if (Empty())
+    {
+        lastWordID = 0;
+    }
+    else
+    {
+        lastWordID = Words_.rbegin()->first;
+        lastWordID++;
+    }
+
+    Word word;
+    word.Form_ = form;
+    Words_[lastWordID] = word;
+}
+
+/**
+ * @brief 単語を借用
+ *
+ * @param dif
+ * @param referenceLanguage
+ */
+void Language::LoanWord(const LanguageDifference &dif, const Language &referenceLanguage)
+{
+    switch (dif.Type_)
+    {
+    case LanguageDifferenceType::Loanword:
+    {
+        const auto referenceWord = referenceLanguage.GetWord(dif.IntParam_[0]);
+        if (referenceWord)
+        {
+            Words_[dif.IntParam_[1]] = *referenceWord;
+        }
+        break;
+    }
 
     default:
         break;
@@ -229,7 +309,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
  *
  * @return double
  */
-double Language::GetStrength() const
+const double Language::GetStrength() const
 {
     return Strength_;
 }
@@ -241,7 +321,7 @@ double Language::GetStrength() const
  * @return true
  * @return false
  */
-bool Language::IsStronger(const Language &lang) const
+const bool Language::IsStronger(const Language &lang) const
 {
     return Strength_ > lang.Strength_;
 }
@@ -253,8 +333,54 @@ bool Language::IsStronger(const Language &lang) const
  * @param period 時代
  * @return LanguageDifference
  */
-LanguageDifference Language::ChangeStrength(const std::string &place, const int period)
+const LanguageDifference Language::ChangeStrength(const std::string &place, const int period)
 {
     Strength_ = Strength_ * 0.9 + getRandomDouble(-1.0, 1.0) * 0.1;
     return LanguageDifference::CreateChangeStrength(place, period, Strength_);
+}
+
+/**
+ * @brief 単語数
+ *
+ * @return int
+ */
+const int Language::CountWord() const
+{
+    return Words_.size();
+}
+
+/**
+ * @brief Get the Nth Word object
+ *
+ * @return std::pair<int, Word>
+ */
+const std::pair<int, Word> Language::GetNthWord(const int n) const
+{
+    auto it = std::next(Words_.begin(), n);
+    return {it->first, it->second};
+}
+
+/**
+ * @brief 単語を取得
+ *
+ * @param wordID
+ * @return const Word
+ */
+const std::optional<Word> Language::GetWord(const int wordID) const
+{
+    auto it = Words_.find(wordID);
+    if (it == Words_.end())
+        return std::nullopt;
+    return it->second;
+}
+
+/**
+ * @brief 単語が空か
+ *
+ * @return true
+ * @return false
+ */
+const bool Language::Empty() const
+{
+    return Words_.empty();
 }

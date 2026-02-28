@@ -134,8 +134,11 @@ void LanguageFamilySimulator::SetProtoLanguageOnGeography(
     // ログ
     PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable_);
     LanguageFamily_.languageDifference_.emplace_back(LanguageDifference::CreateChangeStrength(startPlace, Period_, protoLanguage.GetStrength()));
-    for (const auto &[wordID, word] : protoLanguage.Words_)
+
+    for (int i = 0; i < protoLanguage.CountWord(); i++)
     {
+        const auto [wordID, word] = protoLanguage.GetNthWord(i);
+
         LanguageFamily_.languageDifference_.emplace_back(LanguageDifference::CreateAddWord(startPlace, Period_, wordID, converter.ConvertToString(word.Form_)));
     }
 }
@@ -155,8 +158,11 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
     const auto language = Languages_[place];
     std::vector<std::string> words;
     PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable_);
-    for (const auto &[_, word] : language.Words_)
+
+    for (int i = 0; i < language.CountWord(); i++)
     {
+        const auto [_, word] = language.GetNthWord(i);
+
         words.emplace_back(converter.ConvertToString(word.Form_));
     }
     return words;
@@ -185,7 +191,7 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
             continue;
         }
         // 言語があるか
-        if (language.Words_.empty())
+        if (language.Empty())
         {
             continue;
         }
@@ -224,15 +230,17 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
             Language &language1 = languageIterator1->second;
             Language &language2 = languageIterator2->second;
 
-            if (language1.Words_.empty() || language2.Words_.empty())
+            if (language1.Empty() || language2.Empty())
             {
-                if (language1.Words_.empty())
+                if (language1.Empty())
                 {
                     language1.Copy(language2);
 
                     // ログ
-                    for (const auto &[wordID, word] : language2.Words_)
+                    for (int i = 0; i < language2.CountWord(); i++)
                     {
+                        const auto [wordID, word] = language2.GetNthWord(i);
+
                         const auto dif = LanguageDifference::CreateLoanword(languageIterator2->first, languageIterator1->first, Period_, wordID, wordID);
                         LanguageFamily_.languageDifference_.emplace_back(dif);
                     }
@@ -242,8 +250,10 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
                     language2.Copy(language1);
 
                     // ログ
-                    for (const auto &[wordID, word] : language1.Words_)
+                    for (int i = 0; i < language1.CountWord(); i++)
                     {
+                        const auto [wordID, word] = language1.GetNthWord(i);
+
                         const auto dif = LanguageDifference::CreateLoanword(languageIterator1->first, languageIterator2->first, Period_, wordID, wordID);
                         LanguageFamily_.languageDifference_.emplace_back(dif);
                     }
@@ -256,17 +266,19 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
             const auto referencePlace = (language1.IsStronger(language2)) ? languageIterator1->first : languageIterator2->first;
             const auto targetPlace = (language1.IsStronger(language2)) ? languageIterator2->first : languageIterator1->first;
 
-            for (auto &[targetWordID, targetWord] : targetLanguage->Words_)
+            for (int i = 0; i < targetLanguage->CountWord(); i++)
             {
+                const auto [targetWordID, _] = targetLanguage->GetNthWord(i);
+
                 // 借用率は 0.5 で固定
                 if (getRandomInt(0, 1) != 0)
                     continue;
 
-                targetWord = referenceLanguage->Words_[targetWordID];
-
                 // ログ
                 const auto dif = LanguageDifference::CreateLoanword(referencePlace, targetPlace, Period_, targetWordID, targetWordID);
                 LanguageFamily_.languageDifference_.emplace_back(dif);
+
+                targetLanguage->LoanWord(dif, *referenceLanguage);
             }
         }
     }
@@ -303,7 +315,7 @@ bool LanguageFamilySimulator::HasAllPlaceLanguage()
     {
         // find を使うことで「存在チェック」と「データアクセス」を1回で済ませる
         auto it = Languages_.find(place);
-        if (it == Languages_.end() || it->second.Words_.empty())
+        if (it == Languages_.end() || it->second.Empty())
         {
             return false;
         }
@@ -345,10 +357,10 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         const auto wordID = diff.IntParam_[0];
         const auto form = diff.StringParam_[1];
 
-        Languages_[geometry].Words_[wordID].Form_ = converter.ConvertToPhoneme(form);
+        Languages_[geometry].AddWord(diff, converter.ConvertToPhoneme(form));
         if (diff.Period_ == 0 && geometry == "0")
         {
-            ProtoLanguage_.Words_[wordID].Form_ = converter.ConvertToPhoneme(form);
+            ProtoLanguage_.AddWord(diff, converter.ConvertToPhoneme(form));
         }
         break;
     }
@@ -400,11 +412,7 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         if (Languages_.count(referenceGeometry) == 1)
         {
             const auto referenceLanguage = Languages_.at(referenceGeometry);
-            if (referenceLanguage.Words_.count(referenceWordID) == 1)
-            {
-                const auto referenceWord = referenceLanguage.Words_.at(referenceWordID);
-                Languages_[targetGeometry].Words_[targetWordID] = referenceWord;
-            }
+            Languages_[targetGeometry].LoanWord(diff, referenceLanguage);
         }
         break;
     }
@@ -417,19 +425,7 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         }
 
         const auto geometry = diff.StringParam_[0];
-        const auto wordID = diff.IntParam_[0];
-
-        Word compound;
-        // IntParam[1]以降に合成元の単語IDリストが格納されている
-        for (size_t i = 1; i < diff.IntParam_.size(); ++i)
-        {
-            auto itPart = Languages_[geometry].Words_.find(diff.IntParam_[i]);
-            if (itPart != Languages_[geometry].Words_.end())
-            {
-                compound = compound.Add(itPart->second);
-            }
-        }
-        Languages_[geometry].Words_[wordID] = std::move(compound);
+        Languages_[geometry].ApplyDifference(diff);
         break;
     }
 
@@ -441,9 +437,7 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
         }
 
         const auto geometry = diff.StringParam_[0];
-        const auto wordID = diff.IntParam_[0];
-
-        Languages_[geometry].Words_.erase(wordID);
+        Languages_[geometry].ApplyDifference(diff);
         break;
     }
 
@@ -556,13 +550,13 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
             currentPeriod = diff.Period_;
             for (const auto &place : getNonEmptyStrings(LanguageFamily_.Geography_))
             {
-                if (Languages_.count(place) == 0 || Languages_[place].Words_.empty())
+                if (Languages_.count(place) == 0 || Languages_[place].Empty())
                 {
                     line.emplace_back("");
                 }
                 else
                 {
-                    line.emplace_back(converter.ConvertToString(Languages_[place].Words_[0].Form_));
+                    line.emplace_back(converter.ConvertToString(Languages_[place].GetWord(0)->Form_));
                 }
             }
             result.emplace_back(line);
@@ -576,13 +570,13 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
 
     for (const auto &place : getNonEmptyStrings(LanguageFamily_.Geography_))
     {
-        if (Languages_.count(place) == 0 || Languages_[place].Words_.empty())
+        if (Languages_.count(place) == 0 || Languages_[place].Empty())
         {
             line.emplace_back("");
         }
         else
         {
-            line.emplace_back(converter.ConvertToString(Languages_[place].Words_[0].Form_));
+            line.emplace_back(converter.ConvertToString(Languages_[place].GetWord(0)->Form_));
         }
     }
     result.emplace_back(line);
@@ -625,12 +619,14 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringCurrentLa
     line.clear();
 
     // 5. 各単語の出力
-    for (const auto &[wordID, _] : ProtoLanguage_.Words_)
+    for (int i = 0; i < ProtoLanguage_.CountWord(); i++)
     {
-        line.emplace_back(getCachedString(ProtoLanguage_.Words_.at(wordID).Form_));
+        const auto [wordID, word] = ProtoLanguage_.GetNthWord(i);
+
+        line.emplace_back(getCachedString(word.Form_));
         for (const auto &[__, language] : Languages_)
         {
-            line.emplace_back(getCachedString(language.Words_.at(wordID).Form_));
+            line.emplace_back(getCachedString(language.GetWord(wordID)->Form_));
         }
         result.emplace_back(line);
         line.clear();
