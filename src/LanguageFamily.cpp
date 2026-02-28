@@ -36,6 +36,29 @@ namespace
         }
         return result;
     }
+
+    /**
+     * @brief YAML読み込み
+     *
+     * @param file
+     * @param line
+     * @return true
+     * @return false
+     */
+    bool ImportYAML(std::ifstream &file, std::vector<std::string> &geoLine)
+    {
+        std::string line;
+        if (!std::getline(file, line))
+        {
+            return false;
+        }
+        geoLine = parseYamlList(line);
+        if (geoLine.empty())
+        {
+            return false;
+        }
+        return true;
+    }
 }
 
 /**
@@ -99,43 +122,35 @@ bool LanguageFamily::Import(const std::string &filename)
     std::string line;
     try
     {
-        while (std::getline(file, line))
+        if (!std::getline(file, line) || line != "Map:")
         {
-            if (line == "Map:")
+            return false;
+        }
+        // 地理
+        {
+            Geography_.clear();
+            std::vector<std::string> geoLine;
+            while (ImportYAML(file, geoLine))
             {
-                mode = Mode::Mode_Map;
-                Geography_.clear();
-                continue;
+                Geography_.emplace_back(geoLine);
             }
-            else if (line == "PhoneticsMap:")
+        }
+        // 音韻
+        {
+            PhonemeTable_.clear();
+            std::vector<std::string> phonLine;
+            while (ImportYAML(file, phonLine))
             {
-                mode = Mode::Mode_PhonemeTable;
-                PhonemeTable_.clear();
-                continue;
+                PhonemeTable_.emplace_back(phonLine);
             }
-            else if (line == "LanguageDifferences:")
+        }
+        // 差分
+        {
+            languageDifference_.clear();
+            LanguageDifference dif;
+            while (LanguageDifference::Import(file, dif))
             {
-                mode = Mode::Mode_LanguageDifferences;
-                languageDifference_.clear();
-                LanguageDifference dif;
-                while (LanguageDifference::Import(file, dif))
-                {
-                    languageDifference_.emplace_back(dif);
-                }
-            }
-
-            if (mode == Mode::Mode_Map)
-            {
-                Geography_.emplace_back(parseYamlList(line));
-            }
-            else if (mode == Mode::Mode_PhonemeTable)
-            {
-                PhonemeTable_.emplace_back(parseYamlList(line));
-            }
-            else
-            {
-                file.close();
-                return false;
+                languageDifference_.emplace_back(dif);
             }
         }
     }
@@ -144,7 +159,6 @@ bool LanguageFamily::Import(const std::string &filename)
         file.close();
         return false;
     }
-    languageDifference_.emplace_back(dif);
     file.close();
     return true;
 }
