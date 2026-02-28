@@ -200,34 +200,50 @@ void Language::ApplyPhonologicalChange(const PhonologicalChange &phonologicalCha
  */
 void Language::ApplyDifference(const LanguageDifference &dif)
 {
-    switch (dif.Type_)
+    switch (dif.GetType())
     {
     case LanguageDifferenceType::ChangeStrength:
-        Strength_ = dif.DoubleParam_[0];
+    {
+        const auto strength = dif.DoubleParam(0);
+        if (!strength)
+        {
+            break;
+        }
+        Strength_ = *strength;
         break;
+    }
     case LanguageDifferenceType::PhonologicalChange:
-        ApplyPhonologicalChange(dif.PhonologicalChanges_, true, true);
+        ApplyPhonologicalChange(dif.GetPhonologicalChange(), true, true);
         break;
     case LanguageDifferenceType::AddCompound:
     {
         Word compound;
         // IntParam[1]以降に合成元の単語IDリストが格納されている
-        for (size_t i = 1; i < dif.IntParam_.size(); ++i)
+        for (size_t i = 1; i < dif.IntParamSize(); ++i)
         {
-            auto itPart = Words_.find(dif.IntParam_[i]);
+            const auto referenceWordID = dif.IntParam(i);
+            auto itPart = Words_.find(*referenceWordID);
             if (itPart != Words_.end())
             {
                 compound = compound.Add(itPart->second);
             }
         }
-        Words_[dif.IntParam_[0]] = std::move(compound);
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        Words_[*wordID] = std::move(compound);
         break;
     }
     case LanguageDifferenceType::ObsoleteWord:
     {
-        const auto wordID = dif.IntParam_[0];
-
-        Words_.erase(wordID);
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        Words_.erase(*wordID);
         break;
     }
 
@@ -244,7 +260,12 @@ void Language::ApplyDifference(const LanguageDifference &dif)
  */
 void Language::AddWord(const LanguageDifference &dif, const std::vector<Phoneme> &form)
 {
-    Words_[dif.IntParam_[0]] = Word::Create(form);
+    const auto wordID = dif.IntParam(0);
+    if (!wordID)
+    {
+        return;
+    }
+    Words_[*wordID] = Word::Create(form);
 }
 
 /**
@@ -276,14 +297,24 @@ void Language::AddWord(const std::vector<Phoneme> &form)
  */
 void Language::LoanWord(const LanguageDifference &dif, const Language &referenceLanguage)
 {
-    switch (dif.Type_)
+    switch (dif.GetType())
     {
     case LanguageDifferenceType::Loanword:
     {
-        const auto referenceWord = referenceLanguage.GetWord(dif.IntParam_[0]);
+        const auto referenceWordID = dif.IntParam(0);
+        if (!referenceWordID)
+        {
+            break;
+        }
+        const auto referenceWord = referenceLanguage.GetWord(*referenceWordID);
         if (referenceWord)
         {
-            Words_[dif.IntParam_[1]] = *referenceWord;
+            const auto wordID = dif.IntParam(1);
+            if (!wordID)
+            {
+                break;
+            }
+            Words_[*wordID] = *referenceWord;
         }
         break;
     }

@@ -344,100 +344,114 @@ bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
     const auto places = getNonEmptyStrings(LanguageFamily_.Geography_);
     PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable_);
 
-    switch (diff.Type_)
+    switch (diff.GetType())
     {
     case LanguageDifferenceType::AddWord:
     {
-        if (diff.IntParam_.size() < 1 || diff.StringParam_.size() < 2)
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+        const auto wordID = diff.IntParam(0);
+        if (!wordID)
+        {
+            return false;
+        }
+        const auto form = diff.StringParam(1);
+        if (!form)
         {
             return false;
         }
 
-        const auto geometry = diff.StringParam_[0];
-        const auto wordID = diff.IntParam_[0];
-        const auto form = diff.StringParam_[1];
-
-        Languages_[geometry].AddWord(diff, converter.ConvertToPhoneme(form));
-        if (diff.Period_ == 0 && geometry == "0")
+        Languages_[*geometry].AddWord(diff, converter.ConvertToPhoneme(*form));
+        if (diff.GetPeriod() == 0 && geometry == "0")
         {
-            ProtoLanguage_.AddWord(diff, converter.ConvertToPhoneme(form));
+            ProtoLanguage_.AddWord(diff, converter.ConvertToPhoneme(*form));
         }
         break;
     }
 
     case LanguageDifferenceType::ChangeStrength:
     {
-        if (diff.DoubleParam_.size() < 1 || diff.StringParam_.size() < 1)
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
         {
             return false;
         }
 
-        const auto geometry = diff.StringParam_[0];
-
-        if (Languages_.count(geometry) == 1)
+        if (Languages_.count(*geometry) == 1)
         {
-            Languages_[geometry].ApplyDifference(diff);
+            Languages_[*geometry].ApplyDifference(diff);
         }
         break;
     }
 
     case LanguageDifferenceType::PhonologicalChange:
     {
-        if (diff.StringParam_.size() < 1)
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
         {
             return false;
         }
 
-        const auto geometry = diff.StringParam_[0];
-
-        if (Languages_.count(geometry) == 1)
+        if (Languages_.count(*geometry) == 1)
         {
-            Languages_[geometry].ApplyDifference(diff);
+            Languages_[*geometry].ApplyDifference(diff);
         }
         break;
     }
 
     case LanguageDifferenceType::Loanword:
     {
-        if (diff.IntParam_.size() < 2 || diff.StringParam_.size() < 2)
+        const auto referenceGeometry = diff.StringParam(0);
+        if (!referenceGeometry)
+        {
+            return false;
+        }
+        const auto targetGeometry = diff.StringParam(1);
+        if (!targetGeometry)
+        {
+            return false;
+        }
+        const auto referenceWordID = diff.IntParam(0);
+        if (!referenceWordID)
+        {
+            return false;
+        }
+        const auto targetWordID = diff.IntParam(1);
+        if (!targetWordID)
         {
             return false;
         }
 
-        const auto referenceGeometry = diff.StringParam_[0];
-        const auto targetGeometry = diff.StringParam_[1];
-        const auto referenceWordID = diff.IntParam_[0];
-        const auto targetWordID = diff.IntParam_[1];
-
-        if (Languages_.count(referenceGeometry) == 1)
+        if (Languages_.count(*referenceGeometry) == 1)
         {
-            const auto referenceLanguage = Languages_.at(referenceGeometry);
-            Languages_[targetGeometry].LoanWord(diff, referenceLanguage);
+            const auto referenceLanguage = Languages_.at(*referenceGeometry);
+            Languages_[*targetGeometry].LoanWord(diff, referenceLanguage);
         }
         break;
     }
 
     case LanguageDifferenceType::AddCompound:
     {
-        if (diff.IntParam_.size() < 2 || diff.StringParam_.size() < 1)
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
         {
             return false;
         }
-
-        const auto geometry = diff.StringParam_[0];
-        Languages_[geometry].ApplyDifference(diff);
+        Languages_[*geometry].ApplyDifference(diff);
         break;
     }
 
     case LanguageDifferenceType::ObsoleteWord:
     {
-        if (diff.IntParam_.size() < 1 || diff.StringParam_.size() < 1)
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
         {
             return false;
         }
-
-        const auto geometry = diff.StringParam_[0];
-        Languages_[geometry].ApplyDifference(diff);
+        Languages_[*geometry].ApplyDifference(diff);
         break;
     }
 
@@ -472,7 +486,7 @@ std::optional<Language> LanguageFamilySimulator::CalculateLanguage(const std::st
 {
     for (const auto &diff : LanguageFamily_.languageDifference_)
     {
-        if (diff.Period_ > period)
+        if (diff.GetPeriod() > period)
         {
             return Languages_.at(place);
         }
@@ -545,9 +559,9 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
 
     for (const auto &diff : LanguageFamily_.languageDifference_)
     {
-        if (diff.Period_ != currentPeriod)
+        if (diff.GetPeriod() != currentPeriod)
         {
-            currentPeriod = diff.Period_;
+            currentPeriod = diff.GetPeriod();
             for (const auto &place : getNonEmptyStrings(LanguageFamily_.Geography_))
             {
                 if (Languages_.count(place) == 0 || Languages_[place].Empty())

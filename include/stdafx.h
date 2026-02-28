@@ -4,6 +4,8 @@
 #include <vector>
 #include <map>
 #include <optional>
+#include <fstream>
+#include <sstream>
 
 #include <QString>
 #include <QMainWindow>
