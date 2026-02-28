@@ -104,16 +104,10 @@ void EditLanguageWindow::UpdateTable()
             const auto [_, word] = language->GetNthWord(i);
 
             line.emplace_back(converter.ConvertToString(word.GetForm()));
-            std::string translations;
-            for (const auto [_, translation] : word.Translations_)
-            {
-                for (const auto &t : translation)
-                {
-                    translations += t;
-                    translations += ",";
-                }
-            }
-            line.emplace_back(translations);
+
+            const auto translations = word.GetAllTranslations();
+            line.emplace_back(JoinStrs(translations, ","));
+
             wordData.emplace_back(line);
             line.clear();
         }

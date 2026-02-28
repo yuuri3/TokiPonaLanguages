@@ -176,7 +176,7 @@ void EditWordDialog::UpdateDialog()
 
         // 訳語
         std::vector<std::vector<std::string>> translations;
-        for (const auto &[title, forms] : word->Translations_)
+        for (const auto &[title, forms] : word->GetTranslations())
         {
             std::string formsStr = JoinStrs(forms, ",");
             translations.push_back({title, formsStr});
@@ -186,7 +186,7 @@ void EditWordDialog::UpdateDialog()
 
         // タグ
         std::vector<std::vector<std::string>> tags;
-        for (const auto &tag : word->Tags_)
+        for (const auto &tag : word->GetTags())
         {
             tags.push_back({tag});
         }
@@ -195,7 +195,7 @@ void EditWordDialog::UpdateDialog()
 
         // 自由記述
         std::vector<std::vector<std::string>> contentsData;
-        for (const auto &[title, content] : word->Contents_)
+        for (const auto &[title, content] : word->GetContents())
         {
             contentsData.push_back({title, content});
         }
@@ -204,7 +204,7 @@ void EditWordDialog::UpdateDialog()
 
         // 変化形
         std::vector<std::vector<std::string>> variationsData;
-        for (const auto &[title, variation] : word->Variations_)
+        for (const auto &[title, variation] : word->GetVariations())
         {
             variationsData.push_back({title, converter.ConvertToString(variation)});
         }
@@ -213,7 +213,7 @@ void EditWordDialog::UpdateDialog()
 
         // 関連語
         std::vector<std::vector<std::string>> relationsData;
-        for (const auto &[title, relatedWordID] : word->Relations_)
+        for (const auto &[title, relatedWordID] : word->GetRealtions())
         {
             const auto relatedWord = language->GetWord(relatedWordID);
             if (relatedWord)

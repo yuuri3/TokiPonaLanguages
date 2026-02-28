@@ -18,8 +18,6 @@ private:
     int ID;
     //   form
     std::vector<Phoneme> Form_;
-
-public:
     // translation <title,form>
     std::map<std::string, std::vector<std::string>> Translations_;
     // tags
@@ -31,6 +29,7 @@ public:
     // relations <title,entry>
     std::map<std::string, int> Relations_;
 
+public:
     bool operator==(const Word &other) const
     {
         return Form_ == other.Form_;
@@ -46,8 +45,15 @@ public:
         return Form_ < other.Form_;
     }
 
-    Word Add(const Word &word) const;
     static Word Create(const std::vector<Phoneme> &form);
+    Word Add(const Word &word) const;
+
     const std::vector<Phoneme> GetForm() const;
+    const std::map<std::string, std::vector<std::string>> GetTranslations() const;
+    const std::vector<std::string> GetTags() const;
+    const std::map<std::string, std::string> GetContents() const;
+    const std::map<std::string, std::vector<Phoneme>> GetVariations() const;
+    const std::map<std::string, int> GetRealtions() const;
+    const std::vector<std::string> GetAllTranslations() const;
     void ChangeSound(PhonologicalChange phon, const bool isProhibitSoundDuplication);
 };

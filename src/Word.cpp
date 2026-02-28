@@ -158,6 +158,71 @@ const std::vector<Phoneme> Word::GetForm() const
 }
 
 /**
+ * @brief 訳語をゲット
+ *
+ * @return const std::map<std::string, std::vector<std::string>>
+ */
+const std::map<std::string, std::vector<std::string>> Word::GetTranslations() const
+{
+    return Translations_;
+}
+
+/**
+ * @brief タグをゲット
+ *
+ * @return const std::vector<std::string>
+ */
+const std::vector<std::string> Word::GetTags() const
+{
+    return Tags_;
+}
+
+/**
+ * @brief 自由記述をゲット
+ *
+ * @return const std::map<std::string, std::string>
+ */
+const std::map<std::string, std::string> Word::GetContents() const
+{
+    return Contents_;
+}
+
+/**
+ * @brief 変化形をゲット
+ *
+ * @return const std::map<std::string, std::vector<Phoneme>>
+ */
+const std::map<std::string, std::vector<Phoneme>> Word::GetVariations() const
+{
+    return Variations_;
+}
+
+/**
+ * @brief 関連語をゲット
+ *
+ * @return const std::map<std::string, int>
+ */
+const std::map<std::string, int> Word::GetRealtions() const
+{
+    return Relations_;
+}
+
+/**
+ * @brief 訳語の集合を取得
+ *
+ * @return const std::vector<std::string>
+ */
+const std::vector<std::string> Word::GetAllTranslations() const
+{
+    std::vector<std::string> result;
+    for (const auto &[_, translations] : Translations_)
+    {
+        result.insert(result.end(), translations.begin(), translations.end());
+    }
+    return result;
+}
+
+/**
  * @brief 音韻変化
  *
  * @param phon
