@@ -1,4 +1,4 @@
-#include "..\\include\PhonemeConverter.h"
+#include "PhonemeConverter.h"
 #include "Random.h"
 
 PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::string>> &phonemeTable)
@@ -23,7 +23,7 @@ PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::str
  * 文字列を変換表に基づいて音素列に変換する
  * @param str 文字列
  */
-std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
+std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str) const
 {
     std::vector<Phoneme> convertedPhoneme;
     convertedPhoneme.reserve(str.length());
@@ -64,7 +64,7 @@ std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
  * @param strs 文字列の配列
  * @return 言語
  */
-Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &strs)
+Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &strs) const
 {
     Language convertedLanguage;
     convertedLanguage.Reset();
@@ -81,7 +81,7 @@ Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &str
  * @param Phonemes 音素列
  * @param table 音素表
  */
-std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonemes)
+std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonemes) const
 {
     std::string str = "";
 

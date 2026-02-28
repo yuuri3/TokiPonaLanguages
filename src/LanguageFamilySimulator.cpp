@@ -129,7 +129,6 @@ void LanguageFamilySimulator::SetProtoLanguageOnGeography(
     const Language &protoLanguage)
 {
     Languages_ = setProtoLanguageOnMap(getNonEmptyStrings(LanguageFamily_.GetGeography()), startPlace, protoLanguage);
-    ProtoLanguage_ = protoLanguage;
 
     // ログ
     PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
@@ -332,156 +331,6 @@ void LanguageFamilySimulator::ToNextPeriod()
     Period_++;
 }
 
-/**
- * @brief 差分を適用
- *
- * @param diff 差分
- *
- * @return 成否
- */
-bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
-{
-    const auto places = getNonEmptyStrings(LanguageFamily_.GetGeography());
-    PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
-
-    switch (diff.GetType())
-    {
-    case LanguageDifferenceType::AddWord:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-        const auto wordID = diff.IntParam(0);
-        if (!wordID)
-        {
-            return false;
-        }
-        const auto form = diff.StringParam(1);
-        if (!form)
-        {
-            return false;
-        }
-
-        Languages_[*geometry].AddWord(diff, converter.ConvertToPhoneme(*form));
-        if (diff.GetPeriod() == 0 && geometry == "0")
-        {
-            ProtoLanguage_.AddWord(diff, converter.ConvertToPhoneme(*form));
-        }
-        break;
-    }
-
-    case LanguageDifferenceType::ChangeStrength:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-
-        if (Languages_.count(*geometry) == 1)
-        {
-            Languages_[*geometry].ApplyDifference(diff);
-        }
-        break;
-    }
-
-    case LanguageDifferenceType::PhonologicalChange:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-
-        if (Languages_.count(*geometry) == 1)
-        {
-            Languages_[*geometry].ApplyDifference(diff);
-        }
-        break;
-    }
-
-    case LanguageDifferenceType::Loanword:
-    {
-        const auto referenceGeometry = diff.StringParam(0);
-        if (!referenceGeometry)
-        {
-            return false;
-        }
-        const auto targetGeometry = diff.StringParam(1);
-        if (!targetGeometry)
-        {
-            return false;
-        }
-        const auto referenceWordID = diff.IntParam(0);
-        if (!referenceWordID)
-        {
-            return false;
-        }
-        const auto targetWordID = diff.IntParam(1);
-        if (!targetWordID)
-        {
-            return false;
-        }
-
-        if (Languages_.count(*referenceGeometry) == 1)
-        {
-            const auto referenceLanguage = Languages_.at(*referenceGeometry);
-            Languages_[*targetGeometry].LoanWord(diff, referenceLanguage);
-        }
-        break;
-    }
-
-    case LanguageDifferenceType::AddCompound:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-        Languages_[*geometry].ApplyDifference(diff);
-        break;
-    }
-
-    case LanguageDifferenceType::ObsoleteWord:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-        Languages_[*geometry].ApplyDifference(diff);
-        break;
-    }
-
-    default:
-    {
-        return false;
-    }
-    }
-    return true;
-}
-
-/**
- * @brief 差分を複数適用
- *
- * @param diffs 差分
- *
- * @return 成否
- */
-bool LanguageFamilySimulator::ApplyDifferences(const std::vector<LanguageDifference> &diffs)
-{
-    for (const auto &diff : diffs)
-    {
-        if (!ApplyDifference(diff))
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
 std::optional<Language> LanguageFamilySimulator::CalculateLanguage(const std::string place, const int period)
 {
     for (const auto &diff : LanguageFamily_.GetDifference())
@@ -490,7 +339,8 @@ std::optional<Language> LanguageFamilySimulator::CalculateLanguage(const std::st
         {
             return Languages_.at(place);
         }
-        if (!ApplyDifference(diff))
+        const auto converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
+        if (!LanguageUtility::ApplyDifference(diff, Languages_, converter))
         {
             return std::nullopt;
         }
@@ -508,7 +358,6 @@ std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create()
     simulator.LanguageFamily_ = LanguageFamily::Create({{""}}, {{""}});
     simulator.Period_ = 0;
     simulator.Languages_.clear();
-    simulator.ProtoLanguage_ = Language();
 
     return simulator;
 }
@@ -524,12 +373,7 @@ std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create(LanguageF
     simulator.LanguageFamily_ = languageFamily;
     simulator.Period_ = 0;
     simulator.Languages_.clear();
-    simulator.ProtoLanguage_ = Language();
 
-    if (!simulator.ApplyDifferences(languageFamily.GetDifference()))
-    {
-        return std::nullopt;
-    }
     return simulator;
 }
 
@@ -574,7 +418,7 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
             result.emplace_back(line);
             line.clear();
         }
-        if (!ApplyDifference(diff))
+        if (!LanguageUtility::ApplyDifference(diff, Languages_, converter))
         {
             return {};
         }
@@ -594,54 +438,5 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
     result.emplace_back(line);
     line.clear();
 
-    return result;
-}
-
-/**
- * @brief 文字列の配列に変換
- *
- * @return std::vector<std::vector<std::string>> 配列
- */
-std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringCurrentLanguages()
-{
-    std::vector<std::vector<std::string>> result;
-    std::vector<std::string> line;
-
-    // 1. 文字列変換の結果をキャッシュするマップ (高速化の肝)
-    std::map<std::vector<Phoneme>, std::string> convertCache;
-    auto getCachedString = [&](const std::vector<Phoneme> &s) -> const std::string &
-    {
-        auto iterator = convertCache.find(s);
-        if (iterator != convertCache.end())
-            return iterator->second;
-        PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
-        return convertCache[s] = converter.ConvertToString(s); //
-    };
-
-    // 2. ヘッダー行 (Place) の出力と、Languageポインタのキャッシュ
-    line.emplace_back("");
-    std::vector<const Language *> languagePtrList;
-    languagePtrList.reserve(Languages_.size());
-    for (const auto &[place, language] : Languages_)
-    {
-        line.emplace_back(place);
-        languagePtrList.push_back(&language); // ループ内でのmap検索を避けるために保持
-    }
-    result.emplace_back(line);
-    line.clear();
-
-    // 5. 各単語の出力
-    for (int i = 0; i < ProtoLanguage_.CountWord(); i++)
-    {
-        const auto [wordID, word] = ProtoLanguage_.GetNthWord(i);
-
-        line.emplace_back(getCachedString(word.GetForm()));
-        for (const auto &[__, language] : Languages_)
-        {
-            line.emplace_back(getCachedString(language.GetWord(wordID)->GetForm()));
-        }
-        result.emplace_back(line);
-        line.clear();
-    }
     return result;
 }

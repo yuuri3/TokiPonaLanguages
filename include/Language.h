@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "LanguageDifference.h"
 
+class PhonemeConverter;
+
 /**
  * @brief 言語
  *
@@ -33,3 +35,9 @@ public:
     const std::optional<Word> GetWord(const int wordID) const;
     const bool Empty() const;
 };
+
+namespace LanguageUtility
+{
+    bool ApplyDifference(const LanguageDifference &diff, std::map<std::string, Language> &languages, const PhonemeConverter &converter);
+    bool ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<std::string, Language> &languages, const PhonemeConverter &converter);
+}

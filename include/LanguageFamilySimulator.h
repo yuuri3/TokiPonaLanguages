@@ -19,8 +19,6 @@ struct LanguageFamilySimulator
     int Period_ = 0;
     // 地理と言語の対応（シミュレーション用）
     std::map<std::string, Language> Languages_;
-    // 祖語（シミュレーション用）
-    Language ProtoLanguage_;
 
     static std::optional<LanguageFamilySimulator> Create();
     static std::optional<LanguageFamilySimulator> Create(LanguageFamily languageFamily);
@@ -38,10 +36,5 @@ struct LanguageFamilySimulator
     bool HasAllPlaceLanguage();
     void ToNextPeriod();
     std::vector<std::vector<std::string>> ToStringLanguageFamily();
-    std::vector<std::vector<std::string>> ToStringCurrentLanguages();
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
-
-private:
-    bool ApplyDifference(const LanguageDifference &diff);
-    bool ApplyDifferences(const std::vector<LanguageDifference> &diffs);
 };

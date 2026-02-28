@@ -1,5 +1,6 @@
 #include "Language.h"
 #include "Random.h"
+#include "PhonemeConverter.h"
 
 namespace
 {
@@ -403,4 +404,149 @@ const std::optional<Word> Language::GetWord(const int wordID) const
 const bool Language::Empty() const
 {
     return Words_.empty();
+}
+
+/**
+ * @brief 差分を適用
+ *
+ * @param diff 差分
+ *
+ * @return 成否
+ */
+bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<std::string, Language> &languages, const PhonemeConverter &converter)
+{
+    // const auto places = getNonEmptyStrings(LanguageFamily_.GetGeography());
+
+    switch (diff.GetType())
+    {
+    case LanguageDifferenceType::AddWord:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+        const auto wordID = diff.IntParam(0);
+        if (!wordID)
+        {
+            return false;
+        }
+        const auto form = diff.StringParam(1);
+        if (!form)
+        {
+            return false;
+        }
+
+        languages[*geometry].AddWord(diff, converter.ConvertToPhoneme(*form));
+        break;
+    }
+
+    case LanguageDifferenceType::ChangeStrength:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+
+        if (languages.count(*geometry) == 1)
+        {
+            languages[*geometry].ApplyDifference(diff);
+        }
+        break;
+    }
+
+    case LanguageDifferenceType::PhonologicalChange:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+
+        if (languages.count(*geometry) == 1)
+        {
+            languages[*geometry].ApplyDifference(diff);
+        }
+        break;
+    }
+
+    case LanguageDifferenceType::Loanword:
+    {
+        const auto referenceGeometry = diff.StringParam(0);
+        if (!referenceGeometry)
+        {
+            return false;
+        }
+        const auto targetGeometry = diff.StringParam(1);
+        if (!targetGeometry)
+        {
+            return false;
+        }
+        const auto referenceWordID = diff.IntParam(0);
+        if (!referenceWordID)
+        {
+            return false;
+        }
+        const auto targetWordID = diff.IntParam(1);
+        if (!targetWordID)
+        {
+            return false;
+        }
+
+        if (languages.count(*referenceGeometry) == 1)
+        {
+            const auto referenceLanguage = languages.at(*referenceGeometry);
+            languages[*targetGeometry].LoanWord(diff, referenceLanguage);
+        }
+        break;
+    }
+
+    case LanguageDifferenceType::AddCompound:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+        languages[*geometry].ApplyDifference(diff);
+        break;
+    }
+
+    case LanguageDifferenceType::ObsoleteWord:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+        languages[*geometry].ApplyDifference(diff);
+        break;
+    }
+
+    default:
+    {
+        return false;
+    }
+    }
+    return true;
+}
+
+/**
+ * @brief 差分を複数適用
+ *
+ * @param diffs 差分
+ *
+ * @return 成否
+ */
+bool LanguageUtility::ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<std::string, Language> &languages, const PhonemeConverter &converter)
+{
+    for (const auto &diff : diffs)
+    {
+        if (!ApplyDifference(diff, languages, converter))
+        {
+            return false;
+        }
+    }
+    return true;
 }

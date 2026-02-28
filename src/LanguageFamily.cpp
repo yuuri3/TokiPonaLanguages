@@ -118,6 +118,32 @@ void LanguageFamily::AddDifference(const LanguageDifference &languageDifference)
 }
 
 /**
+ * @brief 言語を計算
+ *
+ * @param place 位置
+ * @param period 時代
+ * @return std::optional<Language>
+ */
+std::optional<Language> LanguageFamily::CalculateLanguage(const std::string place, const int period)
+{
+    std::map<std::string, Language> languages;
+    const auto converter = PhonemeConverter::Create(PhonemeTable_);
+
+    for (const auto &diff : GetDifference())
+    {
+        if (diff.GetPeriod() > period)
+        {
+            return languages.at(place);
+        }
+        if (!LanguageUtility::ApplyDifference(diff, languages, converter))
+        {
+            return std::nullopt;
+        }
+    }
+    return languages.at(place);
+}
+
+/**
  * @brief 差分をファイル出力
  *
  */

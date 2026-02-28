@@ -27,6 +27,7 @@ add_library(src
     EditWordDialog.cpp
     ../include/Language.h
     ../include/LanguageFamilySimulator.h
+    ../include/PhonemeConverter.h
     ../include/Utility.h
     ../include/MainWindow.h
     ../include/UnimplementedDialog.h
