@@ -144,6 +144,70 @@ std::optional<Language> LanguageFamily::CalculateLanguage(const std::string plac
 }
 
 /**
+ * @brief 言語名の配列を出力
+ *
+ * @return const std::vector<std::vector<std::string>>
+ */
+const std::vector<std::vector<std::string>> LanguageFamily::ToString()
+{
+    int currentPeriod = 0;
+    std::vector<std::vector<std::string>> result;
+    std::vector<std::string> line;
+    int period = 0;
+    std::map<std::string, Language> languages;
+
+    auto converter = PhonemeConverter::Create(GetPhonemeTable());
+
+    for (const auto &place : getNonEmptyStrings(GetGeography()))
+    {
+        line.emplace_back(place);
+    }
+    result.emplace_back(line);
+    line.clear();
+
+    for (const auto &diff : GetDifference())
+    {
+        if (diff.GetPeriod() != currentPeriod)
+        {
+            currentPeriod = diff.GetPeriod();
+            for (const auto &place : getNonEmptyStrings(GetGeography()))
+            {
+                if (languages.count(place) == 0 || languages[place].Empty())
+                {
+                    line.emplace_back("");
+                }
+                else
+                {
+                    line.emplace_back(converter.ConvertToString(languages[place].GetWord(0)->GetForm()));
+                }
+            }
+            result.emplace_back(line);
+            line.clear();
+        }
+        if (!LanguageUtility::ApplyDifference(diff, languages, converter))
+        {
+            return {};
+        }
+    }
+
+    for (const auto &place : getNonEmptyStrings(GetGeography()))
+    {
+        if (languages.count(place) == 0 || languages[place].Empty())
+        {
+            line.emplace_back("");
+        }
+        else
+        {
+            line.emplace_back(converter.ConvertToString(languages[place].GetWord(0)->GetForm()));
+        }
+    }
+    result.emplace_back(line);
+    line.clear();
+
+    return result;
+}
+
+/**
  * @brief 差分をファイル出力
  *
  */

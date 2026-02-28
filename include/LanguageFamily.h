@@ -27,6 +27,7 @@ public:
     void AddDifference(const LanguageDifference &languageDifference);
 
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
+    const std::vector<std::vector<std::string>> ToString();
 
     void Export(const std::string &filename);
     bool Import(const std::string &filename);
