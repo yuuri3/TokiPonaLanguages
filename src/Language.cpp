@@ -1,123 +1,6 @@
 #include "Language.h"
 #include "Random.h"
-
-namespace
-{
-    /**
-     * @brief 音韻の制限
-     *
-     * @param changedWordForm
-     * @return true
-     * @return false
-     */
-    bool CheckSoundDuplication(const std::vector<Phoneme> &changedWordForm)
-    {
-        // 子音と母音の境界
-        constexpr int MAX_CONSONANT_MANNER = 3;
-
-        bool isSoundDuplication = false;
-
-        std::vector<std::vector<Phoneme>> wordForms;
-        std::vector<Phoneme> wordForm;
-        for (const auto &phoneme : changedWordForm)
-        {
-            if (phoneme.IsSpace_)
-            {
-                wordForms.emplace_back(wordForm);
-                wordForm.clear();
-            }
-            else
-            {
-                wordForm.emplace_back(phoneme);
-            }
-        }
-        wordForms.emplace_back(wordForm);
-
-        for (const auto &w : wordForms)
-        {
-            if (w.empty())
-                isSoundDuplication = true;
-            else if (w.size() == 1)
-            {
-                if (w[0].Manner_ <= MAX_CONSONANT_MANNER)
-                    isSoundDuplication = true;
-            }
-            else
-            {
-                // 境界条件のチェック
-                if ((w[0].Manner_ <= MAX_CONSONANT_MANNER && w[1].Manner_ <= MAX_CONSONANT_MANNER) ||
-                    (w.back().Manner_ <= MAX_CONSONANT_MANNER && w[w.size() - 2].Manner_ <= MAX_CONSONANT_MANNER))
-                {
-                    isSoundDuplication = true;
-                }
-                else
-                {
-                    // 3連続のチェック
-                    for (size_t j = 0; j + 2 < w.size(); ++j)
-                    {
-                        bool isConsonant = (w[j].Manner_ <= MAX_CONSONANT_MANNER &&
-                                            w[j + 1].Manner_ <= MAX_CONSONANT_MANNER &&
-                                            w[j + 2].Manner_ <= MAX_CONSONANT_MANNER);
-                        bool isVowel = (w[j].Manner_ > MAX_CONSONANT_MANNER &&
-                                        w[j + 1].Manner_ > MAX_CONSONANT_MANNER &&
-                                        w[j + 2].Manner_ > MAX_CONSONANT_MANNER);
-                        if (isConsonant || isVowel)
-                        {
-                            isSoundDuplication = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return isSoundDuplication;
-    }
-
-    /**
-     * @brief 音韻変化を適用する
-     *
-     * @param wordForm 語形
-     * @param changedWordForm 変化語の語形
-     * @param phonologicalChange 音韻変化
-     */
-    bool ChangeWordSound(const std::vector<Phoneme> &wordForm, std::vector<Phoneme> &changedWordForm, const PhonologicalChange &phonologicalChange)
-    {
-        changedWordForm.reserve(wordForm.size());
-        bool isChanged = false;
-
-        for (size_t soundPosition = 0; soundPosition < wordForm.size(); ++soundPosition)
-        {
-            const auto &sound = wordForm[soundPosition];
-
-            // 変化条件の判定
-            bool isSoundEqualToBeforePhoneme = (sound == phonologicalChange.BeforePhoneme_);
-            if (isSoundEqualToBeforePhoneme)
-            {
-                if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::Start && !(soundPosition == 0 || wordForm[soundPosition - 1].IsSpace_))
-                    isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::End && !(soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace_))
-                    isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::Middle && (soundPosition == 0 || wordForm[soundPosition - 1].IsSpace_ || soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace_))
-                    isSoundEqualToBeforePhoneme = false;
-            }
-
-            if (isSoundEqualToBeforePhoneme)
-            {
-                isChanged = true;
-                if (!phonologicalChange.IsRemove_)
-                {
-                    changedWordForm.push_back(phonologicalChange.AfterPhoneme_);
-                }
-            }
-            else
-            {
-                changedWordForm.push_back(sound);
-            }
-        }
-
-        return isChanged;
-    }
-}
+#include "PhonemeConverter.h"
 
 /**
  * @brief リセット
@@ -403,4 +286,149 @@ const std::optional<Word> Language::GetWord(const int wordID) const
 const bool Language::Empty() const
 {
     return Words_.empty();
+}
+
+/**
+ * @brief 差分を適用
+ *
+ * @param diff 差分
+ *
+ * @return 成否
+ */
+bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<std::string, Language> &languages, const PhonemeConverter &converter)
+{
+    // const auto places = getNonEmptyStrings(LanguageFamily_.GetGeography());
+
+    switch (diff.GetType())
+    {
+    case LanguageDifferenceType::AddWord:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+        const auto wordID = diff.IntParam(0);
+        if (!wordID)
+        {
+            return false;
+        }
+        const auto form = diff.StringParam(1);
+        if (!form)
+        {
+            return false;
+        }
+
+        languages[*geometry].AddWord(diff, converter.ConvertToPhoneme(*form));
+        break;
+    }
+
+    case LanguageDifferenceType::ChangeStrength:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+
+        if (languages.count(*geometry) == 1)
+        {
+            languages[*geometry].ApplyDifference(diff);
+        }
+        break;
+    }
+
+    case LanguageDifferenceType::PhonologicalChange:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+
+        if (languages.count(*geometry) == 1)
+        {
+            languages[*geometry].ApplyDifference(diff);
+        }
+        break;
+    }
+
+    case LanguageDifferenceType::Loanword:
+    {
+        const auto referenceGeometry = diff.StringParam(0);
+        if (!referenceGeometry)
+        {
+            return false;
+        }
+        const auto targetGeometry = diff.StringParam(1);
+        if (!targetGeometry)
+        {
+            return false;
+        }
+        const auto referenceWordID = diff.IntParam(0);
+        if (!referenceWordID)
+        {
+            return false;
+        }
+        const auto targetWordID = diff.IntParam(1);
+        if (!targetWordID)
+        {
+            return false;
+        }
+
+        if (languages.count(*referenceGeometry) == 1)
+        {
+            const auto referenceLanguage = languages.at(*referenceGeometry);
+            languages[*targetGeometry].LoanWord(diff, referenceLanguage);
+        }
+        break;
+    }
+
+    case LanguageDifferenceType::AddCompound:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+        languages[*geometry].ApplyDifference(diff);
+        break;
+    }
+
+    case LanguageDifferenceType::ObsoleteWord:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+        languages[*geometry].ApplyDifference(diff);
+        break;
+    }
+
+    default:
+    {
+        return false;
+    }
+    }
+    return true;
+}
+
+/**
+ * @brief 差分を複数適用
+ *
+ * @param diffs 差分
+ *
+ * @return 成否
+ */
+bool LanguageUtility::ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<std::string, Language> &languages, const PhonemeConverter &converter)
+{
+    for (const auto &diff : diffs)
+    {
+        if (!ApplyDifference(diff, languages, converter))
+        {
+            return false;
+        }
+    }
+    return true;
 }

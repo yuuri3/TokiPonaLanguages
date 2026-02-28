@@ -79,12 +79,7 @@ void EditLanguageWindow::UpdateTable()
 {
     if (Languages_ && Place_ && Period_)
     {
-        auto simulator = LanguageFamilySimulator::Create(*Languages_);
-        if (!simulator)
-        {
-            return;
-        }
-        auto language = simulator->CalculateLanguage(*Place_, *Period_);
+        auto language = Languages_->CalculateLanguage(*Place_, *Period_);
         if (!language)
         {
             return;
@@ -92,7 +87,7 @@ void EditLanguageWindow::UpdateTable()
 
         std::vector<std::vector<std::string>> wordData;
         std::vector<std::string> line;
-        PhonemeConverter converter = PhonemeConverter::Create(Languages_->PhonemeTable_);
+        PhonemeConverter converter = PhonemeConverter::Create(Languages_->GetPhonemeTable());
 
         line.emplace_back("単語");
         line.emplace_back("訳語");
@@ -154,12 +149,7 @@ void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
             }
             else
             {
-                auto simulator = LanguageFamilySimulator::Create(*Languages_);
-                if (!simulator)
-                {
-                    return;
-                }
-                language = simulator->CalculateLanguage(*Place_, *Period_);
+                language = Languages_->CalculateLanguage(*Place_, *Period_);
                 Language_ = language;
                 if (!language)
                 {

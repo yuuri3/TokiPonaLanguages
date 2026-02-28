@@ -1,4 +1,4 @@
-#include "..\\include\PhonemeConverter.h"
+#include "PhonemeConverter.h"
 #include "Random.h"
 
 PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::string>> &phonemeTable)
@@ -10,9 +10,7 @@ PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::str
         for (int column = 0; column < (int)phonemeTable[row].size(); ++column)
         {
             const std::string &item = phonemeTable[row][column];
-            Phoneme phoneme;
-            phoneme.Manner_ = row;
-            phoneme.Place_ = column;
+            Phoneme phoneme = Phoneme::Create(column, row);
             converter.PhonemeMap_[item] = phoneme;
         }
     }
@@ -23,7 +21,7 @@ PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::str
  * 文字列を変換表に基づいて音素列に変換する
  * @param str 文字列
  */
-std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
+std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str) const
 {
     std::vector<Phoneme> convertedPhoneme;
     convertedPhoneme.reserve(str.length());
@@ -44,11 +42,7 @@ std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
             }
             if (PhonemeStr == " ")
             {
-                Phoneme space;
-                space.IsSpace_ = true;
-                space.Manner_ = -1;
-                space.Place_ = -1;
-                convertedPhoneme.emplace_back(space);
+                convertedPhoneme.emplace_back(Phoneme::MakeSpace());
                 charPosition += phonemeCharCount;
                 isMatch = true;
             }
@@ -64,7 +58,7 @@ std::vector<Phoneme> PhonemeConverter::ConvertToPhoneme(const std::string &str)
  * @param strs 文字列の配列
  * @return 言語
  */
-Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &strs)
+Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &strs) const
 {
     Language convertedLanguage;
     convertedLanguage.Reset();
@@ -81,7 +75,7 @@ Language PhonemeConverter::convertToLanguage(const std::vector<std::string> &str
  * @param Phonemes 音素列
  * @param table 音素表
  */
-std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonemes)
+std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonemes) const
 {
     std::string str = "";
 
@@ -94,7 +88,7 @@ std::string PhonemeConverter::ConvertToString(const std::vector<Phoneme> &phonem
                 str += keyString;
             }
         }
-        if (phoneme.IsSpace_)
+        if (phoneme.IsSpace())
         {
             str += " ";
         }

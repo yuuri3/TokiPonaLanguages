@@ -62,6 +62,142 @@ namespace
 }
 
 /**
+ * @brief 空の語族を作成
+ *
+ * @param geography 地理
+ * @param phonemeTable 音韻
+ * @return LanguageFamily
+ */
+LanguageFamily LanguageFamily::Create(const std::vector<std::vector<std::string>> &geography, const std::vector<std::vector<std::string>> &phonemeTable)
+{
+    LanguageFamily languages;
+    languages.languageDifference_ = {};
+    languages.Geography_ = geography;
+    languages.PhonemeTable_ = phonemeTable;
+    return languages;
+}
+
+/**
+ * @brief 地理を取得
+ *
+ * @return const std::vector<std::vector<std::string>>
+ */
+const std::vector<std::vector<std::string>> LanguageFamily::GetGeography() const
+{
+    return Geography_;
+}
+
+/**
+ * @brief 音韻を取得
+ *
+ * @return const std::vector<std::vector<std::string>>
+ */
+const std::vector<std::vector<std::string>> LanguageFamily::GetPhonemeTable() const
+{
+    return PhonemeTable_;
+}
+
+/**
+ * @brief 差分を追加
+ *
+ * @param languageDifference
+ */
+void LanguageFamily::AddDifference(const LanguageDifference &languageDifference)
+{
+    languageDifference_.emplace_back(languageDifference);
+}
+
+/**
+ * @brief 言語を計算
+ *
+ * @param place 位置
+ * @param period 時代
+ * @return std::optional<Language>
+ */
+std::optional<Language> LanguageFamily::CalculateLanguage(const std::string place, const int period)
+{
+    std::map<std::string, Language> languages;
+    const auto converter = PhonemeConverter::Create(PhonemeTable_);
+
+    for (const auto &diff : languageDifference_)
+    {
+        if (diff.GetPeriod() > period)
+        {
+            return languages.at(place);
+        }
+        if (!LanguageUtility::ApplyDifference(diff, languages, converter))
+        {
+            return std::nullopt;
+        }
+    }
+    return languages.at(place);
+}
+
+/**
+ * @brief 言語名の配列を出力
+ *
+ * @return const std::vector<std::vector<std::string>>
+ */
+const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
+{
+    int currentPeriod = 0;
+    std::vector<std::vector<std::string>> result;
+    std::vector<std::string> line;
+    int period = 0;
+    std::map<std::string, Language> languages;
+
+    auto converter = PhonemeConverter::Create(GetPhonemeTable());
+
+    for (const auto &place : getNonEmptyStrings(GetGeography()))
+    {
+        line.emplace_back(place);
+    }
+    result.emplace_back(line);
+    line.clear();
+
+    for (const auto &diff : languageDifference_)
+    {
+        if (diff.GetPeriod() != currentPeriod)
+        {
+            currentPeriod = diff.GetPeriod();
+            for (const auto &place : getNonEmptyStrings(GetGeography()))
+            {
+                if (languages.count(place) == 0 || languages[place].Empty())
+                {
+                    line.emplace_back("");
+                }
+                else
+                {
+                    line.emplace_back(converter.ConvertToString(languages[place].GetWord(0)->GetForm()));
+                }
+            }
+            result.emplace_back(line);
+            line.clear();
+        }
+        if (!LanguageUtility::ApplyDifference(diff, languages, converter))
+        {
+            return {};
+        }
+    }
+
+    for (const auto &place : getNonEmptyStrings(GetGeography()))
+    {
+        if (languages.count(place) == 0 || languages[place].Empty())
+        {
+            line.emplace_back("");
+        }
+        else
+        {
+            line.emplace_back(converter.ConvertToString(languages[place].GetWord(0)->GetForm()));
+        }
+    }
+    result.emplace_back(line);
+    line.clear();
+
+    return result;
+}
+
+/**
  * @brief 差分をファイル出力
  *
  */

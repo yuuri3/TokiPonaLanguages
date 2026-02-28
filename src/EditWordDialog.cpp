@@ -151,18 +151,13 @@ void EditWordDialog::UpdateDialog()
         }
         else
         {
-            auto simulator = LanguageFamilySimulator::Create(*Languages_);
-            if (!simulator)
-            {
-                return;
-            }
-            language = simulator->CalculateLanguage(*Place_, *Period_);
+            language = Languages_->CalculateLanguage(*Place_, *Period_);
             if (!language)
             {
                 return;
             }
         }
-        PhonemeConverter converter = PhonemeConverter::Create(Languages_->PhonemeTable_);
+        PhonemeConverter converter = PhonemeConverter::Create(Languages_->GetPhonemeTable());
 
         const auto word = language->GetWord(*WordID_);
         if (!word)
