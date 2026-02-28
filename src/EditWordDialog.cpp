@@ -162,7 +162,7 @@ void EditWordDialog::UpdateDialog()
                 return;
             }
         }
-        PhonemeConverter converter = PhonemeConverter::Create(Languages_->PhonemeTable_);
+        PhonemeConverter converter = PhonemeConverter::Create(Languages_->GetPhonemeTable());
 
         const auto word = language->GetWord(*WordID_);
         if (!word)

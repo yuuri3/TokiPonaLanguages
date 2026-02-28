@@ -132,7 +132,7 @@ void LanguageFamilySimulator::SetProtoLanguageOnGeography(
     ProtoLanguage_ = protoLanguage;
 
     // ログ
-    PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable_);
+    PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
     LanguageFamily_.languageDifference_.emplace_back(LanguageDifference::CreateChangeStrength(startPlace, Period_, protoLanguage.GetStrength()));
 
     for (int i = 0; i < protoLanguage.CountWord(); i++)
@@ -157,7 +157,7 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
     }
     const auto language = Languages_[place];
     std::vector<std::string> words;
-    PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable_);
+    PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
 
     for (int i = 0; i < language.CountWord(); i++)
     {
@@ -195,8 +195,8 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
         {
             continue;
         }
-        const auto randomSound = getRandomSoundFromTable(LanguageFamily_.PhonemeTable_);
-        PhonologicalChange randomPhonologicalChange = makepPhonologicalChangeRandom(randomSound, LanguageFamily_.PhonemeTable_, pSoundLoss);
+        const auto randomSound = getRandomSoundFromTable(LanguageFamily_.GetPhonemeTable());
+        PhonologicalChange randomPhonologicalChange = makepPhonologicalChangeRandom(randomSound, LanguageFamily_.GetPhonemeTable(), pSoundLoss);
 
         // ログ
         const auto dif = LanguageDifference::CreatePhonologicalChange(place, Period_, randomPhonologicalChange);
@@ -342,7 +342,7 @@ void LanguageFamilySimulator::ToNextPeriod()
 bool LanguageFamilySimulator::ApplyDifference(const LanguageDifference &diff)
 {
     const auto places = getNonEmptyStrings(LanguageFamily_.GetGeography());
-    PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable_);
+    PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
 
     switch (diff.GetType())
     {
@@ -546,7 +546,7 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
     Period_ = 0;
     Languages_.clear();
 
-    auto converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable_);
+    auto converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
 
     for (const auto &place : getNonEmptyStrings(LanguageFamily_.GetGeography()))
     {
@@ -614,7 +614,7 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringCurrentLa
         auto iterator = convertCache.find(s);
         if (iterator != convertCache.end())
             return iterator->second;
-        PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.PhonemeTable_);
+        PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
         return convertCache[s] = converter.ConvertToString(s); //
     };
 

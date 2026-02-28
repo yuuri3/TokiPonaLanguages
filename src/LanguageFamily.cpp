@@ -88,6 +88,16 @@ const std::vector<std::vector<std::string>> LanguageFamily::GetGeography() const
 }
 
 /**
+ * @brief 音韻を取得
+ *
+ * @return const std::vector<std::vector<std::string>>
+ */
+const std::vector<std::vector<std::string>> LanguageFamily::GetPhonemeTable() const
+{
+    return PhonemeTable_;
+}
+
+/**
  * @brief 差分をファイル出力
  *
  */

@@ -92,7 +92,7 @@ void EditLanguageWindow::UpdateTable()
 
         std::vector<std::vector<std::string>> wordData;
         std::vector<std::string> line;
-        PhonemeConverter converter = PhonemeConverter::Create(Languages_->PhonemeTable_);
+        PhonemeConverter converter = PhonemeConverter::Create(Languages_->GetPhonemeTable());
 
         line.emplace_back("単語");
         line.emplace_back("訳語");
