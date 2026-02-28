@@ -98,6 +98,26 @@ const std::vector<std::vector<std::string>> LanguageFamily::GetPhonemeTable() co
 }
 
 /**
+ * @brief 差分を出力
+ *
+ * @return std::vector<LanguageDifference>
+ */
+const std::vector<LanguageDifference> LanguageFamily::GetDifference() const
+{
+    return languageDifference_;
+}
+
+/**
+ * @brief 差分を追加
+ *
+ * @param languageDifference
+ */
+void LanguageFamily::AddDifference(const LanguageDifference &languageDifference)
+{
+    languageDifference_.emplace_back(languageDifference);
+}
+
+/**
  * @brief 差分をファイル出力
  *
  */

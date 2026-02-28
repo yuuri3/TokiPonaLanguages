@@ -133,13 +133,13 @@ void LanguageFamilySimulator::SetProtoLanguageOnGeography(
 
     // ログ
     PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
-    LanguageFamily_.languageDifference_.emplace_back(LanguageDifference::CreateChangeStrength(startPlace, Period_, protoLanguage.GetStrength()));
+    LanguageFamily_.AddDifference(LanguageDifference::CreateChangeStrength(startPlace, Period_, protoLanguage.GetStrength()));
 
     for (int i = 0; i < protoLanguage.CountWord(); i++)
     {
         const auto [wordID, word] = protoLanguage.GetNthWord(i);
 
-        LanguageFamily_.languageDifference_.emplace_back(LanguageDifference::CreateAddWord(startPlace, Period_, wordID, converter.ConvertToString(word.GetForm())));
+        LanguageFamily_.AddDifference(LanguageDifference::CreateAddWord(startPlace, Period_, wordID, converter.ConvertToString(word.GetForm())));
     }
 }
 
@@ -200,7 +200,7 @@ void LanguageFamilySimulator::PhonologicalChangeRandom(
 
         // ログ
         const auto dif = LanguageDifference::CreatePhonologicalChange(place, Period_, randomPhonologicalChange);
-        LanguageFamily_.languageDifference_.emplace_back(dif);
+        LanguageFamily_.AddDifference(dif);
 
         language.ApplyDifference(dif);
     }
@@ -242,7 +242,7 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
                         const auto [wordID, word] = language2.GetNthWord(i);
 
                         const auto dif = LanguageDifference::CreateLoanword(languageIterator2->first, languageIterator1->first, Period_, wordID, wordID);
-                        LanguageFamily_.languageDifference_.emplace_back(dif);
+                        LanguageFamily_.AddDifference(dif);
                     }
                 }
                 else
@@ -255,7 +255,7 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
                         const auto [wordID, word] = language1.GetNthWord(i);
 
                         const auto dif = LanguageDifference::CreateLoanword(languageIterator1->first, languageIterator2->first, Period_, wordID, wordID);
-                        LanguageFamily_.languageDifference_.emplace_back(dif);
+                        LanguageFamily_.AddDifference(dif);
                     }
                 }
                 continue;
@@ -276,7 +276,7 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
 
                 // ログ
                 const auto dif = LanguageDifference::CreateLoanword(referencePlace, targetPlace, Period_, targetWordID, targetWordID);
-                LanguageFamily_.languageDifference_.emplace_back(dif);
+                LanguageFamily_.AddDifference(dif);
 
                 targetLanguage->LoanWord(dif, *referenceLanguage);
             }
@@ -297,7 +297,7 @@ void LanguageFamilySimulator::ChangeLanguageStrengthRandom(const double pChangeS
         {
             // ログ
             const auto dif = language.ChangeStrength(place, Period_);
-            LanguageFamily_.languageDifference_.emplace_back(dif);
+            LanguageFamily_.AddDifference(dif);
         }
     }
 }
@@ -484,7 +484,7 @@ bool LanguageFamilySimulator::ApplyDifferences(const std::vector<LanguageDiffere
 
 std::optional<Language> LanguageFamilySimulator::CalculateLanguage(const std::string place, const int period)
 {
-    for (const auto &diff : LanguageFamily_.languageDifference_)
+    for (const auto &diff : LanguageFamily_.GetDifference())
     {
         if (diff.GetPeriod() > period)
         {
@@ -526,7 +526,7 @@ std::optional<LanguageFamilySimulator> LanguageFamilySimulator::Create(LanguageF
     simulator.Languages_.clear();
     simulator.ProtoLanguage_ = Language();
 
-    if (!simulator.ApplyDifferences(languageFamily.languageDifference_))
+    if (!simulator.ApplyDifferences(languageFamily.GetDifference()))
     {
         return std::nullopt;
     }
@@ -555,7 +555,7 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
     result.emplace_back(line);
     line.clear();
 
-    for (const auto &diff : LanguageFamily_.languageDifference_)
+    for (const auto &diff : LanguageFamily_.GetDifference())
     {
         if (diff.GetPeriod() != currentPeriod)
         {
