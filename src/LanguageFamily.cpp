@@ -98,16 +98,6 @@ const std::vector<std::vector<std::string>> LanguageFamily::GetPhonemeTable() co
 }
 
 /**
- * @brief 差分を出力
- *
- * @return std::vector<LanguageDifference>
- */
-const std::vector<LanguageDifference> LanguageFamily::GetDifference() const
-{
-    return languageDifference_;
-}
-
-/**
  * @brief 差分を追加
  *
  * @param languageDifference
@@ -129,7 +119,7 @@ std::optional<Language> LanguageFamily::CalculateLanguage(const std::string plac
     std::map<std::string, Language> languages;
     const auto converter = PhonemeConverter::Create(PhonemeTable_);
 
-    for (const auto &diff : GetDifference())
+    for (const auto &diff : languageDifference_)
     {
         if (diff.GetPeriod() > period)
         {
@@ -165,7 +155,7 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
     result.emplace_back(line);
     line.clear();
 
-    for (const auto &diff : GetDifference())
+    for (const auto &diff : languageDifference_)
     {
         if (diff.GetPeriod() != currentPeriod)
         {

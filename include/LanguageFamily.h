@@ -23,7 +23,6 @@ public:
     static LanguageFamily Create(const std::vector<std::vector<std::string>> &geography, const std::vector<std::vector<std::string>> &phonemeTable);
     const std::vector<std::vector<std::string>> GetGeography() const;
     const std::vector<std::vector<std::string>> GetPhonemeTable() const;
-    const std::vector<LanguageDifference> GetDifference() const;
     void AddDifference(const LanguageDifference &languageDifference);
 
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
