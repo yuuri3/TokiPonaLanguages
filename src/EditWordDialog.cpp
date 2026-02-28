@@ -171,7 +171,7 @@ void EditWordDialog::UpdateDialog()
         }
 
         // 語形
-        const auto form = word->Form_;
+        const auto form = word->GetForm();
         Entry_->setText(QString::fromStdString(converter.ConvertToString(form)));
 
         // 訳語
@@ -218,7 +218,7 @@ void EditWordDialog::UpdateDialog()
             const auto relatedWord = language->GetWord(relatedWordID);
             if (relatedWord)
             {
-                relationsData.push_back({title, converter.ConvertToString(relatedWord->Form_)});
+                relationsData.push_back({title, converter.ConvertToString(relatedWord->GetForm())});
             }
         }
         relationsData.push_back({"", ""});

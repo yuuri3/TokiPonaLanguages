@@ -139,7 +139,7 @@ void LanguageFamilySimulator::SetProtoLanguageOnGeography(
     {
         const auto [wordID, word] = protoLanguage.GetNthWord(i);
 
-        LanguageFamily_.languageDifference_.emplace_back(LanguageDifference::CreateAddWord(startPlace, Period_, wordID, converter.ConvertToString(word.Form_)));
+        LanguageFamily_.languageDifference_.emplace_back(LanguageDifference::CreateAddWord(startPlace, Period_, wordID, converter.ConvertToString(word.GetForm())));
     }
 }
 
@@ -163,7 +163,7 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
     {
         const auto [_, word] = language.GetNthWord(i);
 
-        words.emplace_back(converter.ConvertToString(word.Form_));
+        words.emplace_back(converter.ConvertToString(word.GetForm()));
     }
     return words;
 }
@@ -556,7 +556,7 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
                 }
                 else
                 {
-                    line.emplace_back(converter.ConvertToString(Languages_[place].GetWord(0)->Form_));
+                    line.emplace_back(converter.ConvertToString(Languages_[place].GetWord(0)->GetForm()));
                 }
             }
             result.emplace_back(line);
@@ -576,7 +576,7 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringLanguageF
         }
         else
         {
-            line.emplace_back(converter.ConvertToString(Languages_[place].GetWord(0)->Form_));
+            line.emplace_back(converter.ConvertToString(Languages_[place].GetWord(0)->GetForm()));
         }
     }
     result.emplace_back(line);
@@ -623,10 +623,10 @@ std::vector<std::vector<std::string>> LanguageFamilySimulator::ToStringCurrentLa
     {
         const auto [wordID, word] = ProtoLanguage_.GetNthWord(i);
 
-        line.emplace_back(getCachedString(word.Form_));
+        line.emplace_back(getCachedString(word.GetForm()));
         for (const auto &[__, language] : Languages_)
         {
-            line.emplace_back(getCachedString(language.GetWord(wordID)->Form_));
+            line.emplace_back(getCachedString(language.GetWord(wordID)->GetForm()));
         }
         result.emplace_back(line);
         line.clear();

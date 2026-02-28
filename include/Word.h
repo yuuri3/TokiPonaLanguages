@@ -2,6 +2,7 @@
 
 #include "Phoneme.h"
 #include "stdafx.h"
+#include "PhonologicalChange.h"
 
 class Language;
 
@@ -11,11 +12,14 @@ class Language;
  */
 struct Word
 {
+private:
     // entry
     //   ID
     int ID;
     //   form
     std::vector<Phoneme> Form_;
+
+public:
     // translation <title,form>
     std::map<std::string, std::vector<std::string>> Translations_;
     // tags
@@ -43,4 +47,7 @@ struct Word
     }
 
     Word Add(const Word &word) const;
+    static Word Create(const std::vector<Phoneme> &form);
+    const std::vector<Phoneme> GetForm() const;
+    void ChangeSound(PhonologicalChange phon, const bool isProhibitSoundDuplication);
 };

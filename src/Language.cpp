@@ -156,23 +156,13 @@ void Language::ApplyPhonologicalChange(const PhonologicalChange &phonologicalCha
     // 1. 音韻変化の適用と音素重複チェックを同時に行う
     for (auto &[wordID, word] : Words_)
     {
-        std::vector<Phoneme> changedWordForm;
-        changedWordForm.reserve(word.Form_.size());
+        auto changedWord = word;
+        changedWord.ChangeSound(phonologicalChange, isProhibitSoundDuplication);
 
-        if (!ChangeWordSound(word.Form_, changedWordForm, phonologicalChange))
-            continue;
-
-        // 子音・母音の重複禁止チェック (isSoundDuplication)
-        if (isProhibitSoundDuplication)
+        if (word != changedWord)
         {
-            if (CheckSoundDuplication(changedWordForm))
-                continue; // 違反していればこの単語の変化は破棄
+            phonologicalChangedWords[wordID] = std::move(changedWord);
         }
-
-        // 変化後の単語候補を一時保存
-        Word changedWord = word;
-        changedWord.Form_ = std::move(changedWordForm); // 所有権を移転してコピーを回避
-        phonologicalChangedWords[wordID] = std::move(changedWord);
     }
 
     // 2. 同音語（ミニマル・ペア）の禁止チェック (isProhibiteMinimalPair)
@@ -183,13 +173,13 @@ void Language::ApplyPhonologicalChange(const PhonologicalChange &phonologicalCha
         for (const auto &[wordID, word] : Words_)
         {
             auto it = phonologicalChangedWords.find(wordID);
-            mimimalPairCount[it != phonologicalChangedWords.end() ? it->second.Form_ : word.Form_]++;
+            mimimalPairCount[it != phonologicalChangedWords.end() ? it->second.GetForm() : word.GetForm()]++;
         }
 
         // 重複が発生する変化を差し止める
         for (auto it = phonologicalChangedWords.begin(); it != phonologicalChangedWords.end();)
         {
-            if (mimimalPairCount[it->second.Form_] > 1)
+            if (mimimalPairCount[it->second.GetForm()] > 1)
                 it = phonologicalChangedWords.erase(it);
             else
                 ++it;
@@ -254,9 +244,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
  */
 void Language::AddWord(const LanguageDifference &dif, const std::vector<Phoneme> &form)
 {
-    Word word;
-    word.Form_ = form;
-    Words_[dif.IntParam_[0]] = word;
+    Words_[dif.IntParam_[0]] = Word::Create(form);
 }
 
 /**
@@ -277,9 +265,7 @@ void Language::AddWord(const std::vector<Phoneme> &form)
         lastWordID++;
     }
 
-    Word word;
-    word.Form_ = form;
-    Words_[lastWordID] = word;
+    Words_[lastWordID] = Word::Create(form);
 }
 
 /**

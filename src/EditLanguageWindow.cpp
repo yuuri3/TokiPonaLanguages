@@ -103,7 +103,7 @@ void EditLanguageWindow::UpdateTable()
         {
             const auto [_, word] = language->GetNthWord(i);
 
-            line.emplace_back(converter.ConvertToString(word.Form_));
+            line.emplace_back(converter.ConvertToString(word.GetForm()));
             std::string translations;
             for (const auto [_, translation] : word.Translations_)
             {
