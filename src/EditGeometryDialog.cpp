@@ -126,6 +126,7 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
     }
     else if (selectedAction == deleteColumn)
     {
-        Unimplemented();
+        Languages_->DeleteGeomgraphicColumn(column);
+        UpdateTable();
     }
 }
