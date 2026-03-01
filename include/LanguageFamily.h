@@ -25,6 +25,7 @@ public:
     const std::vector<std::vector<std::string>> GetPhonemeTable() const;
     void AddDifference(const LanguageDifference &languageDifference);
 
+    void ChangePlaceName(const int row, const int column, const std::string &name);
     void AddGeomgraphicRowAbove(const int row);
     void AddGeomgraphicRowBelow(const int row);
     void DeleteGeomgraphicRow(const int row);
@@ -32,6 +33,7 @@ public:
     void AddGeomgraphicColumnLeft(const int column);
     void DeleteGeomgraphicColumn(const int column);
 
+    const bool Empty() const;
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
     const std::vector<std::vector<std::string>> ToString() const;
 

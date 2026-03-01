@@ -13,6 +13,8 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
     MainTable_->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(MainTable_, &QTableWidget::customContextMenuRequested,
             this, &EditGeometryDialog::ShowContextMenu);
+    connect(MainTable_, &QTableWidget::itemChanged,
+            this, &EditGeometryDialog::OnItemChanged);
 }
 
 /**
@@ -20,7 +22,7 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
  *
  * @param languages
  */
-void EditGeometryDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
+void EditGeometryDialog::SetLanguages(LanguageFamily *languages)
 {
     Languages_ = languages;
     UpdateTable();
@@ -64,9 +66,11 @@ void EditGeometryDialog::Unimplemented()
  */
 void EditGeometryDialog::UpdateTable()
 {
-    if (Languages_ && Place_ && Period_)
+    if (Languages_)
     {
+        MainTable_->blockSignals(true);
         DisplayTable(MainTable_, Languages_->GetGeography(), true);
+        MainTable_->blockSignals(false);
     }
 }
 
@@ -129,4 +133,17 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
         Languages_->DeleteGeomgraphicColumn(column);
         UpdateTable();
     }
+}
+
+/**
+ * @brief セル変更時イベント
+ *
+ * @param item
+ */
+void EditGeometryDialog::OnItemChanged(QTableWidgetItem *item)
+{
+    const int row = item->row();
+    const int column = item->column();
+    const std::string name = item->text().toStdString();
+    Languages_->ChangePlaceName(row, column, name);
 }

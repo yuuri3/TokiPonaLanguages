@@ -108,6 +108,33 @@ void LanguageFamily::AddDifference(const LanguageDifference &languageDifference)
 }
 
 /**
+ * @brief 地名を変更
+ *
+ * @param row 行
+ * @param column 列
+ * @param name 地名
+ */
+void LanguageFamily::ChangePlaceName(const int row, const int column, const std::string &name)
+{
+    if (row < 0 || row >= Geography_.size())
+    {
+        return;
+    }
+    if (column < 0 || column >= Geography_[row].size())
+    {
+        for (int i = 0; i < Geography_[row].size() - column; i++)
+        {
+            Geography_[row].emplace_back("");
+        }
+        Geography_[row].emplace_back(name);
+    }
+    else
+    {
+        Geography_[row][column] = name;
+    }
+}
+
+/**
  * @brief 上行に地理を追加
  *
  */
@@ -195,6 +222,17 @@ void LanguageFamily::DeleteGeomgraphicColumn(const int column)
         }
         line.erase(line.begin() + column);
     }
+}
+
+/**
+ * @brief 語族に情報が不足しているか
+ *
+ * @return true
+ * @return false
+ */
+const bool LanguageFamily::Empty() const
+{
+    return Geography_.empty() || PhonemeTable_.empty();
 }
 
 /**

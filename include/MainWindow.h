@@ -29,8 +29,7 @@ private:
     QMenu *SimulationMenu_;
     QMenu *HelpMenu_;
 
-    // std::optional<LanguageFamilySimulator> Simulator_ = std::nullopt;
-    std::optional<LanguageFamily> Languages_ = std::nullopt;
+    LanguageFamily Languages_;
 
     QAction *SimulateAction_;
     QAction *NewFileAction_;
