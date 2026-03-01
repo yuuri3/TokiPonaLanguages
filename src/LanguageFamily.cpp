@@ -134,6 +134,19 @@ void LanguageFamily::AddGeomgraphicRowBelow(const int row)
 }
 
 /**
+ * @brief 地理行を削除
+ *
+ */
+void LanguageFamily::DeleteGeomgraphicRow(const int row)
+{
+    if (row < 0 || row >= Geography_.size())
+    {
+        return;
+    }
+    Geography_.erase(Geography_.begin() + row);
+}
+
+/**
  * @brief 言語を計算
  *
  * @param place 位置
