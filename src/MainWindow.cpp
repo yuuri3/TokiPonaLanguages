@@ -283,7 +283,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
  */
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (!Languages_.Empty() || IsLanguagesSaved_)
+    if (Languages_.Empty() || IsLanguagesSaved_)
     {
         event->accept();
         return;
