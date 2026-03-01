@@ -121,7 +121,8 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
     }
     else if (selectedAction == addLeftColumn)
     {
-        Unimplemented();
+        Languages_->AddGeomgraphicColumnLeft(column);
+        UpdateTable();
     }
     else if (selectedAction == deleteColumn)
     {

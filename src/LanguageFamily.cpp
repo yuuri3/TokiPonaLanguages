@@ -164,6 +164,23 @@ void LanguageFamily::AddGeomgraphicColumnRight(const int column)
 }
 
 /**
+ * @brief 左列に地理を追加
+ *
+ * @param column
+ */
+void LanguageFamily::AddGeomgraphicColumnLeft(const int column)
+{
+    for (auto &line : Geography_)
+    {
+        if (column < 0 || column >= line.size())
+        {
+            continue;
+        }
+        line.insert(line.begin() + column, "");
+    }
+}
+
+/**
  * @brief 言語を計算
  *
  * @param place 位置
