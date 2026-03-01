@@ -143,7 +143,7 @@ LanguageDifference LanguageDifference::CreateObsoleteWord(const std::string &pla
  *
  * @return const LanguageDifferenceType
  */
-const LanguageDifferenceType LanguageDifference::GetType() const
+const LanguageDifferenceType &LanguageDifference::GetType() const
 {
     return Type_;
 }
@@ -276,7 +276,7 @@ const int LanguageDifference::StringParamSize() const
  * @brief 音韻変化を取得
  *
  */
-const PhonologicalChange LanguageDifference::GetPhonologicalChange() const
+const PhonologicalChange &LanguageDifference::GetPhonologicalChange() const
 {
     return PhonologicalChanges_;
 }
