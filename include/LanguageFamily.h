@@ -33,6 +33,10 @@ public:
     void AddGeomgraphicColumnLeft(const int column);
     void DeleteGeomgraphicColumn(const int column);
 
+    void AddPeriodAbove(const int period);
+    void AddPeriodBelow(const int period);
+    void RemovePeriod(const int period);
+
     const bool Empty() const;
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
     const std::vector<std::vector<std::string>> ToString() const;

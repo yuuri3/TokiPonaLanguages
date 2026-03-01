@@ -159,6 +159,24 @@ const int LanguageDifference::GetPeriod() const
 }
 
 /**
+ * @brief 時代を1加算
+ *
+ */
+void LanguageDifference::AddPeriod()
+{
+    Period_++;
+}
+
+/**
+ * @brief 時代を1加算
+ *
+ */
+void LanguageDifference::SubPeriod()
+{
+    Period_--;
+}
+
+/**
  * @brief 整数パラメータを取得
  *
  * @param i

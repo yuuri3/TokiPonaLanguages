@@ -261,7 +261,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     const int row = MainTable_->currentRow();
     const int column = MainTable_->currentColumn();
     const std::string place = MainTable_->item(0, column)->text().toStdString();
-    const int period = row;
+    const int period = row - 1;
     if (selectedAction == editAction)
     {
         EditLanguage(place, period);
@@ -373,10 +373,12 @@ void MainWindow::ShowQtLicense()
 void MainWindow::EditPeriod(const std::string place, const int period)
 {
     EditPeriodDialog subWindow(this);
+    subWindow.SetLanguages(&Languages_);
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
 
+    DisplayLanguageFamily(Languages_);
     IsLanguagesSaved_ = false;
 }
 

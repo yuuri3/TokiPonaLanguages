@@ -34,6 +34,9 @@ public:
 
     const LanguageDifferenceType GetType() const;
     const int GetPeriod() const;
+    void AddPeriod();
+    void SubPeriod();
+
     const std::optional<int> IntParam(const int i) const;
     const int IntParamSize() const;
     const std::optional<double> DoubleParam(const int i) const;

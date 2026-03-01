@@ -225,6 +225,60 @@ void LanguageFamily::DeleteGeomgraphicColumn(const int column)
 }
 
 /**
+ * @brief 上に時代を追加
+ *
+ * @param period
+ */
+void LanguageFamily::AddPeriodAbove(const int period)
+{
+    for (auto &diff : languageDifference_)
+    {
+        if (diff.GetPeriod() >= period)
+        {
+            diff.AddPeriod();
+        }
+    }
+}
+
+/**
+ * @brief 上に時代を追加
+ *
+ * @param period
+ */
+void LanguageFamily::AddPeriodBelow(const int period)
+{
+    for (auto &diff : languageDifference_)
+    {
+        if (diff.GetPeriod() > period)
+        {
+            diff.AddPeriod();
+        }
+    }
+}
+
+/**
+ * @brief 時代を削除
+ *
+ * @param period
+ */
+void LanguageFamily::RemovePeriod(const int period)
+{
+    languageDifference_.erase(
+        std::remove_if(languageDifference_.begin(), languageDifference_.end(),
+                       [&](const LanguageDifference &diff)
+                       { return diff.GetPeriod() == period; }),
+        languageDifference_.end());
+
+    for (auto &diff : languageDifference_)
+    {
+        if (diff.GetPeriod() > period)
+        {
+            diff.SubPeriod();
+        }
+    }
+}
+
+/**
  * @brief 語族に情報が不足しているか
  *
  * @return true
@@ -285,9 +339,9 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
 
     for (const auto &diff : languageDifference_)
     {
-        if (diff.GetPeriod() != currentPeriod)
+        while (diff.GetPeriod() > currentPeriod)
         {
-            currentPeriod = diff.GetPeriod();
+            currentPeriod++;
             for (const auto &place : getNonEmptyStrings(GetGeography()))
             {
                 if (languages.count(place) == 0 || languages[place].Empty())
