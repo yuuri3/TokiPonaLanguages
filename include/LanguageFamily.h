@@ -28,6 +28,7 @@ public:
     void AddGeomgraphicRowAbove(const int row);
     void AddGeomgraphicRowBelow(const int row);
     void DeleteGeomgraphicRow(const int row);
+    void AddGeomgraphicColumnRight(const int column);
 
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
     const std::vector<std::vector<std::string>> ToString() const;

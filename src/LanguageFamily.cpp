@@ -147,6 +147,23 @@ void LanguageFamily::DeleteGeomgraphicRow(const int row)
 }
 
 /**
+ * @brief 右列に地理を追加
+ *
+ * @param column
+ */
+void LanguageFamily::AddGeomgraphicColumnRight(const int column)
+{
+    for (auto &line : Geography_)
+    {
+        if (column < 0 || column >= line.size())
+        {
+            continue;
+        }
+        line.insert(line.begin() + column + 1, "");
+    }
+}
+
+/**
  * @brief 言語を計算
  *
  * @param place 位置
