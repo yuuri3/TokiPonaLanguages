@@ -257,10 +257,10 @@ const int Language::CountWord() const
  *
  * @return std::pair<int, Word>
  */
-const std::pair<int, Word> Language::GetNthWord(const int n) const
+const std::pair<const int, Word> &Language::GetNthWord(const int n) const
 {
     auto it = std::next(Words_.begin(), n);
-    return {it->first, it->second};
+    return *it;
 }
 
 /**
@@ -269,12 +269,12 @@ const std::pair<int, Word> Language::GetNthWord(const int n) const
  * @param wordID
  * @return const Word
  */
-const std::optional<Word> Language::GetWord(const int wordID) const
+const Word *Language::GetWord(const int wordID) const
 {
     auto it = Words_.find(wordID);
     if (it == Words_.end())
-        return std::nullopt;
-    return it->second;
+        return nullptr;
+    return &(it->second);
 }
 
 /**
