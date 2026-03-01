@@ -25,6 +25,8 @@ public:
     const std::vector<std::vector<std::string>> GetPhonemeTable() const;
     void AddDifference(const LanguageDifference &languageDifference);
 
+    void AddGeomgraphicRowAbove(const int row);
+
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
     const std::vector<std::vector<std::string>> ToString() const;
 

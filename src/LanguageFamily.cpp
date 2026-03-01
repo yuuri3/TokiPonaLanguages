@@ -108,6 +108,19 @@ void LanguageFamily::AddDifference(const LanguageDifference &languageDifference)
 }
 
 /**
+ * @brief 上行に地理を追加
+ *
+ */
+void LanguageFamily::AddGeomgraphicRowAbove(const int row)
+{
+    if (row < 0 || row >= Geography_.size())
+    {
+        return;
+    }
+    Geography_.insert(Geography_.begin() + row, std::vector<std::string>());
+}
+
+/**
  * @brief 言語を計算
  *
  * @param place 位置

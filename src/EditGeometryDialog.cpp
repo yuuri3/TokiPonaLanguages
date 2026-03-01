@@ -76,6 +76,10 @@ void EditGeometryDialog::UpdateTable()
  */
 void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
 {
+    if (!Languages_)
+    {
+        return;
+    }
     // クリックされた位置のアイテムを取得
     QModelIndex index = MainTable_->indexAt(pos);
     if (!index.isValid())
@@ -97,7 +101,8 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
 
     if (selectedAction == addUpRow)
     {
-        Unimplemented();
+        Languages_->AddGeomgraphicRowAbove(row);
+        UpdateTable();
     }
     else if (selectedAction == addDownRow)
     {
