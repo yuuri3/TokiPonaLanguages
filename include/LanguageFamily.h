@@ -21,8 +21,8 @@ private:
 
 public:
     static LanguageFamily Create(const std::vector<std::vector<std::string>> &geography, const std::vector<std::vector<std::string>> &phonemeTable);
-    const std::vector<std::vector<std::string>> GetGeography() const;
-    const std::vector<std::vector<std::string>> GetPhonemeTable() const;
+    const std::vector<std::vector<std::string>> &GetGeography() const;
+    const std::vector<std::vector<std::string>> &GetPhonemeTable() const;
     void AddDifference(const LanguageDifference &languageDifference);
 
     void ChangePlaceName(const int row, const int column, const std::string &name);

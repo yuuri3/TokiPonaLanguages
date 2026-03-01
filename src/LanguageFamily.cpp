@@ -82,7 +82,7 @@ LanguageFamily LanguageFamily::Create(const std::vector<std::vector<std::string>
  *
  * @return const std::vector<std::vector<std::string>>
  */
-const std::vector<std::vector<std::string>> LanguageFamily::GetGeography() const
+const std::vector<std::vector<std::string>> &LanguageFamily::GetGeography() const
 {
     return Geography_;
 }
@@ -92,7 +92,7 @@ const std::vector<std::vector<std::string>> LanguageFamily::GetGeography() const
  *
  * @return const std::vector<std::vector<std::string>>
  */
-const std::vector<std::vector<std::string>> LanguageFamily::GetPhonemeTable() const
+const std::vector<std::vector<std::string>> &LanguageFamily::GetPhonemeTable() const
 {
     return PhonemeTable_;
 }
