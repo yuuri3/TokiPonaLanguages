@@ -10,7 +10,7 @@ class EditGeometryDialog : public QDialog
 public:
     EditGeometryDialog(QWidget *parent = nullptr);
     ~EditGeometryDialog() = default;
-    void SetLanguages(LanguageFamily *languages);
+    void SetLanguages(std::shared_ptr<LanguageFamily> languages);
     void SetPlace(const std::string &place);
     void SetPeriod(const int period);
 
@@ -20,7 +20,7 @@ private slots:
     void OnItemChanged(QTableWidgetItem *item);
 
 private:
-    LanguageFamily *Languages_;
+    std::shared_ptr<LanguageFamily> Languages_;
     std::string Place_;
     int Period_;
 

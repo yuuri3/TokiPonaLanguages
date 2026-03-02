@@ -22,7 +22,7 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
  *
  * @param languages
  */
-void EditGeometryDialog::SetLanguages(LanguageFamily *languages)
+void EditGeometryDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
 {
     Languages_ = languages;
     UpdateTable();

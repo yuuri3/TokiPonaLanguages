@@ -26,7 +26,7 @@ EditPeriodDialog::EditPeriodDialog(QWidget *parent)
  *
  * @param languages
  */
-void EditPeriodDialog::SetLanguages(LanguageFamily *languages)
+void EditPeriodDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
 {
     Languages_ = languages;
 }

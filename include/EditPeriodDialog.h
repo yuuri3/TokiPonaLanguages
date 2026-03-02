@@ -10,7 +10,7 @@ class EditPeriodDialog : public QDialog
 public:
     EditPeriodDialog(QWidget *parent = nullptr);
     ~EditPeriodDialog() = default;
-    void SetLanguages(LanguageFamily *languages);
+    void SetLanguages(std::shared_ptr<LanguageFamily> languages);
     void SetPlace(const std::string &place);
     void SetPeriod(const int period);
 
@@ -21,7 +21,7 @@ private slots:
     void Remove();
 
 private:
-    LanguageFamily *Languages_;
+    std::shared_ptr<LanguageFamily> Languages_;
     std::optional<std::string> Place_;
     std::optional<int> Period_;
 
