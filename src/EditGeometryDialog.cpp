@@ -9,6 +9,12 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
 
     MainTable_ = new QTableWidget(this);
     layout->addWidget(MainTable_);
+
+    MainTable_->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(MainTable_, &QTableWidget::customContextMenuRequested,
+            this, &EditGeometryDialog::ShowContextMenu);
+    connect(MainTable_, &QTableWidget::itemChanged,
+            this, &EditGeometryDialog::OnItemChanged);
 }
 
 /**
@@ -16,7 +22,7 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
  *
  * @param languages
  */
-void EditGeometryDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
+void EditGeometryDialog::SetLanguages(LanguageFamily *languages)
 {
     Languages_ = languages;
     UpdateTable();
@@ -60,8 +66,84 @@ void EditGeometryDialog::Unimplemented()
  */
 void EditGeometryDialog::UpdateTable()
 {
-    if (Languages_ && Place_ && Period_)
+    if (Languages_)
     {
-        DisplayTable(MainTable_, Languages_->GetGeography());
+        MainTable_->blockSignals(true);
+        DisplayTable(MainTable_, Languages_->GetGeography(), true);
+        MainTable_->blockSignals(false);
     }
+}
+
+/**
+ * @brief 表右クリック時イベント
+ *
+ */
+void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
+{
+    if (!Languages_)
+    {
+        return;
+    }
+    // クリックされた位置のアイテムを取得
+    QModelIndex index = MainTable_->indexAt(pos);
+    if (!index.isValid())
+        return; // セルのない場所なら何もしない
+
+    QMenu menu(this);
+    QAction *addUpRow = menu.addAction("上に行追加");
+    QAction *addDownRow = menu.addAction("下に行追加");
+    QAction *deleteRow = menu.addAction("行削除");
+    QAction *addRightColumn = menu.addAction("右に列追加");
+    QAction *addLeftColumn = menu.addAction("左に列追加");
+    QAction *deleteColumn = menu.addAction("列削除");
+
+    // メニューを表示し、選ばれたアクションを取得
+    QAction *selectedAction = menu.exec(MainTable_->viewport()->mapToGlobal(pos));
+
+    const int row = index.row();
+    const int column = index.column();
+
+    if (selectedAction == addUpRow)
+    {
+        Languages_->AddGeomgraphicRowAbove(row);
+        UpdateTable();
+    }
+    else if (selectedAction == addDownRow)
+    {
+        Languages_->AddGeomgraphicRowBelow(row);
+        UpdateTable();
+    }
+    else if (selectedAction == deleteRow)
+    {
+        Languages_->DeleteGeomgraphicRow(row);
+        UpdateTable();
+    }
+    else if (selectedAction == addRightColumn)
+    {
+        Languages_->AddGeomgraphicColumnRight(column);
+        UpdateTable();
+    }
+    else if (selectedAction == addLeftColumn)
+    {
+        Languages_->AddGeomgraphicColumnLeft(column);
+        UpdateTable();
+    }
+    else if (selectedAction == deleteColumn)
+    {
+        Languages_->DeleteGeomgraphicColumn(column);
+        UpdateTable();
+    }
+}
+
+/**
+ * @brief セル変更時イベント
+ *
+ * @param item
+ */
+void EditGeometryDialog::OnItemChanged(QTableWidgetItem *item)
+{
+    const int row = item->row();
+    const int column = item->column();
+    const std::string name = item->text().toStdString();
+    Languages_->ChangePlaceName(row, column, name);
 }

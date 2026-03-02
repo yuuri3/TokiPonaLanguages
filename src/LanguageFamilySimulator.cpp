@@ -139,7 +139,7 @@ void LanguageFamilySimulator::SetProtoLanguageOnGeography(
 
     for (int i = 0; i < protoLanguage.CountWord(); i++)
     {
-        const auto [wordID, word] = protoLanguage.GetNthWord(i);
+        const auto &[wordID, word] = protoLanguage.GetNthWord(i);
 
         LanguageFamily_.AddDifference(LanguageDifference::CreateAddWord(startPlace, Period_, wordID, converter.ConvertToString(word.GetForm())));
     }
@@ -163,7 +163,7 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
 
     for (int i = 0; i < language.CountWord(); i++)
     {
-        const auto [_, word] = language.GetNthWord(i);
+        const auto &[_, word] = language.GetNthWord(i);
 
         words.emplace_back(converter.ConvertToString(word.GetForm()));
     }
@@ -241,7 +241,7 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
                     // ログ
                     for (int i = 0; i < language2.CountWord(); i++)
                     {
-                        const auto [wordID, word] = language2.GetNthWord(i);
+                        const auto &[wordID, _] = language2.GetNthWord(i);
 
                         const auto dif = LanguageDifference::CreateLoanword(languageIterator2->first, languageIterator1->first, Period_, wordID, wordID);
                         LanguageFamily_.AddDifference(dif);
@@ -254,7 +254,7 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
                     // ログ
                     for (int i = 0; i < language1.CountWord(); i++)
                     {
-                        const auto [wordID, word] = language1.GetNthWord(i);
+                        const auto &[wordID, _] = language1.GetNthWord(i);
 
                         const auto dif = LanguageDifference::CreateLoanword(languageIterator1->first, languageIterator2->first, Period_, wordID, wordID);
                         LanguageFamily_.AddDifference(dif);
@@ -270,7 +270,7 @@ void LanguageFamilySimulator::LoanwordRandom(const int nLoanword, const double p
 
             for (int i = 0; i < targetLanguage->CountWord(); i++)
             {
-                const auto [targetWordID, _] = targetLanguage->GetNthWord(i);
+                const auto &[targetWordID, _] = targetLanguage->GetNthWord(i);
 
                 // 借用率は 0.5 で固定
                 if (getRandomInt(0, 1) != 0)

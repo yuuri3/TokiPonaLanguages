@@ -31,8 +31,8 @@ public:
     const bool IsStronger(const Language &lang) const;
     const LanguageDifference ChangeStrength(const std::string &place, const int period);
     const int CountWord() const;
-    const std::pair<int, Word> GetNthWord(const int n) const;
-    const std::optional<Word> GetWord(const int wordID) const;
+    const std::pair<const int, Word> &GetNthWord(const int n) const;
+    const Word *GetWord(const int wordID) const;
     const bool Empty() const;
 };
 

@@ -138,8 +138,10 @@ std::vector<std::string> getNonEmptyStrings(const std::vector<std::vector<std::s
  * @param table 表
  * @param data データ
  */
-void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string>> &data)
+void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string>> &data, const bool IsEdit)
 {
+    constexpr int CELL_HEIGHT = 30;
+    constexpr int CELL_WIDTH = 30;
     table->clear();
     table->setRowCount(0);
     table->setColumnCount(0);
@@ -160,20 +162,30 @@ void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string
         // 3. データの流し込み
         for (int i = 0; i < rows; ++i)
         {
-            for (int j = 0; j < data[i].size(); ++j)
+            for (int j = 0; j < cols; ++j)
             {
-                // std::string から QString へ変換してセット
-                QString content = QString::fromStdString(data[i][j]);
-                table->setItem(i, j, new QTableWidgetItem(content));
+                if (j < data[i].size())
+                {
+                    // std::string から QString へ変換してセット
+                    QString content = QString::fromStdString(data[i][j]);
+                    table->setItem(i, j, new QTableWidgetItem(content));
+                }
+                else
+                {
+                    table->setItem(i, j, new QTableWidgetItem(""));
+                }
             }
         }
     }
 
     table->verticalHeader()->setVisible(false);
     table->horizontalHeader()->setVisible(false);
-    table->resizeColumnsToContents();
-    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    table->verticalHeader()->setDefaultSectionSize(CELL_HEIGHT);
+    table->horizontalHeader()->setDefaultSectionSize(CELL_WIDTH);
+    if (!IsEdit)
+    {
+        table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    }
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
     table->resizeColumnsToContents();

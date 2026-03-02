@@ -9,7 +9,7 @@ std::vector<std::string> getNonEmptyStrings(const std::vector<std::vector<std::s
 std::string JoinStrs(const std::vector<std::string> &elements, const std::string &delimiter);
 std::string EraseSpace(std::string str);
 
-void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string>> &data);
+void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string>> &data, const bool IsEdit = false);
 void ClearLayout(QLayout *layout);
 void DeleteWidget(QWidget *widget);
 void ClearWidget(QWidget *widget);

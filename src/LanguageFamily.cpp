@@ -82,7 +82,7 @@ LanguageFamily LanguageFamily::Create(const std::vector<std::vector<std::string>
  *
  * @return const std::vector<std::vector<std::string>>
  */
-const std::vector<std::vector<std::string>> LanguageFamily::GetGeography() const
+const std::vector<std::vector<std::string>> &LanguageFamily::GetGeography() const
 {
     return Geography_;
 }
@@ -92,7 +92,7 @@ const std::vector<std::vector<std::string>> LanguageFamily::GetGeography() const
  *
  * @return const std::vector<std::vector<std::string>>
  */
-const std::vector<std::vector<std::string>> LanguageFamily::GetPhonemeTable() const
+const std::vector<std::vector<std::string>> &LanguageFamily::GetPhonemeTable() const
 {
     return PhonemeTable_;
 }
@@ -105,6 +105,188 @@ const std::vector<std::vector<std::string>> LanguageFamily::GetPhonemeTable() co
 void LanguageFamily::AddDifference(const LanguageDifference &languageDifference)
 {
     languageDifference_.emplace_back(languageDifference);
+}
+
+/**
+ * @brief 地名を変更
+ *
+ * @param row 行
+ * @param column 列
+ * @param name 地名
+ */
+void LanguageFamily::ChangePlaceName(const int row, const int column, const std::string &name)
+{
+    if (row < 0 || row >= Geography_.size())
+    {
+        return;
+    }
+    if (column < 0 || column >= Geography_[row].size())
+    {
+        for (int i = 0; i < Geography_[row].size() - column; i++)
+        {
+            Geography_[row].emplace_back("");
+        }
+        Geography_[row].emplace_back(name);
+    }
+    else
+    {
+        Geography_[row][column] = name;
+    }
+}
+
+/**
+ * @brief 上行に地理を追加
+ *
+ */
+void LanguageFamily::AddGeomgraphicRowAbove(const int row)
+{
+    if (row < 0 || row >= Geography_.size())
+    {
+        return;
+    }
+    Geography_.insert(Geography_.begin() + row, std::vector<std::string>());
+}
+
+/**
+ * @brief 下行に地理を追加
+ *
+ */
+void LanguageFamily::AddGeomgraphicRowBelow(const int row)
+{
+    if (row < 0 || row >= Geography_.size())
+    {
+        return;
+    }
+    Geography_.insert(Geography_.begin() + row + 1, std::vector<std::string>());
+}
+
+/**
+ * @brief 地理行を削除
+ *
+ */
+void LanguageFamily::DeleteGeomgraphicRow(const int row)
+{
+    if (row < 0 || row >= Geography_.size())
+    {
+        return;
+    }
+    Geography_.erase(Geography_.begin() + row);
+}
+
+/**
+ * @brief 右列に地理を追加
+ *
+ * @param column
+ */
+void LanguageFamily::AddGeomgraphicColumnRight(const int column)
+{
+    for (auto &line : Geography_)
+    {
+        if (column < 0 || column >= line.size())
+        {
+            continue;
+        }
+        line.insert(line.begin() + column + 1, "");
+    }
+}
+
+/**
+ * @brief 左列に地理を追加
+ *
+ * @param column
+ */
+void LanguageFamily::AddGeomgraphicColumnLeft(const int column)
+{
+    for (auto &line : Geography_)
+    {
+        if (column < 0 || column >= line.size())
+        {
+            continue;
+        }
+        line.insert(line.begin() + column, "");
+    }
+}
+
+/**
+ * @brief 地理の列を削除
+ *
+ * @param column
+ */
+void LanguageFamily::DeleteGeomgraphicColumn(const int column)
+{
+    for (auto &line : Geography_)
+    {
+        if (column < 0 || column >= line.size())
+        {
+            continue;
+        }
+        line.erase(line.begin() + column);
+    }
+}
+
+/**
+ * @brief 上に時代を追加
+ *
+ * @param period
+ */
+void LanguageFamily::AddPeriodAbove(const int period)
+{
+    for (auto &diff : languageDifference_)
+    {
+        if (diff.GetPeriod() >= period)
+        {
+            diff.AddPeriod();
+        }
+    }
+}
+
+/**
+ * @brief 上に時代を追加
+ *
+ * @param period
+ */
+void LanguageFamily::AddPeriodBelow(const int period)
+{
+    for (auto &diff : languageDifference_)
+    {
+        if (diff.GetPeriod() > period)
+        {
+            diff.AddPeriod();
+        }
+    }
+}
+
+/**
+ * @brief 時代を削除
+ *
+ * @param period
+ */
+void LanguageFamily::RemovePeriod(const int period)
+{
+    languageDifference_.erase(
+        std::remove_if(languageDifference_.begin(), languageDifference_.end(),
+                       [&](const LanguageDifference &diff)
+                       { return diff.GetPeriod() == period; }),
+        languageDifference_.end());
+
+    for (auto &diff : languageDifference_)
+    {
+        if (diff.GetPeriod() > period)
+        {
+            diff.SubPeriod();
+        }
+    }
+}
+
+/**
+ * @brief 語族に情報が不足しているか
+ *
+ * @return true
+ * @return false
+ */
+const bool LanguageFamily::Empty() const
+{
+    return Geography_.empty() || PhonemeTable_.empty();
 }
 
 /**
@@ -157,9 +339,9 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
 
     for (const auto &diff : languageDifference_)
     {
-        if (diff.GetPeriod() != currentPeriod)
+        while (diff.GetPeriod() > currentPeriod)
         {
-            currentPeriod = diff.GetPeriod();
+            currentPeriod++;
             for (const auto &place : getNonEmptyStrings(GetGeography()))
             {
                 if (languages.count(place) == 0 || languages[place].Empty())

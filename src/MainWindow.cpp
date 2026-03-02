@@ -138,7 +138,7 @@ void MainWindow::Simulate()
     if (simulator)
     {
         Languages_ = simulator->GetLanguages();
-        DisplayLanguageFamily(*Languages_);
+        DisplayLanguageFamily(Languages_);
     }
 
     IsLanguagesSaved_ = false;
@@ -160,7 +160,7 @@ void MainWindow::DisplayLanguageFamily(const LanguageFamily &languages)
  */
 void MainWindow::SaveFile()
 {
-    if (Languages_)
+    if (!Languages_.Empty())
     {
         QString fileName = QFileDialog::getSaveFileName(
             this,
@@ -172,7 +172,7 @@ void MainWindow::SaveFile()
         {
             return;
         }
-        Languages_->Export(fileName.toStdString());
+        Languages_.Export(fileName.toStdString());
     }
     else
     {
@@ -198,8 +198,8 @@ void MainWindow::OpenFile()
         "CSV Files (*.log)" // フィルタ
     );
     Languages_ = LanguageFamily::Create({{""}}, {{""}});
-    Languages_->Import(fileName.toStdString());
-    DisplayLanguageFamily(*Languages_);
+    Languages_.Import(fileName.toStdString());
+    DisplayLanguageFamily(Languages_);
 
     IsLanguagesSaved_ = true;
 }
@@ -208,7 +208,7 @@ void MainWindow::NewFile()
 {
     WarningUnsaveFile();
     Languages_ = LanguageFamily::Create({{""}}, {{""}});
-    DisplayLanguageFamily(*Languages_);
+    DisplayLanguageFamily(Languages_);
 
     IsLanguagesSaved_ = true;
 }
@@ -219,7 +219,7 @@ void MainWindow::NewFile()
  */
 void MainWindow::WarningUnsaveFile()
 {
-    if (Languages_)
+    if (!Languages_.Empty())
     {
         const auto reply = QMessageBox::warning(
             this,
@@ -234,7 +234,7 @@ void MainWindow::WarningUnsaveFile()
                 QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
                 "CSV Files (*.log);;All Files (*)");
 
-            Languages_->Export(fileName.toStdString());
+            Languages_.Export(fileName.toStdString());
         }
     }
 }
@@ -261,7 +261,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     const int row = MainTable_->currentRow();
     const int column = MainTable_->currentColumn();
     const std::string place = MainTable_->item(0, column)->text().toStdString();
-    const int period = row;
+    const int period = row - 1;
     if (selectedAction == editAction)
     {
         EditLanguage(place, period);
@@ -283,7 +283,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
  */
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (!Languages_ || IsLanguagesSaved_)
+    if (Languages_.Empty() || IsLanguagesSaved_)
     {
         event->accept();
         return;
@@ -333,10 +333,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
  */
 void MainWindow::EditLanguage(const std::string place, const int period)
 {
-    if (Languages_)
+    if (!Languages_.Empty())
     {
         EditLanguageWindow subWindow(this);
-        subWindow.SetLanguages(std::make_shared<LanguageFamily>(*Languages_));
+        subWindow.SetLanguages(std::make_shared<LanguageFamily>(Languages_));
         subWindow.SetPlace(place);
         subWindow.SetPeriod(period);
         subWindow.exec();
@@ -373,10 +373,12 @@ void MainWindow::ShowQtLicense()
 void MainWindow::EditPeriod(const std::string place, const int period)
 {
     EditPeriodDialog subWindow(this);
+    subWindow.SetLanguages(&Languages_);
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
 
+    DisplayLanguageFamily(Languages_);
     IsLanguagesSaved_ = false;
 }
 
@@ -389,10 +391,11 @@ void MainWindow::EditPeriod(const std::string place, const int period)
 void MainWindow::EditGeometry(const std::string place, const int period)
 {
     EditGeometryDialog subWindow(this);
-    subWindow.SetLanguages(std::make_shared<LanguageFamily>(*Languages_));
+    subWindow.SetLanguages(&Languages_);
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
 
+    DisplayLanguageFamily(Languages_);
     IsLanguagesSaved_ = false;
 }

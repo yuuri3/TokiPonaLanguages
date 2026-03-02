@@ -32,15 +32,18 @@ public:
     static LanguageDifference CreateAddCompound(const std::string &place, const int period, const int wordID, const std::vector<int> wordIDs);
     static LanguageDifference CreateObsoleteWord(const std::string &place, const int period, const int wordID);
 
-    const LanguageDifferenceType GetType() const;
+    const LanguageDifferenceType &GetType() const;
     const int GetPeriod() const;
+    void AddPeriod();
+    void SubPeriod();
+
     const std::optional<int> IntParam(const int i) const;
     const int IntParamSize() const;
     const std::optional<double> DoubleParam(const int i) const;
     const int DoubleParamSize() const;
     const std::optional<std::string> StringParam(const int i) const;
     const int StringParamSize() const;
-    const PhonologicalChange GetPhonologicalChange() const;
+    const PhonologicalChange &GetPhonologicalChange() const;
 
     static bool Import(std::ifstream &file, LanguageDifference &dif);
     void Export(std::ofstream &file) const;

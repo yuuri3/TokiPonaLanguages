@@ -96,7 +96,7 @@ void EditLanguageWindow::UpdateTable()
 
         for (int i = 0; i < language->CountWord(); i++)
         {
-            const auto [_, word] = language->GetNthWord(i);
+            const auto &[_, word] = language->GetNthWord(i);
 
             line.emplace_back(converter.ConvertToString(word.GetForm()));
 
@@ -164,7 +164,7 @@ void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
             {
                 return;
             }
-            const auto [wordID, _] = language->GetNthWord(row - 1);
+            const auto &[wordID, _] = language->GetNthWord(row - 1);
 
             EditWordDialog subWindow(this);
             subWindow.SetLanguage(*language);
