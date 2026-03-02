@@ -120,26 +120,17 @@ void EditWordDialog::Unimplemented()
  * @param period 時代
  * @param wordID 単語ID
  */
-void EditWordDialog::Set(const LanguageFamily &languages,
+void EditWordDialog::Set(std::shared_ptr<LanguageFamily> languages,
+                         const Language &language,
                          const std::string &place,
                          const int period,
                          const int wordID)
 {
     Languages_ = languages;
+    Language_ = language;
     Place_ = place;
     Period_ = period;
     WordID_ = wordID;
-    UpdateDialog();
-}
-
-/**
- * @brief 選択した言語をセット
- *
- * @param language
- */
-void EditWordDialog::SetLanguage(const Language &language)
-{
-    Language_ = language;
     UpdateDialog();
 }
 
@@ -149,24 +140,11 @@ void EditWordDialog::SetLanguage(const Language &language)
  */
 void EditWordDialog::UpdateDialog()
 {
-    if (Languages_ && Place_ && Period_ && WordID_)
+    if (Languages_)
     {
-        std::optional<Language> language;
-        if (Language_)
-        {
-            language = Language_;
-        }
-        else
-        {
-            language = Languages_->CalculateLanguage(*Place_, *Period_);
-            if (!language)
-            {
-                return;
-            }
-        }
         PhonemeConverter converter = PhonemeConverter::Create(Languages_->GetPhonemeTable());
 
-        const auto word = language->GetWord(*WordID_);
+        const auto word = Language_.GetWord(WordID_);
         if (!word)
         {
             return;
@@ -217,7 +195,7 @@ void EditWordDialog::UpdateDialog()
         std::vector<std::vector<std::string>> relationsData;
         for (const auto &[title, relatedWordID] : word->GetRealtions())
         {
-            const auto relatedWord = language->GetWord(relatedWordID);
+            const auto relatedWord = Language_.GetWord(relatedWordID);
             if (relatedWord)
             {
                 relationsData.push_back({title, converter.ConvertToString(relatedWord->GetForm())});

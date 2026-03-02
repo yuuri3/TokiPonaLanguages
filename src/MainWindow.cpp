@@ -15,6 +15,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    Languages_ = std::make_shared<LanguageFamily>();
     IsLanguagesSaved_ = true;
 
     const auto appName = QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName();
@@ -137,7 +138,7 @@ void MainWindow::Simulate()
     auto simulator = sub.GetSimulator();
     if (simulator)
     {
-        Languages_ = simulator->GetLanguages();
+        *Languages_ = simulator->GetLanguages();
         DisplayLanguageFamily(Languages_);
     }
 
@@ -148,9 +149,9 @@ void MainWindow::Simulate()
  * @brief 語族をウィンドウに表示
  *
  */
-void MainWindow::DisplayLanguageFamily(const LanguageFamily &languages)
+void MainWindow::DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> languages)
 {
-    const auto table = languages.ToString();
+    const auto table = languages->ToString();
     DisplayTable(MainTable_, table);
 }
 
@@ -160,7 +161,7 @@ void MainWindow::DisplayLanguageFamily(const LanguageFamily &languages)
  */
 void MainWindow::SaveFile()
 {
-    if (!Languages_.Empty())
+    if (!Languages_->Empty())
     {
         QString fileName = QFileDialog::getSaveFileName(
             this,
@@ -172,7 +173,7 @@ void MainWindow::SaveFile()
         {
             return;
         }
-        Languages_.Export(fileName.toStdString());
+        Languages_->Export(fileName.toStdString());
     }
     else
     {
@@ -197,8 +198,8 @@ void MainWindow::OpenFile()
         "C:/",              // 初期表示フォルダ
         "CSV Files (*.log)" // フィルタ
     );
-    Languages_ = LanguageFamily::Create({{""}}, {{""}});
-    Languages_.Import(fileName.toStdString());
+    *Languages_ = LanguageFamily::Create({{""}}, {{""}});
+    Languages_->Import(fileName.toStdString());
     DisplayLanguageFamily(Languages_);
 
     IsLanguagesSaved_ = true;
@@ -207,7 +208,7 @@ void MainWindow::OpenFile()
 void MainWindow::NewFile()
 {
     WarningUnsaveFile();
-    Languages_ = LanguageFamily::Create({{""}}, {{""}});
+    *Languages_ = LanguageFamily::Create({{""}}, {{""}});
     DisplayLanguageFamily(Languages_);
 
     IsLanguagesSaved_ = true;
@@ -219,7 +220,7 @@ void MainWindow::NewFile()
  */
 void MainWindow::WarningUnsaveFile()
 {
-    if (!Languages_.Empty())
+    if (!Languages_->Empty())
     {
         const auto reply = QMessageBox::warning(
             this,
@@ -234,7 +235,7 @@ void MainWindow::WarningUnsaveFile()
                 QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
                 "CSV Files (*.log);;All Files (*)");
 
-            Languages_.Export(fileName.toStdString());
+            Languages_->Export(fileName.toStdString());
         }
     }
 }
@@ -283,7 +284,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
  */
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (Languages_.Empty() || IsLanguagesSaved_)
+    if (Languages_->Empty() || IsLanguagesSaved_)
     {
         event->accept();
         return;
@@ -333,10 +334,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
  */
 void MainWindow::EditLanguage(const std::string place, const int period)
 {
-    if (!Languages_.Empty())
+    if (!Languages_->Empty())
     {
         EditLanguageWindow subWindow(this);
-        subWindow.SetLanguages(std::make_shared<LanguageFamily>(Languages_));
+        subWindow.SetLanguages(Languages_);
         subWindow.SetPlace(place);
         subWindow.SetPeriod(period);
         subWindow.exec();
@@ -373,7 +374,7 @@ void MainWindow::ShowQtLicense()
 void MainWindow::EditPeriod(const std::string place, const int period)
 {
     EditPeriodDialog subWindow(this);
-    subWindow.SetLanguages(&Languages_);
+    subWindow.SetLanguages(Languages_);
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();
@@ -391,7 +392,7 @@ void MainWindow::EditPeriod(const std::string place, const int period)
 void MainWindow::EditGeometry(const std::string place, const int period)
 {
     EditGeometryDialog subWindow(this);
-    subWindow.SetLanguages(&Languages_);
+    subWindow.SetLanguages(Languages_);
     subWindow.SetPlace(place);
     subWindow.SetPeriod(period);
     subWindow.exec();

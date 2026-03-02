@@ -167,8 +167,7 @@ void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
             const auto &[wordID, _] = language->GetNthWord(row - 1);
 
             EditWordDialog subWindow(this);
-            subWindow.SetLanguage(*language);
-            subWindow.Set(*Languages_, *Place_, *Period_, wordID);
+            subWindow.Set(Languages_, *Language_, *Place_, *Period_, wordID);
             subWindow.exec();
         }
     }
