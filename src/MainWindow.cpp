@@ -166,7 +166,7 @@ void MainWindow::SaveFile()
             this,
             "保存先を設定",
             QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
-            "CSV Files (*.log);;All Files (*)");
+            "ULang Files (*.ulng)");
 
         if (fileName.isEmpty())
         {
