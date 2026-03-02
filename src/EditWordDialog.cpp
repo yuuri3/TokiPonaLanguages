@@ -293,7 +293,7 @@ void EditWordDialog::AddRelationsButtonPushed()
  * @brief 行追加
  *
  * @param widget 親ウィジェット
- * @param values 入力値
+ * @param values 入力値（[0]: タイトル, [1]: 内容）
  * @param widths 幅のリスト
  */
 void EditWordDialog::AddLine(QWidget *widget, const std::vector<std::string> &values, const std::vector<int> &widths)
@@ -307,16 +307,30 @@ void EditWordDialog::AddLine(QWidget *widget, const std::vector<std::string> &va
     QWidget *rowContainer = new QWidget(widget);
     QHBoxLayout *subLayout = new QHBoxLayout(rowContainer);
     subLayout->setContentsMargins(0, 0, 0, 0);
-    subLayout->setAlignment(Qt::AlignLeft);
+    subLayout->setAlignment(Qt::AlignTop); // 複数行入力時に左側のボックスが上に寄るように設定
 
     for (size_t i = 0; i < values.size(); i++)
     {
-        auto line = new QLineEdit(rowContainer);
-        line->setText(QString::fromStdString(values[i]));
-        line->setFixedWidth(widths[i]);
-        line->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(line, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
-        subLayout->addWidget(line);
+        // 自由記述(Contents_)セクションの2番目のボックスのみ QTextEdit を使用
+        if (widget == Contents_ && i == 1)
+        {
+            auto textEdit = new QTextEdit(rowContainer);
+            textEdit->setPlainText(QString::fromStdString(values[i]));
+            textEdit->setFixedWidth(widths[i]);
+            textEdit->setFixedHeight(80); // 複数行用に高さを確保
+            textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
+            connect(textEdit, &QTextEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
+            subLayout->addWidget(textEdit);
+        }
+        else
+        {
+            auto line = new QLineEdit(rowContainer);
+            line->setText(QString::fromStdString(values[i]));
+            line->setFixedWidth(widths[i]);
+            line->setContextMenuPolicy(Qt::CustomContextMenu);
+            connect(line, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
+            subLayout->addWidget(line);
+        }
     }
 
     widget->layout()->addWidget(rowContainer);
@@ -329,31 +343,34 @@ void EditWordDialog::AddLine(QWidget *widget, const std::vector<std::string> &va
  */
 void EditWordDialog::ClickLine(const QPoint &pos)
 {
-    QLineEdit *senderLineEdit = qobject_cast<QLineEdit *>(sender());
-    if (!senderLineEdit)
+    // QLineEdit か QTextEdit かを問わず QWidget として取得
+    QWidget *senderWidget = qobject_cast<QWidget *>(sender());
+    if (!senderWidget)
         return;
 
     QMenu menu(this);
     QAction *addAction = menu.addAction("追加");
     QAction *removeAction = menu.addAction("削除");
 
-    QAction *selectedAction = menu.exec(senderLineEdit->mapToGlobal(pos));
+    QAction *selectedAction = menu.exec(senderWidget->mapToGlobal(pos));
 
     if (selectedAction == addAction)
     {
-        // 階層を遡って親ウィジェットを取得
-        QWidget *rowContainer = senderLineEdit->parentWidget();
+        QWidget *rowContainer = senderWidget->parentWidget();
         QWidget *targetWidget = rowContainer->parentWidget();
 
-        // 列数を判定
-        int colCount = rowContainer->findChildren<QLineEdit *>().count();
-        auto widths = (colCount == 1) ? ONE_WIDTH : TWO_WIDTHS;
-        std::vector<std::string> newLine(colCount, "");
-        AddLine(targetWidget, newLine, widths);
+        // 1つの rowContainer 内にある入力要素（QLineEdit と QTextEdit）の合計数を取得
+        int boxCount = rowContainer->findChildren<QLineEdit *>().count() +
+                       rowContainer->findChildren<QTextEdit *>().count();
+
+        // ボックスの数に応じた幅設定を維持
+        auto widths = (boxCount == 1) ? ONE_WIDTH : TWO_WIDTHS;
+        std::vector<std::string> newValues(boxCount, "");
+        AddLine(targetWidget, newValues, widths);
     }
     else if (selectedAction == removeAction)
     {
-        QWidget *rowContainer = senderLineEdit->parentWidget();
+        QWidget *rowContainer = senderWidget->parentWidget();
         if (rowContainer)
         {
             DeleteWidget(rowContainer);

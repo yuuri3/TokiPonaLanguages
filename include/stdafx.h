@@ -26,3 +26,4 @@
 #include <QApplication>
 #include <QLabel>
 #include <QLayoutItem>
+#include <QTextEdit>
