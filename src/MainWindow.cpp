@@ -229,7 +229,7 @@ void MainWindow::OpenFile()
 
 void MainWindow::NewFile()
 {
-    if (WarningUnsaveFile())
+    if (IsLanguagesSaved_ || WarningUnsaveFile())
     {
         *Languages_ = LanguageFamily::Create({{"0"}}, {{""}});
         DisplayLanguageFamily(Languages_);
