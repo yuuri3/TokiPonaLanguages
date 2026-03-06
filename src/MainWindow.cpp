@@ -385,7 +385,7 @@ void MainWindow::EditLanguage(const std::string place, const int period)
 void MainWindow::ShowVersion()
 {
     QMessageBox::about(this, "バージョン情報",
-                       QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName() + "<p>Copyright 2026 フクロウナギ</p>");
+                       QString::fromStdString(APPLICATION_NAME + APPLICATION_VERSION));
 }
 
 /**
