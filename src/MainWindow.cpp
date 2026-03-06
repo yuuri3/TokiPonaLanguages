@@ -18,8 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     Languages_ = std::make_shared<LanguageFamily>();
     IsLanguagesSaved_ = true;
 
-    const auto appName = QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName();
-    setWindowTitle(appName);
+    setWindowTitle(QString::fromStdString(APPLICATION_NAME));
 
     // * メニューバー
     MenuBar_ = new QMenuBar(this);

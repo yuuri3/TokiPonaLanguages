@@ -2,6 +2,8 @@
 
 #include "stdafx.h"
 
+static std::string APPLICATION_NAME = "うなぎエディタ";
+
 std::vector<std::vector<std::string>> readCSV(const std::string &filename);
 bool writeCSV(const std::string &filename, const std::vector<std::vector<std::string>> &data);
 std::vector<std::pair<std::string, std::string>> getAdjacencies(const std::vector<std::vector<std::string>> &data);

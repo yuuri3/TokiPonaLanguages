@@ -1,9 +1,9 @@
 #include "UnimplementedDialog.h"
+#include "Utility.h"
 
 UnimplementedDialog::UnimplementedDialog(QWidget *parent)
 {
-    const auto appName = QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName();
-    setWindowTitle(appName);
+    setWindowTitle(QString::fromStdString(APPLICATION_NAME));
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
