@@ -1,6 +1,9 @@
 #include "EditLanguageWindow.h"
 #include "UnimplementedDialog.h"
 #include "EditWordDialog.h"
+#include "PhonemeConverter.h"
+#include "LanguageFamily.h"
+#include "Utility.h"
 
 EditLanguageWindow::EditLanguageWindow(QWidget *parent)
 {

@@ -6,6 +6,7 @@
 #include "EditLanguageWindow.h"
 #include "EditPeriodDialog.h"
 #include "EditGeometryDialog.h"
+#include "HelpDialog.h"
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -18,8 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     Languages_ = std::make_shared<LanguageFamily>();
     IsLanguagesSaved_ = true;
 
-    const auto appName = QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName();
-    setWindowTitle(appName);
+    setWindowTitle(QString::fromStdString(APPLICATION_NAME));
 
     // * メニューバー
     MenuBar_ = new QMenuBar(this);
@@ -58,6 +58,16 @@ MainWindow::MainWindow(QWidget *parent)
     EditMenu_->addAction(LoanwordAction_);
     connect(LoanwordAction_, &QAction::triggered, this, &MainWindow::Unimplemented);
 
+    //     * 地理編集
+    EditGeometry_ = new QAction("地理編集", this);
+    EditMenu_->addAction(EditGeometry_);
+    connect(EditGeometry_, &QAction::triggered, this, &MainWindow::Unimplemented);
+
+    //     * 時間軸編集
+    EditPeriod_ = new QAction("時間軸編集", this);
+    EditMenu_->addAction(EditPeriod_);
+    connect(EditPeriod_, &QAction::triggered, this, &MainWindow::Unimplemented);
+
     //   * シミュレーションメニュー
     SimulationMenu_ = MenuBar_->addMenu("シミュレーション");
 
@@ -72,7 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
     //     * ヘルプ
     HelpAction_ = new QAction("ヘルプ", this);
     HelpMenu_->addAction(HelpAction_);
-    connect(HelpAction_, &QAction::triggered, this, &MainWindow::Unimplemented);
+    connect(HelpAction_, &QAction::triggered, this, &MainWindow::ShowHelp);
 
     //     * バージョン情報
     VersionAction_ = new QAction("バージョン情報", this);
@@ -97,6 +107,8 @@ MainWindow::MainWindow(QWidget *parent)
     MainTable_->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(MainTable_, &QTableWidget::customContextMenuRequested,
             this, &MainWindow::ShowContextMenu);
+
+    DisplayLanguageFamily(Languages_);
 
     // レイアウト調整
     constexpr int BUTTON_HEIGHT = 30;
@@ -151,8 +163,18 @@ void MainWindow::Simulate()
  */
 void MainWindow::DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> languages)
 {
+    SaveFileAction_->setEnabled(false);
+    if (languages->Empty())
+    {
+        return;
+    }
     const auto table = languages->ToString();
     DisplayTable(MainTable_, table);
+
+    if (!table.empty())
+    {
+        SaveFileAction_->setEnabled(true);
+    }
 }
 
 /**
@@ -278,6 +300,16 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
 }
 
 /**
+ * @brief ヘルプ起動
+ *
+ */
+void MainWindow::ShowHelp()
+{
+    HelpDialog subWindow(this);
+    subWindow.exec();
+}
+
+/**
  * @brief アプリクローズ時イベント
  *
  * @param event
@@ -353,7 +385,7 @@ void MainWindow::EditLanguage(const std::string place, const int period)
 void MainWindow::ShowVersion()
 {
     QMessageBox::about(this, "バージョン情報",
-                       QFileInfo(QCoreApplication::applicationFilePath()).completeBaseName() + "<p>Copyright 2026 フクロウナギ</p>");
+                       QString::fromStdString(APPLICATION_NAME + APPLICATION_VERSION));
 }
 
 /**

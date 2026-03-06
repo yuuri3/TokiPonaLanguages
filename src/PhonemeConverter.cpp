@@ -1,5 +1,6 @@
 #include "PhonemeConverter.h"
 #include "Random.h"
+#include "Language.h"
 
 PhonemeConverter PhonemeConverter::Create(const std::vector<std::vector<std::string>> &phonemeTable)
 {

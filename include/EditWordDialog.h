@@ -1,9 +1,8 @@
 #pragma once
 
 #include "stdafx.h"
-#include "Word.h"
-#include "PhonemeConverter.h"
 #include "LanguageFamily.h"
+#include "Language.h"
 
 class EditWordDialog : public QDialog
 {

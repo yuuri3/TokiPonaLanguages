@@ -1,11 +1,5 @@
 #include "SimulationDialog.h"
-#include <QFormLayout>
-#include <QSpinBox>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QMessageBox>
+#include "Evolution.h"
 
 namespace
 {

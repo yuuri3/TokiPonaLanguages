@@ -2,9 +2,9 @@
 
 #include "Phoneme.h"
 #include "stdafx.h"
-#include "PhonologicalChange.h"
 
 class Language;
+class PhonologicalChange;
 
 /**
  * @brief 単語

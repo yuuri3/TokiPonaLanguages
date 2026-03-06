@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Utility.h"
-#include "Random.h"
-#include "PhonemeConverter.h"
 #include "LanguageDifference.h"
+
+class Language;
 
 /**
  * @brief 語族

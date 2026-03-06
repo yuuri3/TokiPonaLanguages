@@ -18,11 +18,6 @@ set(EXE_VERSION "0.03.02.0")
 string(REPLACE "." "," APP_VERSION_COMMA "${APP_VERSION},0") 
 string(REPLACE "." "," EXE_VERSION_COMMA "${EXE_VERSION}") 
 
-# 2. テンプレートから実際の .rc ファイルを生成
-configure_file(version.rc.in version.rc @ONLY)
-
-set(RESOURCE_FILES build/version.rc)
-
 if(WIN32)
     set(UI_RESOURCES "resource.rc")
     add_executable(Unagi-Conlang-Editor WIN32 main.cpp ${UI_RESOURCES} ${RESOURCE_FILES})

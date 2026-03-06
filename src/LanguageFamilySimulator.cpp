@@ -1,8 +1,7 @@
 #include "LanguageFamilySimulator.h"
-#include <set>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
+#include "Random.h"
+#include "PhonemeConverter.h"
+#include "Utility.h"
 
 namespace
 {

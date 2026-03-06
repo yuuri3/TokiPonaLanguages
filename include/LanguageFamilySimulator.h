@@ -1,10 +1,7 @@
 #pragma once
 
-#include "Utility.h"
-#include "Random.h"
-#include "PhonemeConverter.h"
-#include "LanguageDifference.h"
 #include "LanguageFamily.h"
+#include "Language.h"
 #include "stdafx.h"
 
 /**

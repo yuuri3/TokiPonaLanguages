@@ -1,5 +1,6 @@
 #include "EditPeriodDialog.h"
 #include "UnimplementedDialog.h"
+#include "LanguageFamily.h"
 
 EditPeriodDialog::EditPeriodDialog(QWidget *parent)
 {

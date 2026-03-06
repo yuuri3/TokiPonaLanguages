@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LanguageFamilySimulator.h"
+#include "LanguageFamily.h"
 #include "stdafx.h"
 
 class MainWindow : public QMainWindow
@@ -18,6 +18,7 @@ private slots:
     void OpenFile();
     void NewFile();
     void ShowContextMenu(const QPoint &pos);
+    void ShowHelp();
     void ShowVersion();
     void ShowQtLicense();
 
@@ -37,6 +38,8 @@ private:
     QAction *SaveFileAction_;
     QAction *PhonologicalChangeAction_;
     QAction *LoanwordAction_;
+    QAction *EditGeometry_;
+    QAction *EditPeriod_;
     QAction *HelpAction_;
     QAction *VersionAction_;
     QAction *QtAction_;
