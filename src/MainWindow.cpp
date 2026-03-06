@@ -218,8 +218,8 @@ void MainWindow::OpenFile()
         QString fileName = QFileDialog::getOpenFileName(
             this,
             "ファイルを選択",
-            "C:/",              // 初期表示フォルダ
-            "CSV Files (*.log)" // フィルタ
+            "C:/",                            // 初期表示フォルダ
+            "Supported Files (*.ulng *.json)" // フィルタ
         );
         *Languages_ = LanguageFamily::Create({{""}}, {{""}});
         Languages_->Import(fileName.toStdString());
