@@ -49,7 +49,7 @@ private:
     bool IsLanguagesSaved_;
 
     void DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> languages);
-    void WarningUnsaveFile();
+    bool WarningUnsaveFile();
     void EditLanguage(const std::string place, const int period);
     void EditPeriod(const std::string place, const int period);
     void EditGeometry(const std::string place, const int period);

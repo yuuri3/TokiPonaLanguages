@@ -229,18 +229,20 @@ void MainWindow::OpenFile()
 
 void MainWindow::NewFile()
 {
-    WarningUnsaveFile();
-    *Languages_ = LanguageFamily::Create({{""}}, {{""}});
-    DisplayLanguageFamily(Languages_);
+    if (WarningUnsaveFile())
+    {
+        *Languages_ = LanguageFamily::Create({{""}}, {{""}});
+        DisplayLanguageFamily(Languages_);
 
-    IsLanguagesSaved_ = true;
+        IsLanguagesSaved_ = true;
+    }
 }
 
 /**
  * @brief 未保存のファイルを警告
- *
+ * * @return 保存処理が完了、または保存せずに続行する場合は true。キャンセルされた場合は false。
  */
-void MainWindow::WarningUnsaveFile()
+bool MainWindow::WarningUnsaveFile()
 {
     if (!Languages_->Empty())
     {
@@ -248,7 +250,8 @@ void MainWindow::WarningUnsaveFile()
             this,
             "",
             "現在開いているファイルを保存しますか。",
-            QMessageBox::Yes | QMessageBox::No);
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
         if (reply == QMessageBox::Yes)
         {
             QString fileName = QFileDialog::getSaveFileName(
@@ -257,9 +260,24 @@ void MainWindow::WarningUnsaveFile()
                 QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
                 "CSV Files (*.log);;All Files (*)");
 
+            if (fileName.isEmpty())
+            {
+                // 保存ダイアログでキャンセルされた場合
+                return false;
+            }
+
             Languages_->Export(fileName.toStdString());
+            return true;
+        }
+        else if (reply == QMessageBox::Cancel)
+        {
+            // キャンセルボタンまたは×ボタンで終了した場合
+            return false;
         }
     }
+
+    // Languages_ が空、または「いいえ（保存しない）」を選択した場合
+    return true;
 }
 
 /**
