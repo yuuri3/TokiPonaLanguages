@@ -62,6 +62,11 @@ MainWindow::MainWindow(QWidget *parent)
     EditMenu_->addAction(EditGeometry_);
     connect(EditGeometry_, &QAction::triggered, this, &MainWindow::Unimplemented);
 
+    //     * 時間軸編集
+    EditPeriod_ = new QAction("時間軸編集", this);
+    EditMenu_->addAction(EditPeriod_);
+    connect(EditPeriod_, &QAction::triggered, this, &MainWindow::Unimplemented);
+
     //   * シミュレーションメニュー
     SimulationMenu_ = MenuBar_->addMenu("シミュレーション");
 

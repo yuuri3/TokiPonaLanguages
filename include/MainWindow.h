@@ -38,6 +38,7 @@ private:
     QAction *PhonologicalChangeAction_;
     QAction *LoanwordAction_;
     QAction *EditGeometry_;
+    QAction *EditPeriod_;
     QAction *HelpAction_;
     QAction *VersionAction_;
     QAction *QtAction_;
