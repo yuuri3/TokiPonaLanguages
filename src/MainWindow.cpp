@@ -213,18 +213,20 @@ void MainWindow::SaveFile()
  */
 void MainWindow::OpenFile()
 {
-    WarningUnsaveFile();
-    QString fileName = QFileDialog::getOpenFileName(
-        this,
-        "ファイルを選択",
-        "C:/",              // 初期表示フォルダ
-        "CSV Files (*.log)" // フィルタ
-    );
-    *Languages_ = LanguageFamily::Create({{""}}, {{""}});
-    Languages_->Import(fileName.toStdString());
-    DisplayLanguageFamily(Languages_);
+    if (IsLanguagesSaved_ || WarningUnsaveFile())
+    {
+        QString fileName = QFileDialog::getOpenFileName(
+            this,
+            "ファイルを選択",
+            "C:/",              // 初期表示フォルダ
+            "CSV Files (*.log)" // フィルタ
+        );
+        *Languages_ = LanguageFamily::Create({{""}}, {{""}});
+        Languages_->Import(fileName.toStdString());
+        DisplayLanguageFamily(Languages_);
 
-    IsLanguagesSaved_ = true;
+        IsLanguagesSaved_ = true;
+    }
 }
 
 void MainWindow::NewFile()
