@@ -1,4 +1,4 @@
-#include "..\\include\LanguageDifference.h"
+#include "LanguageDifference.h"
 #include "Utility.h"
 
 namespace

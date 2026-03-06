@@ -1,7 +1,4 @@
-#include "..\\include\Utility.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include "Utility.h"
 
 /**
  * CSVファイルを読み込んで2次元ベクトルで返す関数
