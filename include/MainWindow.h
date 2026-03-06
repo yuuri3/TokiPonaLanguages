@@ -18,6 +18,7 @@ private slots:
     void OpenFile();
     void NewFile();
     void ShowContextMenu(const QPoint &pos);
+    void ShowHelp();
     void ShowVersion();
     void ShowQtLicense();
 

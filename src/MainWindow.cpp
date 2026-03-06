@@ -6,6 +6,7 @@
 #include "EditLanguageWindow.h"
 #include "EditPeriodDialog.h"
 #include "EditGeometryDialog.h"
+#include "HelpDialog.h"
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -81,7 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
     //     * ヘルプ
     HelpAction_ = new QAction("ヘルプ", this);
     HelpMenu_->addAction(HelpAction_);
-    connect(HelpAction_, &QAction::triggered, this, &MainWindow::Unimplemented);
+    connect(HelpAction_, &QAction::triggered, this, &MainWindow::ShowHelp);
 
     //     * バージョン情報
     VersionAction_ = new QAction("バージョン情報", this);
@@ -296,6 +297,16 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     {
         EditGeometry(place, period);
     }
+}
+
+/**
+ * @brief ヘルプ起動
+ *
+ */
+void MainWindow::ShowHelp()
+{
+    HelpDialog subWindow(this);
+    subWindow.exec();
 }
 
 /**

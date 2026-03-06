@@ -1,7 +1,6 @@
 #include "EditWordDialog.h"
 #include "UnimplementedDialog.h"
 #include "LanguageFamilySimulator.h"
-#include <QScrollArea>
 
 EditWordDialog::EditWordDialog(QWidget *parent)
 {

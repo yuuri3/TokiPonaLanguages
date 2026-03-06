@@ -26,6 +26,7 @@ add_library(src
     EditPeriodDialog.cpp
     EditGeometryDialog.cpp
     EditWordDialog.cpp
+    HelpDialog.cpp
     ../include/Language.h
     ../include/LanguageFamilySimulator.h
     ../include/Phoneme.h
@@ -39,6 +40,7 @@ add_library(src
     ../include/EditPeriodDialog.h
     ../include/EditGeometryDialog.h
     ../include/EditWordDialog.h
+    ../include/HelpDialog.h
   )
 
 target_include_directories(src

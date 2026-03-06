@@ -27,3 +27,4 @@
 #include <QLabel>
 #include <QLayoutItem>
 #include <QTextEdit>
+#include <QScrollArea>
