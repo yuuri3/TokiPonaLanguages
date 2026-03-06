@@ -6,6 +6,7 @@
 #include <optional>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 #include <QString>
 #include <QMainWindow>

@@ -9,38 +9,44 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 # ヘッダーファイルもリストに含める
 add_library(src
   SHARED
+    EditGeometryDialog.cpp
+    EditLanguageWindow.cpp
+    EditPeriodDialog.cpp
+    EditWordDialog.cpp
     Evolution.cpp
-    LanguageDifference.cpp
+    HelpDialog.cpp
     Language.cpp
+    LanguageDifference.cpp
     LanguageFamily.cpp
     LanguageFamilySimulator.cpp
+    MainWindow.cpp
     Phoneme.cpp
     PhonemeConverter.cpp
     Random.cpp
+    SimulationDialog.cpp
+    UnimplementedDialog.cpp
     Utility.cpp
     Word.cpp
-    MainWindow.cpp
-    UnimplementedDialog.cpp
-    SimulationDialog.cpp
-    EditLanguageWindow.cpp
-    EditPeriodDialog.cpp
-    EditGeometryDialog.cpp
-    EditWordDialog.cpp
-    HelpDialog.cpp
-    ../include/Language.h
-    ../include/LanguageFamilySimulator.h
-    ../include/Phoneme.h
-    ../include/PhonemeConverter.h
-    ../include/Utility.h
-    ../include/MainWindow.h
-    ../include/UnimplementedDialog.h
-    ../include/SimulationDialog.h
-    ../include/Evolution.h
+    ../include/EditGeometryDialog.h
     ../include/EditLanguageWindow.h
     ../include/EditPeriodDialog.h
-    ../include/EditGeometryDialog.h
     ../include/EditWordDialog.h
+    ../include/Evolution.h
     ../include/HelpDialog.h
+    ../include/Language.h
+    ../include/LanguageDifference.h
+    ../include/LanguageDifferenceType.h
+    ../include/LanguageFamily.h
+    ../include/LanguageFamilySimulator.h
+    ../include/MainWindow.h
+    ../include/Phoneme.h
+    ../include/PhonemeConverter.h
+    ../include/PhoneticEnvironment.h
+    ../include/Random.h
+    ../include/SimulationDialog.h
+    ../include/UnimplementedDialog.h
+    ../include/Utility.h
+    ../include/Word.h
   )
 
 target_include_directories(src

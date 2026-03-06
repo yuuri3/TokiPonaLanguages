@@ -1,4 +1,4 @@
-#include "..\\include\LanguageFamily.h"
+#include "LanguageFamily.h"
 #include "PhonemeConverter.h"
 #include "Language.h"
 #include "Utility.h"
