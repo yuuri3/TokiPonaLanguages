@@ -37,6 +37,7 @@ private:
     QAction *SaveFileAction_;
     QAction *PhonologicalChangeAction_;
     QAction *LoanwordAction_;
+    QAction *EditGeometry_;
     QAction *HelpAction_;
     QAction *VersionAction_;
     QAction *QtAction_;

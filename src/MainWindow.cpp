@@ -57,6 +57,11 @@ MainWindow::MainWindow(QWidget *parent)
     EditMenu_->addAction(LoanwordAction_);
     connect(LoanwordAction_, &QAction::triggered, this, &MainWindow::Unimplemented);
 
+    //     * 地理編集
+    EditGeometry_ = new QAction("地理編集", this);
+    EditMenu_->addAction(EditGeometry_);
+    connect(EditGeometry_, &QAction::triggered, this, &MainWindow::Unimplemented);
+
     //   * シミュレーションメニュー
     SimulationMenu_ = MenuBar_->addMenu("シミュレーション");
 
