@@ -231,7 +231,7 @@ void MainWindow::NewFile()
 {
     if (WarningUnsaveFile())
     {
-        *Languages_ = LanguageFamily::Create({{""}}, {{""}});
+        *Languages_ = LanguageFamily::Create({{"0"}}, {{""}});
         DisplayLanguageFamily(Languages_);
 
         IsLanguagesSaved_ = true;
