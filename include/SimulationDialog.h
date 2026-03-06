@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "Evolution.h"
+#include "LanguageFamilySimulator.h"
 
 class QSpinBox;
 class QLineEdit;

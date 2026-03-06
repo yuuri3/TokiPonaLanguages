@@ -28,3 +28,4 @@
 #include <QLayoutItem>
 #include <QTextEdit>
 #include <QScrollArea>
+#include <QFormLayout>

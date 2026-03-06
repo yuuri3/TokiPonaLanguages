@@ -1,5 +1,6 @@
 #include "..\\include\Word.h"
 #include "..\\include\Language.h"
+#include "PhonologicalChange.h"
 
 namespace
 {

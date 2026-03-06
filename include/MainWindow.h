@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LanguageFamilySimulator.h"
+#include "LanguageFamily.h"
 #include "stdafx.h"
 
 class MainWindow : public QMainWindow

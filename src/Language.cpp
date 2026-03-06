@@ -1,6 +1,7 @@
 #include "Language.h"
 #include "Random.h"
 #include "PhonemeConverter.h"
+#include "LanguageDifference.h"
 
 /**
  * @brief リセット

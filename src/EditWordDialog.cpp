@@ -1,6 +1,8 @@
 #include "EditWordDialog.h"
 #include "UnimplementedDialog.h"
 #include "LanguageFamilySimulator.h"
+#include "PhonemeConverter.h"
+#include "Utility.h"
 
 EditWordDialog::EditWordDialog(QWidget *parent)
 {

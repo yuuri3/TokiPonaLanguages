@@ -1,7 +1,9 @@
 #pragma once
 
 #include "stdafx.h"
-#include "LanguageFamilySimulator.h"
+#include "Language.h"
+
+class LanguageFamily;
 
 class EditLanguageWindow : public QDialog
 {

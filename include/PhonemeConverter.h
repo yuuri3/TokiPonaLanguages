@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Language.h"
+#include "Phoneme.h"
 #include "stdafx.h"
+
+class Language;
 
 /**
  * @brief 音素 <-> 表記変換

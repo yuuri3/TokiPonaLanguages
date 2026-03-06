@@ -1,5 +1,7 @@
 #include "EditGeometryDialog.h"
 #include "UnimplementedDialog.h"
+#include "LanguageFamily.h"
+#include "Utility.h"
 
 EditGeometryDialog::EditGeometryDialog(QWidget *parent)
 {

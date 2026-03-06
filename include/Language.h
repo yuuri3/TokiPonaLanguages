@@ -2,9 +2,9 @@
 
 #include "Word.h"
 #include "stdafx.h"
-#include "LanguageDifference.h"
 
 class PhonemeConverter;
+class LanguageDifference;
 
 /**
  * @brief 言語

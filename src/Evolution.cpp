@@ -1,4 +1,7 @@
 #include "Evolution.h"
+#include "PhonemeConverter.h"
+#include "LanguageFamilySimulator.h"
+#include "Utility.h"
 
 std::optional<LanguageFamilySimulator> evolution(
     const int nLoanword,
