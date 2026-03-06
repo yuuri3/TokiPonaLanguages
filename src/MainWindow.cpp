@@ -97,6 +97,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(MainTable_, &QTableWidget::customContextMenuRequested,
             this, &MainWindow::ShowContextMenu);
 
+    DisplayLanguageFamily(Languages_);
+
     // レイアウト調整
     constexpr int BUTTON_HEIGHT = 30;
     constexpr int BUTTON_WIDTH = 90;
@@ -150,8 +152,18 @@ void MainWindow::Simulate()
  */
 void MainWindow::DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> languages)
 {
+    SaveFileAction_->setEnabled(false);
+    if (languages->Empty())
+    {
+        return;
+    }
     const auto table = languages->ToString();
     DisplayTable(MainTable_, table);
+
+    if (!table.empty())
+    {
+        SaveFileAction_->setEnabled(true);
+    }
 }
 
 /**
