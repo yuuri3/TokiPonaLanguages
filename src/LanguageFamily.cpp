@@ -31,6 +31,13 @@ namespace
 }
 
 /**
+ * @brief ラテンアルファベットの表
+ *
+ */
+std::vector<std::vector<std::string>> LanguageFamily::RomanAlphabetTable =
+    {{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}};
+
+/**
  * @brief 空の語族を作成
  *
  * @param geography 地理

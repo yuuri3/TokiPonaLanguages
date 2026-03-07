@@ -19,6 +19,8 @@ private:
     std::vector<LanguageDifference> languageDifference_;
 
 public:
+    static std::vector<std::vector<std::string>> RomanAlphabetTable;
+
     static LanguageFamily Create(const std::vector<std::vector<std::string>> &geography, const std::vector<std::vector<std::string>> &phonemeTable);
     const std::vector<std::vector<std::string>> &GetGeography() const;
     const std::vector<std::vector<std::string>> &GetPhonemeTable() const;
