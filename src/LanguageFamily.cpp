@@ -5,22 +5,6 @@
 
 namespace
 {
-    // ヘルパー関数：ベクトルをカンマ区切りのリスト形式にする
-    template <typename T>
-    std::string formatYamlList(const std::vector<T> &vec)
-    {
-        if (vec.empty())
-            return "[]";
-        std::stringstream ss;
-        ss << "[";
-        for (size_t i = 0; i < vec.size(); ++i)
-        {
-            ss << vec[i] << (i == vec.size() - 1 ? "" : ", ");
-        }
-        ss << "]";
-        return ss.str();
-    }
-
     // YAMLの [a, b, c] 形式を vector<string> に変換する
     std::vector<std::string> parseYamlList(const std::string &line)
     {
@@ -396,14 +380,14 @@ void LanguageFamily::Export(const std::string &filename)
     file << "Map:\n";
     for (const auto &row : Geography_)
     {
-        file << "  - " << formatYamlList(row) << "\n";
+        file << FormatVector(row) << "\n";
     }
 
     // 3. PhoneticsMap
     file << "PhoneticsMap:\n";
     for (const auto &row : PhonemeTable_)
     {
-        file << "  - " << formatYamlList(row) << "\n";
+        file << FormatVector(row) << "\n";
     }
 
     // 4. LanguageDifferences

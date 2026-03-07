@@ -387,34 +387,17 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
  */
 void LanguageDifference::Export(std::ofstream &file) const
 {
-    file << "  - Section: " << GetPeriod() << "\n";
-    file << "    Type: " << static_cast<int>(GetType()) << "\n";
-
-    file << "    IntParam:\n";
-    for (int i = 0; i < IntParamSize(); i++)
-    {
-        file << "      - " << IntParam(i).value() << "\n";
-    }
-
-    file << "    DoubleParam:\n";
-    for (int i = 0; i < DoubleParamSize(); i++)
-    {
-        file << "      - " << DoubleParam(i).value() << "\n";
-    }
-
-    file << "    StringParam:\n";
-    for (int i = 0; i < StringParamSize(); i++)
-    {
-        file << "      - " << StringParam(i).value() << "\n";
-    }
-
-    file << "    SoundChange:\n";
-    file << "      Before:\n";
-    file << "        Place: " << GetPhonologicalChange().BeforePhoneme_.GetPlace() << "\n";
-    file << "        Mannar: " << GetPhonologicalChange().BeforePhoneme_.GetManner() << "\n";
-    file << "      After:\n";
-    file << "        Place: " << GetPhonologicalChange().AfterPhoneme_.GetPlace() << "\n";
-    file << "        Mannar: " << GetPhonologicalChange().AfterPhoneme_.GetManner() << "\n";
-    file << "      Condition: " << static_cast<int>(GetPhonologicalChange().PhoneticEnvironment_) << "\n";
-    file << "      IsRemove: " << GetPhonologicalChange().IsRemove_ << "\n";
+    file << FormatVector<int>({GetPeriod()}) << "\n";
+    file << FormatVector<int>({ConvertFromLanguageDifferenceType(GetType())}) << "\n";
+    file << FormatVector<int>(IntParam_) << "\n";
+    file << FormatVector<double>(DoubleParam_) << "\n";
+    file << FormatVector<std::string>(StringParam_) << "\n";
+    std::vector<int> soundChange = {
+        GetPhonologicalChange().BeforePhoneme_.GetPlace(),
+        GetPhonologicalChange().BeforePhoneme_.GetManner(),
+        GetPhonologicalChange().AfterPhoneme_.GetPlace(),
+        GetPhonologicalChange().AfterPhoneme_.GetManner(),
+        ConvertFromPhoneticEnvironment(GetPhonologicalChange().PhoneticEnvironment_),
+        GetPhonologicalChange().IsRemove_};
+    file << FormatVector<int>(soundChange) << "\n";
 }

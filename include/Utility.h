@@ -16,3 +16,19 @@ void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string
 void ClearLayout(QLayout *layout);
 void DeleteWidget(QWidget *widget);
 void ClearWidget(QWidget *widget);
+
+template <typename T>
+
+// ヘルパー関数：ベクトルをカンマ区切りのリスト形式にする
+std::string FormatVector(const std::vector<T> &vec)
+{
+    if (vec.empty())
+        return ",";
+    std::stringstream ss;
+    ss << "";
+    for (size_t i = 0; i < vec.size(); ++i)
+    {
+        ss << vec[i] << ", ";
+    }
+    return ss.str();
+}
