@@ -298,3 +298,59 @@ void ClearWidget(QWidget *widget)
         delete oldLayout;
     }
 }
+
+// YAMLの [a, b, c] 形式を vector<string> に変換する
+const std::vector<std::string> ParseVector(const std::string &line)
+{
+    std::vector<std::string> result;
+
+    std::stringstream ss(line);
+    std::string item;
+    while (std::getline(ss, item, ','))
+    {
+        result.push_back(EraseSpace(item));
+    }
+    return result;
+}
+
+const std::vector<int> ParseIntVector(const std::string &line)
+{
+    std::vector<int> result;
+
+    std::stringstream ss(line);
+    std::string item;
+    while (std::getline(ss, item, ','))
+    {
+        try
+        {
+            int param = std::stoi(EraseSpace(item));
+            result.push_back(param);
+        }
+        catch (...)
+        {
+            return {};
+        }
+    }
+    return result;
+}
+
+const std::vector<double> ParseDoubleVector(const std::string &line)
+{
+    std::vector<double> result;
+
+    std::stringstream ss(line);
+    std::string item;
+    while (std::getline(ss, item, ','))
+    {
+        try
+        {
+            double param = std::stod(EraseSpace(item));
+            result.push_back(param);
+        }
+        catch (...)
+        {
+            return {};
+        }
+    }
+    return result;
+}

@@ -5,24 +5,6 @@
 
 namespace
 {
-    // YAMLの [a, b, c] 形式を vector<string> に変換する
-    std::vector<std::string> parseYamlList(const std::string &line)
-    {
-        std::vector<std::string> result;
-        size_t openingParenthesisPosition = line.find('[');
-        size_t closingParenthesisPosition = line.find(']');
-        if (openingParenthesisPosition == std::string::npos || closingParenthesisPosition == std::string::npos)
-            return result;
-
-        std::string content = line.substr(openingParenthesisPosition + 1, closingParenthesisPosition - openingParenthesisPosition - 1);
-        std::stringstream ss(content);
-        std::string item;
-        while (std::getline(ss, item, ','))
-        {
-            result.push_back(EraseSpace(item));
-        }
-        return result;
-    }
 
     /**
      * @brief YAML読み込み
@@ -39,7 +21,7 @@ namespace
         {
             return false;
         }
-        geoLine = parseYamlList(line);
+        geoLine = ParseVector(line);
         if (geoLine.empty())
         {
             return false;
@@ -413,53 +395,31 @@ bool LanguageFamily::Import(const std::string &filename)
     if (!file.is_open())
         return false;
 
-    enum Mode
-    {
-        Mode_Map,
-        Mode_PhonemeTable,
-        Mode_LanguageDifferences,
-    };
-
-    Mode mode;
-    LanguageDifference dif;
-    bool isDifferenceSection = false;
-
     std::string line;
-    try
+
+    // Map
+    if (!std::getline(file, line) || line != "Map:")
+        return false;
+    Geography_.clear();
+    while (std::getline(file, line) && line != "PhoneticsMap:")
     {
-        if (!std::getline(file, line) || line != "Map:")
-        {
-            return false;
-        }
-        // 地理
-        {
-            Geography_.clear();
-            std::vector<std::string> geoLine;
-            while (ImportYAML(file, geoLine))
-            {
-                Geography_.emplace_back(geoLine);
-            }
-        }
-        // 音韻
-        {
-            PhonemeTable_.clear();
-            std::vector<std::string> phonLine;
-            while (ImportYAML(file, phonLine))
-            {
-                PhonemeTable_.emplace_back(phonLine);
-            }
-        }
-        // 差分
-        {
-            languageDifference_.clear();
-            LanguageDifference dif;
-            while (LanguageDifference::Import(file, dif))
-            {
-                languageDifference_.emplace_back(dif);
-            }
-        }
+        Geography_.emplace_back(ParseVector(line));
     }
-    catch (...)
+    // PhoneticsMap
+    PhonemeTable_.clear();
+    while (std::getline(file, line) && line != "LanguageDifferences:")
+    {
+        PhonemeTable_.emplace_back(ParseVector(line));
+    }
+    // LanguageDifferences
+    languageDifference_.clear();
+    LanguageDifference dif;
+    while (LanguageDifference::Import(file, dif))
+    {
+        languageDifference_.emplace_back(dif);
+    }
+    // 途中で終了した場合、読み込み失敗とする
+    if (std::getline(file, line))
     {
         file.close();
         return false;

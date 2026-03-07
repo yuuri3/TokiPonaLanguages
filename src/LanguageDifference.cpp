@@ -289,95 +289,63 @@ const PhonologicalChange &LanguageDifference::GetPhonologicalChange() const
  */
 bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
 {
-    enum SubMode
-    {
-        SubMode_Type,
-        SubMode_Period,
-        SubMode_IntParam,
-        SubMode_DoubleParam,
-        SubMode_StringParam,
-        SubMode_PhonologicalChanges,
-    };
-    SubMode subMode;
-
+    dif = LanguageDifference();
     std::string line;
-    while (std::getline(file, line))
+
+    // Period
     {
-        auto [memberName, memberValue] = splitByColon(line);
-        if (memberName == "- Section")
-        {
-            dif = LanguageDifference();
-            dif.Period_ = std::stoi(memberValue);
-            continue;
-        }
-        else if (memberName == "Type")
-        {
-            dif.Type_ = static_cast<LanguageDifferenceType>(std::stoi(memberValue));
-            continue;
-        }
-        else if (line == "    IntParam:")
-        {
-            subMode = SubMode::SubMode_IntParam;
-            continue;
-        }
-        else if (line == "    DoubleParam:")
-        {
-            subMode = SubMode::SubMode_DoubleParam;
-            continue;
-        }
-        else if (line == "    StringParam:")
-        {
-            subMode = SubMode::SubMode_StringParam;
-            continue;
-        }
-        else if (line == "    SoundChange:")
-        {
-            std::getline(file, line); // Before:
-            std::getline(file, line); // Place:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const int beforePlace = std::stoi(memberValue);
-            std::getline(file, line); // Manner:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const int beforeManner = std::stoi(memberValue);
-
-            std::getline(file, line); // After:
-            std::getline(file, line); // Place:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const int afterPlace = std::stoi(memberValue);
-            std::getline(file, line); // Manner:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const int afterManner = std::stoi(memberValue);
-
-            std::getline(file, line); // Condition:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const auto phoneticEnvironment = static_cast<PhoneticEnvironment>(std::stoi(memberValue));
-
-            std::getline(file, line); // IsRemove:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const bool isRemove = static_cast<bool>(std::stoi(memberValue));
-
-            dif.PhonologicalChanges_.BeforePhoneme_ = Phoneme::Create(beforePlace, beforeManner);
-            dif.PhonologicalChanges_.AfterPhoneme_ = Phoneme::Create(afterPlace, afterManner);
-            dif.PhonologicalChanges_.PhoneticEnvironment_ = phoneticEnvironment;
-            dif.PhonologicalChanges_.IsRemove_ = isRemove;
-
-            return true;
-        }
-
-        if (subMode == SubMode::SubMode_IntParam)
-        {
-            dif.IntParam_.emplace_back(std::stoi(line.substr(8)));
-        }
-        else if (subMode == SubMode::SubMode_DoubleParam)
-        {
-            dif.DoubleParam_.emplace_back(std::stod(line.substr(8)));
-        }
-        else if (subMode == SubMode::SubMode_StringParam)
-        {
-            dif.StringParam_.emplace_back(line.substr(8));
-        }
+        if (!std::getline(file, line))
+            return false;
+        const auto period = ParseVector(line);
+        if (period.size() != 1)
+            return false;
+        dif.Period_ = std::stoi(period[0]);
     }
-    return false;
+    // Type
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto type = ParseIntVector(line);
+        if (type.size() != 1)
+            return false;
+        dif.Type_ = ConvertToLanguageDifferenceType(type[0]);
+    }
+    // IntParam
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto param = ParseIntVector(line);
+        dif.IntParam_ = param;
+    }
+    // DoubleParam
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto param = ParseDoubleVector(line);
+        dif.DoubleParam_ = param;
+    }
+    // StringParam
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto param = ParseVector(line);
+        dif.StringParam_ = param;
+    }
+    // PhonologicalChange
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto params = ParseIntVector(line);
+        if (params.size() < 6)
+        {
+            return false;
+        }
+        dif.PhonologicalChanges_.BeforePhoneme_ = Phoneme::Create(params[0], params[1]);
+        dif.PhonologicalChanges_.AfterPhoneme_ = Phoneme::Create(params[2], params[3]);
+        dif.PhonologicalChanges_.PhoneticEnvironment_ = ConvertToPhoneticEnvironment(params[4]);
+        dif.PhonologicalChanges_.IsRemove_ = static_cast<bool>(params[5]);
+    }
+    return true;
 }
 
 /**

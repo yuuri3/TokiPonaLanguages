@@ -20,7 +20,7 @@ void ClearWidget(QWidget *widget);
 template <typename T>
 
 // ヘルパー関数：ベクトルをカンマ区切りのリスト形式にする
-std::string FormatVector(const std::vector<T> &vec)
+const std::string FormatVector(const std::vector<T> &vec)
 {
     if (vec.empty())
         return ",";
@@ -32,3 +32,7 @@ std::string FormatVector(const std::vector<T> &vec)
     }
     return ss.str();
 }
+
+const std::vector<std::string> ParseVector(const std::string &line);
+const std::vector<int> ParseIntVector(const std::string &line);
+const std::vector<double> ParseDoubleVector(const std::string &line);
