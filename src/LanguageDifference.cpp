@@ -297,7 +297,7 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
         if (!std::getline(file, line))
             return false;
         const auto period = ParseVector(line);
-        if (period.size() != 1)
+        if (period.size() < 1)
             return false;
         dif.Period_ = std::stoi(period[0]);
     }
@@ -306,7 +306,7 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
         if (!std::getline(file, line))
             return false;
         const auto type = ParseIntVector(line);
-        if (type.size() != 1)
+        if (type.size() < 1)
             return false;
         dif.Type_ = ConvertToLanguageDifferenceType(type[0]);
     }
