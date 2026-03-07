@@ -4,6 +4,7 @@
  */
 enum class LanguageDifferenceType
 {
+    UnDefined = -1,
     // 単語追加
     // string 地理
     // int 単語ID
@@ -34,3 +35,44 @@ enum class LanguageDifferenceType
     // int 単語ID
     ObsoleteWord = 6
 };
+
+inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
+{
+    switch (i)
+    {
+    case 0:
+        return LanguageDifferenceType::AddWord;
+    case 1:
+        return LanguageDifferenceType::ChangeStrength;
+    case 2:
+        return LanguageDifferenceType::PhonologicalChange;
+    case 4:
+        return LanguageDifferenceType::Loanword;
+    case 5:
+        return LanguageDifferenceType::AddCompound;
+    case 6:
+        return LanguageDifferenceType::ObsoleteWord;
+    default:
+        return LanguageDifferenceType::UnDefined;
+    }
+}
+inline const int ConvertFromLanguageDifferenceType(const LanguageDifferenceType type)
+{
+    switch (type)
+    {
+    case LanguageDifferenceType::AddWord:
+        return 0;
+    case LanguageDifferenceType::ChangeStrength:
+        return 1;
+    case LanguageDifferenceType::PhonologicalChange:
+        return 2;
+    case LanguageDifferenceType::Loanword:
+        return 4;
+    case LanguageDifferenceType::AddCompound:
+        return 5;
+    case LanguageDifferenceType::ObsoleteWord:
+        return 6;
+    default:
+        return -1;
+    }
+}
