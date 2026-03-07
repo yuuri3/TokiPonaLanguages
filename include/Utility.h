@@ -28,7 +28,7 @@ const std::string FormatVector(const std::vector<T> &vec)
     ss << "";
     for (size_t i = 0; i < vec.size(); ++i)
     {
-        ss << vec[i] << ", ";
+        ss << vec[i] << ",";
     }
     return ss.str();
 }
