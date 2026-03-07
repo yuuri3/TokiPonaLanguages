@@ -5,6 +5,7 @@
 
 class Language;
 class PhonologicalChange;
+class PhonemeConverter;
 
 /**
  * @brief 単語
@@ -46,6 +47,7 @@ public:
     }
 
     static Word Create(const std::vector<Phoneme> &form);
+    static Word CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &converter);
     Word Add(const Word &word) const;
 
     const std::vector<Phoneme> GetForm() const;

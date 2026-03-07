@@ -434,3 +434,39 @@ bool LanguageFamily::Import(const std::string &filename)
     file.close();
     return true;
 }
+
+/**
+ * @brief json ファイル読み込み
+ *
+ * @param filename ファイル名
+ * @return true
+ * @return false
+ */
+bool LanguageFamily::ImportJson(const std::string &filename)
+{
+    // 地理データ
+    Geography_ = {{"0"}};
+
+    // 音韻データ
+    PhonemeTable_ = RomanAlphabetTable;
+
+    // 言語
+    const auto data = ImportFromJson(QString::fromStdString(filename));
+    if (!data.success)
+    {
+        return false;
+    }
+
+    // 単語追加
+    int wordID = 0;
+    const auto converter = PhonemeConverter::Create(RomanAlphabetTable);
+    for (const auto &qWord : data.words)
+    {
+        const auto word = Word::CreateFromJsonObject(qWord.toObject(), converter);
+        const auto dif = LanguageDifference::CreateAddWord("0", 0, wordID, converter.ConvertToString(word.GetForm()));
+        languageDifference_.emplace_back(dif);
+        wordID++;
+    }
+
+    return true;
+}

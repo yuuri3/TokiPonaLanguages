@@ -1,5 +1,6 @@
 #include "Language.h"
 #include "PhonologicalChange.h"
+#include "PhonemeConverter.h"
 
 namespace
 {
@@ -144,6 +145,81 @@ Word Word::Create(const std::vector<Phoneme> &form)
 {
     Word word;
     word.Form_ = form;
+    return word;
+}
+
+/**
+ * @brief json オブジェクトから作成
+ *
+ * @param obj json オブジェクト
+ * @return Word
+ */
+Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &converter)
+{
+    Word word;
+
+    // 1. entry (ID, form)
+    QJsonObject entryObj = obj["entry"].toObject();
+    word.ID = entryObj["id"].toInt();
+
+    // form 文字列を std::vector<Phoneme> に変換
+    // ※プロジェクト内の既存の変換関数（PhonemeConverterなど）を利用
+    QString formStr = entryObj["form"].toString();
+    word.Form_ = converter.ConvertToPhoneme(formStr.toStdString());
+
+    // 2. tags
+    QJsonArray tagsArray = obj["tags"].toArray();
+    for (const auto &tag : tagsArray)
+    {
+        word.Tags_.push_back(tag.toString().toStdString());
+    }
+
+    // 3. translations (title -> forms のリスト)
+    QJsonArray transArray = obj["translations"].toArray();
+    for (const auto &transValue : transArray)
+    {
+        QJsonObject transObj = transValue.toObject();
+        std::string title = transObj["title"].toString().toStdString();
+
+        std::vector<std::string> forms;
+        QJsonArray formsArray = transObj["forms"].toArray();
+        for (const auto &f : formsArray)
+        {
+            forms.push_back(f.toString().toStdString());
+        }
+        word.Translations_[title] = forms;
+    }
+
+    // 4. contents (title -> text)
+    QJsonArray contentsArray = obj["contents"].toArray();
+    for (const auto &contValue : contentsArray)
+    {
+        QJsonObject contObj = contValue.toObject();
+        std::string title = contObj["title"].toString().toStdString();
+        std::string text = contObj["text"].toString().toStdString();
+        word.Contents_[title] = text;
+    }
+
+    // 5. variations (title -> Phonemeリスト)
+    QJsonArray variationsArray = obj["variations"].toArray();
+    for (const auto &varValue : variationsArray)
+    {
+        QJsonObject varObj = varValue.toObject();
+        std::string title = varObj["title"].toString().toStdString();
+        std::string form = varObj["form"].toString().toStdString();
+        word.Variations_[title] = converter.ConvertToPhoneme(form);
+    }
+
+    // 6. relations (title -> entry ID)
+    QJsonArray relationsArray = obj["relations"].toArray();
+    for (const auto &relValue : relationsArray)
+    {
+        QJsonObject relObj = relValue.toObject();
+        std::string title = relObj["title"].toString().toStdString();
+        int entryId = relObj["entry"].toObject()["id"].toInt();
+        word.Relations_[title] = entryId;
+    }
+
     return word;
 }
 

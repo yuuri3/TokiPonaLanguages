@@ -354,3 +354,38 @@ const std::vector<double> ParseDoubleVector(const std::string &line)
     }
     return result;
 }
+
+/**
+ * @brief json ファイル読み込み
+ *
+ * @param fileName
+ * @return ImportData
+ */
+ImportData ImportFromJson(const QString &fileName)
+{
+    ImportData result;
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        return result; // success = false のまま返す
+    }
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
+
+    if (error.error != QJsonParseError::NoError)
+    {
+        return result;
+    }
+
+    QJsonObject root = doc.object();
+
+    // データの抽出
+    result.version = root["version"].toInt();
+    result.words = root["words"].toArray();
+    result.examples = root["examples"].toArray();
+    result.success = true;
+
+    return result;
+}

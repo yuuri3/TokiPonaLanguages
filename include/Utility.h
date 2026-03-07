@@ -36,3 +36,13 @@ const std::string FormatVector(const std::vector<T> &vec)
 const std::vector<std::string> ParseVector(const std::string &line);
 const std::vector<int> ParseIntVector(const std::string &line);
 const std::vector<double> ParseDoubleVector(const std::string &line);
+
+struct ImportData
+{
+    int version;
+    QJsonArray words;
+    QJsonArray examples;
+    bool success = false;
+};
+
+ImportData ImportFromJson(const QString &fileName);

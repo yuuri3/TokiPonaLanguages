@@ -44,4 +44,6 @@ public:
 
     void Export(const std::string &filename);
     bool Import(const std::string &filename);
+
+    bool ImportJson(const std::string &filename);
 };
