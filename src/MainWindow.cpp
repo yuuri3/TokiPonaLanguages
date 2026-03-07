@@ -221,11 +221,40 @@ void MainWindow::OpenFile()
             "C:/",                            // 初期表示フォルダ
             "Supported Files (*.ulng *.json)" // フィルタ
         );
-        *Languages_ = LanguageFamily::Create({{""}}, {{""}});
-        Languages_->Import(fileName.toStdString());
-        DisplayLanguageFamily(Languages_);
 
-        IsLanguagesSaved_ = true;
+        // ファイル選択がキャンセルされた場合は何もしない
+        if (fileName.isEmpty())
+        {
+            return;
+        }
+
+        // 拡張子による分岐処理
+        bool isOpenFile = false;
+        if (fileName.endsWith(".json", Qt::CaseInsensitive))
+        {
+            // .json 読み込み
+            *Languages_ = LanguageFamily::Create({{""}}, {{""}});
+            isOpenFile = Languages_->ImportJson(fileName.toStdString());
+        }
+        else if (fileName.endsWith(".ulng", Qt::CaseInsensitive))
+        {
+            // 従来の .ulng 読み込み処理
+            *Languages_ = LanguageFamily::Create({{""}}, {{""}});
+            isOpenFile = Languages_->Import(fileName.toStdString());
+        }
+
+        if (!isOpenFile)
+        {
+            QMessageBox::critical(
+                this,
+                "実行エラー",
+                "ファイルを開けません");
+        }
+        else
+        {
+            DisplayLanguageFamily(Languages_);
+            IsLanguagesSaved_ = true;
+        }
     }
 }
 
