@@ -40,6 +40,13 @@ enum class LanguageDifferenceType
     // string 品詞ID
     // string 変更後の品詞
     EditPart = 7,
+    // 品詞追加
+    // string 地理
+    // int 単語ID
+    // int 品詞ID
+    // int 訳語ID
+    // string 変更後の訳語
+    EditTranslation = 9,
 };
 
 inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
@@ -60,6 +67,8 @@ inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
         return LanguageDifferenceType::ObsoleteWord;
     case 7:
         return LanguageDifferenceType::EditPart;
+    case 9:
+        return LanguageDifferenceType::EditTranslation;
     default:
         return LanguageDifferenceType::UnDefined;
     }
