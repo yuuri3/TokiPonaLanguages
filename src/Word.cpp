@@ -262,6 +262,17 @@ const std::map<std::string, std::vector<std::string>> Word::GetTranslations() co
 }
 
 /**
+ * @brief 品詞をセット
+ *
+ * @param partID 品詞ID
+ * @param part 品詞
+ */
+void Word::SetPart(const int partID, const std::string part)
+{
+    Translations_[partID].first = part;
+}
+
+/**
  * @brief タグをゲット
  *
  * @return const std::vector<std::string>
