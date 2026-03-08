@@ -4,6 +4,7 @@
  */
 enum class LanguageDifferenceType
 {
+    UnDefined = -1,
     // 単語追加
     // string 地理
     // int 単語ID
@@ -32,5 +33,62 @@ enum class LanguageDifferenceType
     // 死語
     // string 地理
     // int 単語ID
-    ObsoleteWord = 6
+    ObsoleteWord = 6,
+    // 品詞追加
+    // string 地理
+    // int 単語ID
+    // string 品詞ID
+    // string 変更後の品詞
+    EditPart = 7,
+    // 品詞削除
+    // string 地理
+    // int 単語ID
+    // string 品詞ID
+    DeletePart = 8,
+    // 品詞追加
+    // string 地理
+    // int 単語ID
+    // int 品詞ID
+    // int 訳語ID
+    // string 変更後の訳語
+    EditTranslation = 9,
+    // 訳語削除
+    // string 地理
+    // int 単語ID
+    // int 品詞ID
+    // int 訳語ID
+    DeleteTranslation = 10,
 };
+
+inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
+{
+    switch (i)
+    {
+    case 0:
+        return LanguageDifferenceType::AddWord;
+    case 1:
+        return LanguageDifferenceType::ChangeStrength;
+    case 2:
+        return LanguageDifferenceType::PhonologicalChange;
+    case 4:
+        return LanguageDifferenceType::Loanword;
+    case 5:
+        return LanguageDifferenceType::AddCompound;
+    case 6:
+        return LanguageDifferenceType::ObsoleteWord;
+    case 7:
+        return LanguageDifferenceType::EditPart;
+    case 8:
+        return LanguageDifferenceType::DeletePart;
+    case 9:
+        return LanguageDifferenceType::EditTranslation;
+    case 10:
+        return LanguageDifferenceType::DeleteTranslation;
+    default:
+        return LanguageDifferenceType::UnDefined;
+    }
+}
+inline const int ConvertFromLanguageDifferenceType(const LanguageDifferenceType type)
+{
+    return static_cast<int>(type);
+}

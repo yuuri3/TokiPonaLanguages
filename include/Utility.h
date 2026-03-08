@@ -16,3 +16,33 @@ void DisplayTable(QTableWidget *table, const std::vector<std::vector<std::string
 void ClearLayout(QLayout *layout);
 void DeleteWidget(QWidget *widget);
 void ClearWidget(QWidget *widget);
+
+template <typename T>
+
+// ヘルパー関数：ベクトルをカンマ区切りのリスト形式にする
+const std::string FormatVector(const std::vector<T> &vec)
+{
+    if (vec.empty())
+        return ",";
+    std::stringstream ss;
+    ss << "";
+    for (size_t i = 0; i < vec.size(); ++i)
+    {
+        ss << vec[i] << ",";
+    }
+    return ss.str();
+}
+
+const std::vector<std::string> ParseVector(const std::string &line);
+const std::vector<int> ParseIntVector(const std::string &line);
+const std::vector<double> ParseDoubleVector(const std::string &line);
+
+struct ImportData
+{
+    int version;
+    QJsonArray words;
+    QJsonArray examples;
+    bool success = false;
+};
+
+ImportData ImportFromJson(const QString &fileName);

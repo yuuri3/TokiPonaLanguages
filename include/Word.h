@@ -5,6 +5,7 @@
 
 class Language;
 class PhonologicalChange;
+class PhonemeConverter;
 
 /**
  * @brief 単語
@@ -19,7 +20,7 @@ private:
     //   form
     std::vector<Phoneme> Form_;
     // translation <title,form>
-    std::map<std::string, std::vector<std::string>> Translations_;
+    std::map<int, std::pair<std::string, std::map<int, std::string>>> Translations_;
     // tags
     std::vector<std::string> Tags_;
     // contents <title,text>
@@ -46,10 +47,15 @@ public:
     }
 
     static Word Create(const std::vector<Phoneme> &form);
+    static Word CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &converter);
     Word Add(const Word &word) const;
 
     const std::vector<Phoneme> GetForm() const;
     const std::map<std::string, std::vector<std::string>> GetTranslations() const;
+    void SetPart(const int partID, const std::string &part);
+    void DeletePart(const int partID);
+    void SetTranslation(const int partID, const int translationID, const std::string &translation);
+    void DeleteTranslation(const int partID, const int translationID);
     const std::vector<std::string> GetTags() const;
     const std::map<std::string, std::string> GetContents() const;
     const std::map<std::string, std::vector<Phoneme>> GetVariations() const;

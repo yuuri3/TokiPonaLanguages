@@ -1,5 +1,6 @@
 #include "Language.h"
 #include "PhonologicalChange.h"
+#include "PhonemeConverter.h"
 
 namespace
 {
@@ -148,6 +149,89 @@ Word Word::Create(const std::vector<Phoneme> &form)
 }
 
 /**
+ * @brief json オブジェクトから作成
+ *
+ * @param obj json オブジェクト
+ * @return Word
+ */
+Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &converter)
+{
+    Word word;
+
+    // 1. entry (ID, form)
+    QJsonObject entryObj = obj["entry"].toObject();
+    word.ID = entryObj["id"].toInt();
+
+    // form 文字列を std::vector<Phoneme> に変換
+    // ※プロジェクト内の既存の変換関数（PhonemeConverterなど）を利用
+    QString formStr = entryObj["form"].toString();
+    word.Form_ = converter.ConvertToPhoneme(formStr.toStdString());
+
+    // 2. tags
+    QJsonArray tagsArray = obj["tags"].toArray();
+    for (const auto &tag : tagsArray)
+    {
+        word.Tags_.push_back(tag.toString().toStdString());
+    }
+
+    // 3. translations (title -> forms のリスト)
+    QJsonArray transArray = obj["translations"].toArray();
+    int partId = 0;
+    for (const auto &transValue : transArray)
+    {
+        QJsonObject transObj = transValue.toObject();
+        std::string title = transObj["title"].toString().toStdString();
+        word.Translations_[partId].first = title;
+
+        std::vector<std::string> forms;
+        QJsonArray formsArray = transObj["forms"].toArray();
+        for (const auto &f : formsArray)
+        {
+            forms.push_back(f.toString().toStdString());
+        }
+        int id = 0;
+        for (const auto &form : forms)
+        {
+            word.Translations_[partId].second[id] = form;
+            id++;
+        }
+        id++;
+    }
+
+    // 4. contents (title -> text)
+    QJsonArray contentsArray = obj["contents"].toArray();
+    for (const auto &contValue : contentsArray)
+    {
+        QJsonObject contObj = contValue.toObject();
+        std::string title = contObj["title"].toString().toStdString();
+        std::string text = contObj["text"].toString().toStdString();
+        word.Contents_[title] = text;
+    }
+
+    // 5. variations (title -> Phonemeリスト)
+    QJsonArray variationsArray = obj["variations"].toArray();
+    for (const auto &varValue : variationsArray)
+    {
+        QJsonObject varObj = varValue.toObject();
+        std::string title = varObj["title"].toString().toStdString();
+        std::string form = varObj["form"].toString().toStdString();
+        word.Variations_[title] = converter.ConvertToPhoneme(form);
+    }
+
+    // 6. relations (title -> entry ID)
+    QJsonArray relationsArray = obj["relations"].toArray();
+    for (const auto &relValue : relationsArray)
+    {
+        QJsonObject relObj = relValue.toObject();
+        std::string title = relObj["title"].toString().toStdString();
+        int entryId = relObj["entry"].toObject()["id"].toInt();
+        word.Relations_[title] = entryId;
+    }
+
+    return word;
+}
+
+/**
  * @brief 語形をゲット
  *
  * @return const std::vector<Phoneme>
@@ -164,7 +248,67 @@ const std::vector<Phoneme> Word::GetForm() const
  */
 const std::map<std::string, std::vector<std::string>> Word::GetTranslations() const
 {
-    return Translations_;
+    std::map<std::string, std::vector<std::string>> result;
+    for (const auto &[_, pair] : Translations_)
+    {
+        const auto &[part, translations] = pair;
+        result[part] = {};
+        for (const auto &[__, translation] : translations)
+        {
+            result[part].emplace_back(translation);
+        }
+    }
+    return result;
+}
+
+/**
+ * @brief 品詞をセット
+ *
+ * @param partID 品詞ID
+ * @param part 品詞
+ */
+void Word::SetPart(const int partID, const std::string &part)
+{
+    Translations_[partID].first = part;
+}
+
+/**
+ * @brief 品詞を削除
+ *
+ * @param partID 品詞ID
+ */
+void Word::DeletePart(const int partID)
+{
+    Translations_.erase(partID);
+}
+
+/**
+ * @brief 訳語をセット
+ *
+ * @param partID 品詞ID
+ * @param translationID 訳語ID
+ * @param translation 訳語
+ */
+void Word::SetTranslation(const int partID, const int translationID, const std::string &translation)
+{
+    if (Translations_.count(partID) == 1)
+    {
+        Translations_[partID].second[translationID] = translation;
+    }
+}
+
+/**
+ * @brief 訳語を削除
+ *
+ * @param partID 品詞ID
+ * @param translationID 訳語ID
+ */
+void Word::DeleteTranslation(const int partID, const int translationID)
+{
+    if (Translations_.count(partID) == 1)
+    {
+        Translations_[partID].second.erase(translationID);
+    }
 }
 
 /**
@@ -215,9 +359,13 @@ const std::map<std::string, int> Word::GetRealtions() const
 const std::vector<std::string> Word::GetAllTranslations() const
 {
     std::vector<std::string> result;
-    for (const auto &[_, translations] : Translations_)
+    for (const auto &[_, pair] : Translations_)
     {
-        result.insert(result.end(), translations.begin(), translations.end());
+        const auto &[__, translations] = pair;
+        for (const auto &[___, translation] : translations)
+        {
+            result.emplace_back(translation);
+        }
     }
     return result;
 }

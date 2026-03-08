@@ -130,6 +130,64 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         Words_.erase(*wordID);
         break;
     }
+    case LanguageDifferenceType::EditPart:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto partID = dif.IntParam(1);
+        if (!partID)
+        {
+            break;
+        }
+        const auto part = dif.StringParam(1);
+        if (!part)
+        {
+            break;
+        }
+        Words_[*wordID].SetPart(*partID, *part);
+        break;
+    }
+    case LanguageDifferenceType::EditTranslation:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto partID = dif.IntParam(1);
+        if (!partID)
+        {
+            break;
+        }
+        const auto translationID = dif.IntParam(2);
+        if (!translationID)
+        {
+            break;
+        }
+        const auto translation = dif.StringParam(1);
+        if (!translation)
+        {
+            break;
+        }
+        Words_[*wordID].SetTranslation(*partID, *translationID, *translation);
+    }
+    case LanguageDifferenceType::DeletePart:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto partID = dif.IntParam(1);
+        if (!partID)
+        {
+            break;
+        }
+        Words_[*wordID].DeletePart(*partID);
+    }
 
     default:
         break;
@@ -302,6 +360,27 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
 
     switch (diff.GetType())
     {
+    case LanguageDifferenceType::ChangeStrength:
+    case LanguageDifferenceType::PhonologicalChange:
+    case LanguageDifferenceType::AddCompound:
+    case LanguageDifferenceType::ObsoleteWord:
+    case LanguageDifferenceType::EditPart:
+    case LanguageDifferenceType::EditTranslation:
+    case LanguageDifferenceType::DeletePart:
+    {
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+
+        if (languages.count(*geometry) == 1)
+        {
+            languages[*geometry].ApplyDifference(diff);
+        }
+        break;
+    }
+
     case LanguageDifferenceType::AddWord:
     {
         const auto geometry = diff.StringParam(0);
@@ -321,36 +400,6 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
         }
 
         languages[*geometry].AddWord(diff, converter.ConvertToPhoneme(*form));
-        break;
-    }
-
-    case LanguageDifferenceType::ChangeStrength:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-
-        if (languages.count(*geometry) == 1)
-        {
-            languages[*geometry].ApplyDifference(diff);
-        }
-        break;
-    }
-
-    case LanguageDifferenceType::PhonologicalChange:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-
-        if (languages.count(*geometry) == 1)
-        {
-            languages[*geometry].ApplyDifference(diff);
-        }
         break;
     }
 
@@ -382,28 +431,6 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
             const auto referenceLanguage = languages.at(*referenceGeometry);
             languages[*targetGeometry].LoanWord(diff, referenceLanguage);
         }
-        break;
-    }
-
-    case LanguageDifferenceType::AddCompound:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-        languages[*geometry].ApplyDifference(diff);
-        break;
-    }
-
-    case LanguageDifferenceType::ObsoleteWord:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-        languages[*geometry].ApplyDifference(diff);
         break;
     }
 

@@ -30,3 +30,5 @@
 #include <QTextEdit>
 #include <QScrollArea>
 #include <QFormLayout>
+#include <QJsonArray>
+#include <QJsonObject>

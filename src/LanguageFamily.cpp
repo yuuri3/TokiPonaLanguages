@@ -5,40 +5,6 @@
 
 namespace
 {
-    // ヘルパー関数：ベクトルをカンマ区切りのリスト形式にする
-    template <typename T>
-    std::string formatYamlList(const std::vector<T> &vec)
-    {
-        if (vec.empty())
-            return "[]";
-        std::stringstream ss;
-        ss << "[";
-        for (size_t i = 0; i < vec.size(); ++i)
-        {
-            ss << vec[i] << (i == vec.size() - 1 ? "" : ", ");
-        }
-        ss << "]";
-        return ss.str();
-    }
-
-    // YAMLの [a, b, c] 形式を vector<string> に変換する
-    std::vector<std::string> parseYamlList(const std::string &line)
-    {
-        std::vector<std::string> result;
-        size_t openingParenthesisPosition = line.find('[');
-        size_t closingParenthesisPosition = line.find(']');
-        if (openingParenthesisPosition == std::string::npos || closingParenthesisPosition == std::string::npos)
-            return result;
-
-        std::string content = line.substr(openingParenthesisPosition + 1, closingParenthesisPosition - openingParenthesisPosition - 1);
-        std::stringstream ss(content);
-        std::string item;
-        while (std::getline(ss, item, ','))
-        {
-            result.push_back(EraseSpace(item));
-        }
-        return result;
-    }
 
     /**
      * @brief YAML読み込み
@@ -55,7 +21,7 @@ namespace
         {
             return false;
         }
-        geoLine = parseYamlList(line);
+        geoLine = ParseVector(line);
         if (geoLine.empty())
         {
             return false;
@@ -63,6 +29,13 @@ namespace
         return true;
     }
 }
+
+/**
+ * @brief ラテンアルファベットの表
+ *
+ */
+std::vector<std::vector<std::string>> LanguageFamily::RomanAlphabetTable =
+    {{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}};
 
 /**
  * @brief 空の語族を作成
@@ -396,14 +369,14 @@ void LanguageFamily::Export(const std::string &filename)
     file << "Map:\n";
     for (const auto &row : Geography_)
     {
-        file << "  - " << formatYamlList(row) << "\n";
+        file << FormatVector(row) << "\n";
     }
 
     // 3. PhoneticsMap
     file << "PhoneticsMap:\n";
     for (const auto &row : PhonemeTable_)
     {
-        file << "  - " << formatYamlList(row) << "\n";
+        file << FormatVector(row) << "\n";
     }
 
     // 4. LanguageDifferences
@@ -429,57 +402,85 @@ bool LanguageFamily::Import(const std::string &filename)
     if (!file.is_open())
         return false;
 
-    enum Mode
-    {
-        Mode_Map,
-        Mode_PhonemeTable,
-        Mode_LanguageDifferences,
-    };
-
-    Mode mode;
-    LanguageDifference dif;
-    bool isDifferenceSection = false;
-
     std::string line;
-    try
+
+    // Map
+    if (!std::getline(file, line) || line != "Map:")
+        return false;
+    Geography_.clear();
+    while (std::getline(file, line) && line != "PhoneticsMap:")
     {
-        if (!std::getline(file, line) || line != "Map:")
-        {
-            return false;
-        }
-        // 地理
-        {
-            Geography_.clear();
-            std::vector<std::string> geoLine;
-            while (ImportYAML(file, geoLine))
-            {
-                Geography_.emplace_back(geoLine);
-            }
-        }
-        // 音韻
-        {
-            PhonemeTable_.clear();
-            std::vector<std::string> phonLine;
-            while (ImportYAML(file, phonLine))
-            {
-                PhonemeTable_.emplace_back(phonLine);
-            }
-        }
-        // 差分
-        {
-            languageDifference_.clear();
-            LanguageDifference dif;
-            while (LanguageDifference::Import(file, dif))
-            {
-                languageDifference_.emplace_back(dif);
-            }
-        }
+        Geography_.emplace_back(ParseVector(line));
     }
-    catch (...)
+    // PhoneticsMap
+    PhonemeTable_.clear();
+    while (std::getline(file, line) && line != "LanguageDifferences:")
+    {
+        PhonemeTable_.emplace_back(ParseVector(line));
+    }
+    // LanguageDifferences
+    languageDifference_.clear();
+    LanguageDifference dif;
+    while (LanguageDifference::Import(file, dif))
+    {
+        languageDifference_.emplace_back(dif);
+    }
+    // 途中で終了した場合、読み込み失敗とする
+    if (std::getline(file, line))
     {
         file.close();
         return false;
     }
     file.close();
+    return true;
+}
+
+/**
+ * @brief json ファイル読み込み
+ *
+ * @param filename ファイル名
+ * @return true
+ * @return false
+ */
+bool LanguageFamily::ImportJson(const std::string &filename)
+{
+    // 地理データ
+    Geography_ = {{"0"}};
+
+    // 音韻データ
+    PhonemeTable_ = RomanAlphabetTable;
+
+    // 言語
+    const auto data = ImportFromJson(QString::fromStdString(filename));
+    if (!data.success)
+    {
+        return false;
+    }
+
+    // 単語追加
+    int wordID = 0;
+    const auto converter = PhonemeConverter::Create(RomanAlphabetTable);
+    for (const auto &qWord : data.words)
+    {
+        const auto word = Word::CreateFromJsonObject(qWord.toObject(), converter);
+        auto dif = LanguageDifference::CreateAddWord("0", 0, wordID, converter.ConvertToString(word.GetForm()));
+        languageDifference_.emplace_back(dif);
+
+        int partID = 0;
+        for (const auto &[part, translations] : word.GetTranslations())
+        {
+            dif = LanguageDifference::CreateEditPart("0", 0, wordID, partID, part);
+            languageDifference_.emplace_back(dif);
+            int translationID = 0;
+            for (const auto &translation : translations)
+            {
+                dif = LanguageDifference::CreateEditTranslation("0", 0, wordID, partID, translationID, translation);
+                languageDifference_.emplace_back(dif);
+                translationID++;
+            }
+        }
+        wordID++;
+    }
+
     return true;
 }

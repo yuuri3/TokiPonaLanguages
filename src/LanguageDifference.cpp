@@ -139,6 +139,94 @@ LanguageDifference LanguageDifference::CreateObsoleteWord(const std::string &pla
 }
 
 /**
+ * @brief 品詞追加
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param partID 品詞ID
+ * @param part 品詞名
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateEditPart(const std::string &place, const int period, const int wordID, const int partID, const std::string &part)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::EditPart;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(partID);
+    diff.StringParam_.emplace_back(part);
+    return diff;
+}
+
+/**
+ * @brief 品詞削除
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param partID 品詞ID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateDeletePart(const std::string &place, const int period, const int wordID, const int partID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeletePart;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(partID);
+    return diff;
+}
+
+/**
+ * @brief 品詞追加
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param partID 品詞ID
+ * @param translationID 訳語ID
+ * @param translation 訳語
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateEditTranslation(const std::string &place, const int period, const int wordID, const int partID, const int translationID, const std::string &translation)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::EditTranslation;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(partID);
+    diff.IntParam_.emplace_back(translationID);
+    diff.StringParam_.emplace_back(translation);
+    return diff;
+}
+
+/**
+ * @brief 訳語削除
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param partID 品詞ID
+ * @param translationID 訳語ID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateDeleteTranslation(const std::string &place, const int period, const int wordID, const int partID, const int translationID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeleteTranslation;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(partID);
+    diff.IntParam_.emplace_back(translationID);
+    return diff;
+}
+
+/**
  * @brief タイプをゲット
  *
  * @return const LanguageDifferenceType
@@ -289,95 +377,63 @@ const PhonologicalChange &LanguageDifference::GetPhonologicalChange() const
  */
 bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
 {
-    enum SubMode
-    {
-        SubMode_Type,
-        SubMode_Period,
-        SubMode_IntParam,
-        SubMode_DoubleParam,
-        SubMode_StringParam,
-        SubMode_PhonologicalChanges,
-    };
-    SubMode subMode;
-
+    dif = LanguageDifference();
     std::string line;
-    while (std::getline(file, line))
+
+    // Period
     {
-        auto [memberName, memberValue] = splitByColon(line);
-        if (memberName == "- Section")
-        {
-            dif = LanguageDifference();
-            dif.Period_ = std::stoi(memberValue);
-            continue;
-        }
-        else if (memberName == "Type")
-        {
-            dif.Type_ = static_cast<LanguageDifferenceType>(std::stoi(memberValue));
-            continue;
-        }
-        else if (line == "    IntParam:")
-        {
-            subMode = SubMode::SubMode_IntParam;
-            continue;
-        }
-        else if (line == "    DoubleParam:")
-        {
-            subMode = SubMode::SubMode_DoubleParam;
-            continue;
-        }
-        else if (line == "    StringParam:")
-        {
-            subMode = SubMode::SubMode_StringParam;
-            continue;
-        }
-        else if (line == "    SoundChange:")
-        {
-            std::getline(file, line); // Before:
-            std::getline(file, line); // Place:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const int beforePlace = std::stoi(memberValue);
-            std::getline(file, line); // Manner:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const int beforeManner = std::stoi(memberValue);
-
-            std::getline(file, line); // After:
-            std::getline(file, line); // Place:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const int afterPlace = std::stoi(memberValue);
-            std::getline(file, line); // Manner:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const int afterManner = std::stoi(memberValue);
-
-            std::getline(file, line); // Condition:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const auto phoneticEnvironment = static_cast<PhoneticEnvironment>(std::stoi(memberValue));
-
-            std::getline(file, line); // IsRemove:
-            std::tie(memberName, memberValue) = splitByColon(line);
-            const bool isRemove = static_cast<bool>(std::stoi(memberValue));
-
-            dif.PhonologicalChanges_.BeforePhoneme_ = Phoneme::Create(beforePlace, beforeManner);
-            dif.PhonologicalChanges_.AfterPhoneme_ = Phoneme::Create(afterPlace, afterManner);
-            dif.PhonologicalChanges_.PhoneticEnvironment_ = phoneticEnvironment;
-            dif.PhonologicalChanges_.IsRemove_ = isRemove;
-
-            return true;
-        }
-
-        if (subMode == SubMode::SubMode_IntParam)
-        {
-            dif.IntParam_.emplace_back(std::stoi(line.substr(8)));
-        }
-        else if (subMode == SubMode::SubMode_DoubleParam)
-        {
-            dif.DoubleParam_.emplace_back(std::stod(line.substr(8)));
-        }
-        else if (subMode == SubMode::SubMode_StringParam)
-        {
-            dif.StringParam_.emplace_back(line.substr(8));
-        }
+        if (!std::getline(file, line))
+            return false;
+        const auto period = ParseVector(line);
+        if (period.size() < 1)
+            return false;
+        dif.Period_ = std::stoi(period[0]);
     }
-    return false;
+    // Type
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto type = ParseIntVector(line);
+        if (type.size() < 1)
+            return false;
+        dif.Type_ = ConvertToLanguageDifferenceType(type[0]);
+    }
+    // IntParam
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto param = ParseIntVector(line);
+        dif.IntParam_ = param;
+    }
+    // DoubleParam
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto param = ParseDoubleVector(line);
+        dif.DoubleParam_ = param;
+    }
+    // StringParam
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto param = ParseVector(line);
+        dif.StringParam_ = param;
+    }
+    // PhonologicalChange
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto params = ParseIntVector(line);
+        if (params.size() < 6)
+        {
+            return false;
+        }
+        dif.PhonologicalChanges_.BeforePhoneme_ = Phoneme::Create(params[0], params[1]);
+        dif.PhonologicalChanges_.AfterPhoneme_ = Phoneme::Create(params[2], params[3]);
+        dif.PhonologicalChanges_.PhoneticEnvironment_ = ConvertToPhoneticEnvironment(params[4]);
+        dif.PhonologicalChanges_.IsRemove_ = static_cast<bool>(params[5]);
+    }
+    return true;
 }
 
 /**
@@ -387,34 +443,17 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
  */
 void LanguageDifference::Export(std::ofstream &file) const
 {
-    file << "  - Section: " << GetPeriod() << "\n";
-    file << "    Type: " << static_cast<int>(GetType()) << "\n";
-
-    file << "    IntParam:\n";
-    for (int i = 0; i < IntParamSize(); i++)
-    {
-        file << "      - " << IntParam(i).value() << "\n";
-    }
-
-    file << "    DoubleParam:\n";
-    for (int i = 0; i < DoubleParamSize(); i++)
-    {
-        file << "      - " << DoubleParam(i).value() << "\n";
-    }
-
-    file << "    StringParam:\n";
-    for (int i = 0; i < StringParamSize(); i++)
-    {
-        file << "      - " << StringParam(i).value() << "\n";
-    }
-
-    file << "    SoundChange:\n";
-    file << "      Before:\n";
-    file << "        Place: " << GetPhonologicalChange().BeforePhoneme_.GetPlace() << "\n";
-    file << "        Mannar: " << GetPhonologicalChange().BeforePhoneme_.GetManner() << "\n";
-    file << "      After:\n";
-    file << "        Place: " << GetPhonologicalChange().AfterPhoneme_.GetPlace() << "\n";
-    file << "        Mannar: " << GetPhonologicalChange().AfterPhoneme_.GetManner() << "\n";
-    file << "      Condition: " << static_cast<int>(GetPhonologicalChange().PhoneticEnvironment_) << "\n";
-    file << "      IsRemove: " << GetPhonologicalChange().IsRemove_ << "\n";
+    file << FormatVector<int>({GetPeriod()}) << "\n";
+    file << FormatVector<int>({ConvertFromLanguageDifferenceType(GetType())}) << "\n";
+    file << FormatVector<int>(IntParam_) << "\n";
+    file << FormatVector<double>(DoubleParam_) << "\n";
+    file << FormatVector<std::string>(StringParam_) << "\n";
+    std::vector<int> soundChange = {
+        GetPhonologicalChange().BeforePhoneme_.GetPlace(),
+        GetPhonologicalChange().BeforePhoneme_.GetManner(),
+        GetPhonologicalChange().AfterPhoneme_.GetPlace(),
+        GetPhonologicalChange().AfterPhoneme_.GetManner(),
+        ConvertFromPhoneticEnvironment(GetPhonologicalChange().PhoneticEnvironment_),
+        GetPhonologicalChange().IsRemove_};
+    file << FormatVector<int>(soundChange) << "\n";
 }

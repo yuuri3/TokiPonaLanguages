@@ -298,3 +298,94 @@ void ClearWidget(QWidget *widget)
         delete oldLayout;
     }
 }
+
+// YAMLの [a, b, c] 形式を vector<string> に変換する
+const std::vector<std::string> ParseVector(const std::string &line)
+{
+    std::vector<std::string> result;
+
+    std::stringstream ss(line);
+    std::string item;
+    while (std::getline(ss, item, ','))
+    {
+        result.push_back(EraseSpace(item));
+    }
+    return result;
+}
+
+const std::vector<int> ParseIntVector(const std::string &line)
+{
+    std::vector<int> result;
+
+    std::stringstream ss(line);
+    std::string item;
+    while (std::getline(ss, item, ','))
+    {
+        try
+        {
+            int param = std::stoi(EraseSpace(item));
+            result.push_back(param);
+        }
+        catch (...)
+        {
+            return {};
+        }
+    }
+    return result;
+}
+
+const std::vector<double> ParseDoubleVector(const std::string &line)
+{
+    std::vector<double> result;
+
+    std::stringstream ss(line);
+    std::string item;
+    while (std::getline(ss, item, ','))
+    {
+        try
+        {
+            double param = std::stod(EraseSpace(item));
+            result.push_back(param);
+        }
+        catch (...)
+        {
+            return {};
+        }
+    }
+    return result;
+}
+
+/**
+ * @brief json ファイル読み込み
+ *
+ * @param fileName
+ * @return ImportData
+ */
+ImportData ImportFromJson(const QString &fileName)
+{
+    ImportData result;
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        return result; // success = false のまま返す
+    }
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
+
+    if (error.error != QJsonParseError::NoError)
+    {
+        return result;
+    }
+
+    QJsonObject root = doc.object();
+
+    // データの抽出
+    result.version = root["version"].toInt();
+    result.words = root["words"].toArray();
+    result.examples = root["examples"].toArray();
+    result.success = true;
+
+    return result;
+}
