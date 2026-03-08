@@ -205,6 +205,28 @@ LanguageDifference LanguageDifference::CreateEditTranslation(const std::string &
 }
 
 /**
+ * @brief 訳語削除
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param partID 品詞ID
+ * @param translationID 訳語ID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateDeleteTranslation(const std::string &place, const int period, const int wordID, const int partID, const int translationID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeleteTranslation;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(partID);
+    diff.IntParam_.emplace_back(translationID);
+    return diff;
+}
+
+/**
  * @brief タイプをゲット
  *
  * @return const LanguageDifferenceType
