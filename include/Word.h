@@ -55,6 +55,7 @@ public:
     void SetPart(const int partID, const std::string &part);
     void DeletePart(const int partID);
     void SetTranslation(const int partID, const int translationID, const std::string &translation);
+    void DeleteTranslation(const int partID, const int translationID);
     const std::vector<std::string> GetTags() const;
     const std::map<std::string, std::string> GetContents() const;
     const std::map<std::string, std::vector<Phoneme>> GetVariations() const;

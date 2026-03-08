@@ -298,6 +298,20 @@ void Word::SetTranslation(const int partID, const int translationID, const std::
 }
 
 /**
+ * @brief 訳語を削除
+ *
+ * @param partID 品詞ID
+ * @param translationID 訳語ID
+ */
+void Word::DeleteTranslation(const int partID, const int translationID)
+{
+    if (Translations_.count(partID) == 1)
+    {
+        Translations_[partID].second.erase(translationID);
+    }
+}
+
+/**
  * @brief タグをゲット
  *
  * @return const std::vector<std::string>
