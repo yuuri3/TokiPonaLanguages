@@ -161,6 +161,26 @@ LanguageDifference LanguageDifference::CreateEditPart(const std::string &place, 
 }
 
 /**
+ * @brief 品詞削除
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param partID 品詞ID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateDeletePart(const std::string &place, const int period, const int wordID, const int partID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeletePart;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(partID);
+    return diff;
+}
+
+/**
  * @brief 品詞追加
  *
  * @param place 地域
