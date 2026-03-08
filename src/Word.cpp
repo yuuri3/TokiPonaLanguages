@@ -273,6 +273,16 @@ void Word::SetPart(const int partID, const std::string &part)
 }
 
 /**
+ * @brief 品詞を削除
+ *
+ * @param partID 品詞ID
+ */
+void Word::DeletePart(const int partID)
+{
+    Translations_.erase(partID);
+}
+
+/**
  * @brief 訳語をセット
  *
  * @param partID 品詞ID
