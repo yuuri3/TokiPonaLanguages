@@ -20,7 +20,7 @@ private:
     //   form
     std::vector<Phoneme> Form_;
     // translation <title,form>
-    std::map<std::string, std::vector<std::string>> Translations_;
+    std::map<int, std::pair<std::string, std::map<int, std::string>>> Translations_;
     // tags
     std::vector<std::string> Tags_;
     // contents <title,text>

@@ -176,10 +176,12 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
 
     // 3. translations (title -> forms のリスト)
     QJsonArray transArray = obj["translations"].toArray();
+    int partId = 0;
     for (const auto &transValue : transArray)
     {
         QJsonObject transObj = transValue.toObject();
         std::string title = transObj["title"].toString().toStdString();
+        word.Translations_[partId].first = title;
 
         std::vector<std::string> forms;
         QJsonArray formsArray = transObj["forms"].toArray();
@@ -187,7 +189,13 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
         {
             forms.push_back(f.toString().toStdString());
         }
-        word.Translations_[title] = forms;
+        int id = 0;
+        for (const auto &form : forms)
+        {
+            word.Translations_[partId].second[id] = form;
+            id++;
+        }
+        id++;
     }
 
     // 4. contents (title -> text)
@@ -240,7 +248,17 @@ const std::vector<Phoneme> Word::GetForm() const
  */
 const std::map<std::string, std::vector<std::string>> Word::GetTranslations() const
 {
-    return Translations_;
+    std::map<std::string, std::vector<std::string>> result;
+    for (const auto &[_, pair] : Translations_)
+    {
+        const auto &[part, translations] = pair;
+        result[part] = {};
+        for (const auto &[__, translation] : translations)
+        {
+            result[part].emplace_back(translation);
+        }
+    }
+    return result;
 }
 
 /**
@@ -291,9 +309,13 @@ const std::map<std::string, int> Word::GetRealtions() const
 const std::vector<std::string> Word::GetAllTranslations() const
 {
     std::vector<std::string> result;
-    for (const auto &[_, translations] : Translations_)
+    for (const auto &[_, pair] : Translations_)
     {
-        result.insert(result.end(), translations.begin(), translations.end());
+        const auto &[__, translations] = pair;
+        for (const auto &[___, translation] : translations)
+        {
+            result.emplace_back(translation);
+        }
     }
     return result;
 }

@@ -33,7 +33,7 @@ enum class LanguageDifferenceType
     // 死語
     // string 地理
     // int 単語ID
-    ObsoleteWord = 6
+    ObsoleteWord = 6,
 };
 
 inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
@@ -58,21 +58,5 @@ inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
 }
 inline const int ConvertFromLanguageDifferenceType(const LanguageDifferenceType type)
 {
-    switch (type)
-    {
-    case LanguageDifferenceType::AddWord:
-        return 0;
-    case LanguageDifferenceType::ChangeStrength:
-        return 1;
-    case LanguageDifferenceType::PhonologicalChange:
-        return 2;
-    case LanguageDifferenceType::Loanword:
-        return 4;
-    case LanguageDifferenceType::AddCompound:
-        return 5;
-    case LanguageDifferenceType::ObsoleteWord:
-        return 6;
-    default:
-        return -1;
-    }
+    return static_cast<int>(type);
 }
