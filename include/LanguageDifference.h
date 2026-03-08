@@ -31,6 +31,7 @@ public:
     static LanguageDifference CreateLoanword(const std::string &place1, const std::string &place2, const int period, const int wordID1, const int wordID2);
     static LanguageDifference CreateAddCompound(const std::string &place, const int period, const int wordID, const std::vector<int> wordIDs);
     static LanguageDifference CreateObsoleteWord(const std::string &place, const int period, const int wordID);
+    static LanguageDifference CreateEditPart(const std::string &place, const int period, const int wordID, const int partID, const std::string &part);
 
     const LanguageDifferenceType &GetType() const;
     const int GetPeriod() const;

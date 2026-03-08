@@ -139,6 +139,28 @@ LanguageDifference LanguageDifference::CreateObsoleteWord(const std::string &pla
 }
 
 /**
+ * @brief 品詞追加
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param partID 品詞ID
+ * @param part 品詞名
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateEditPart(const std::string &place, const int period, const int wordID, const int partID, const std::string &part)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::EditPart;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(partID);
+    diff.StringParam_.emplace_back(part);
+    return diff;
+}
+
+/**
  * @brief タイプをゲット
  *
  * @return const LanguageDifferenceType
