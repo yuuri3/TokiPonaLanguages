@@ -150,6 +150,30 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         Words_[*wordID].SetPart(*partID, *part);
         break;
     }
+    case LanguageDifferenceType::EditTranslation:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto partID = dif.IntParam(1);
+        if (!partID)
+        {
+            break;
+        }
+        const auto translationID = dif.IntParam(2);
+        if (!translationID)
+        {
+            break;
+        }
+        const auto translation = dif.StringParam(1);
+        if (!translation)
+        {
+            break;
+        }
+        Words_[*wordID].SetTranslation(*partID, *translationID, *translation);
+    }
 
     default:
         break;
@@ -327,6 +351,7 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
     case LanguageDifferenceType::AddCompound:
     case LanguageDifferenceType::ObsoleteWord:
     case LanguageDifferenceType::EditPart:
+    case LanguageDifferenceType::EditTranslation:
     {
         const auto geometry = diff.StringParam(0);
         if (!geometry)
