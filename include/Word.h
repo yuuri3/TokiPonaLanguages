@@ -52,7 +52,8 @@ public:
 
     const std::vector<Phoneme> GetForm() const;
     const std::map<std::string, std::vector<std::string>> GetTranslations() const;
-    void SetPart(const int partID, const std::string part);
+    void SetPart(const int partID, const std::string &part);
+    void SetTranslation(const int partID, const int translationID, const std::string &translation);
     const std::vector<std::string> GetTags() const;
     const std::map<std::string, std::string> GetContents() const;
     const std::map<std::string, std::vector<Phoneme>> GetVariations() const;
