@@ -471,6 +471,13 @@ bool LanguageFamily::ImportJson(const std::string &filename)
         {
             dif = LanguageDifference::CreateEditPart("0", 0, wordID, partID, part);
             languageDifference_.emplace_back(dif);
+            int translationID = 0;
+            for (const auto &translation : translations)
+            {
+                dif = LanguageDifference::CreateEditTranslation("0", 0, wordID, partID, translationID, translation);
+                languageDifference_.emplace_back(dif);
+                translationID++;
+            }
         }
         wordID++;
     }
