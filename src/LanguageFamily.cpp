@@ -478,6 +478,11 @@ bool LanguageFamily::ImportJson(const std::string &filename)
                 languageDifference_.emplace_back(dif);
             }
         }
+        int tagID = 0;
+        for (const auto &tag : word.GetTags())
+        {
+            dif = LanguageDifference::CreateEditTag("0", 0, wordID, tagID, tag);
+        }
         wordID++;
     }
 
