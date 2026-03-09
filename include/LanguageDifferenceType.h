@@ -58,6 +58,12 @@ enum class LanguageDifferenceType
     // int 品詞ID
     // int 訳語ID
     DeleteTranslation = 10,
+    // タグ編集
+    // string 地理
+    // int 単語ID
+    // int タグID
+    // string 変更後のタグ
+    EditTag = 11,
 };
 
 inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
@@ -84,6 +90,8 @@ inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
         return LanguageDifferenceType::EditTranslation;
     case 10:
         return LanguageDifferenceType::DeleteTranslation;
+    case 11:
+        return LanguageDifferenceType::EditTag;
     default:
         return LanguageDifferenceType::UnDefined;
     }
