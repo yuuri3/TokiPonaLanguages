@@ -362,6 +362,17 @@ void Word::DeleteTranslation(const int partID, const int translationID)
 }
 
 /**
+ * @brief タグを編集
+ *
+ * @param tagID タグID
+ * @param tag タグ
+ */
+void Word::SetTag(const int tagID, const std::string &tag)
+{
+    Tags_[tagID] = tag;
+}
+
+/**
  * @brief タグをゲット
  *
  * @return const std::vector<std::string>
