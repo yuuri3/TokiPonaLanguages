@@ -173,6 +173,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
             break;
         }
         Words_[*wordID].SetTranslation(*partID, *translationID, *translation);
+        break;
     }
     case LanguageDifferenceType::DeletePart:
     {
@@ -187,6 +188,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
             break;
         }
         Words_[*wordID].DeletePart(*partID);
+        break;
     }
 
     default:
