@@ -51,7 +51,10 @@ public:
     Word Add(const Word &word) const;
 
     const std::vector<Phoneme> GetForm() const;
-    const std::map<std::string, std::vector<std::string>> GetTranslations() const;
+    const std::vector<int> GetPartIDs() const;
+    const std::vector<int> GetTranslationIDs(const int partID) const;
+    const std::string GetPart(const int partID) const;
+    const std::string GetTranslation(const int partID, const int translationID) const;
     void SetPart(const int partID, const std::string &part);
     void DeletePart(const int partID);
     void SetTranslation(const int partID, const int translationID, const std::string &translation);

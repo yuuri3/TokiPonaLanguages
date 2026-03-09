@@ -466,17 +466,16 @@ bool LanguageFamily::ImportJson(const std::string &filename)
         auto dif = LanguageDifference::CreateAddWord("0", 0, wordID, converter.ConvertToString(word.GetForm()));
         languageDifference_.emplace_back(dif);
 
-        int partID = 0;
-        for (const auto &[part, translations] : word.GetTranslations())
+        for (const auto partID : word.GetPartIDs())
         {
+            const auto part = word.GetPart(partID);
             dif = LanguageDifference::CreateEditPart("0", 0, wordID, partID, part);
             languageDifference_.emplace_back(dif);
-            int translationID = 0;
-            for (const auto &translation : translations)
+            for (const auto translationID : word.GetTranslationIDs(partID))
             {
+                const auto translation = word.GetTranslation(partID, translationID);
                 dif = LanguageDifference::CreateEditTranslation("0", 0, wordID, partID, translationID, translation);
                 languageDifference_.emplace_back(dif);
-                translationID++;
             }
         }
         wordID++;
