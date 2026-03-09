@@ -181,7 +181,7 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
     {
         QJsonObject transObj = transValue.toObject();
         std::string title = transObj["title"].toString().toStdString();
-        word.Translations_[partId].first = title;
+        word.SetPart(partId, title);
 
         std::vector<std::string> forms;
         QJsonArray formsArray = transObj["forms"].toArray();
@@ -192,10 +192,10 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
         int id = 0;
         for (const auto &form : forms)
         {
-            word.Translations_[partId].second[id] = form;
+            word.SetTranslation(partId, id, form);
             id++;
         }
-        id++;
+        partId++;
     }
 
     // 4. contents (title -> text)
@@ -242,23 +242,73 @@ const std::vector<Phoneme> Word::GetForm() const
 }
 
 /**
- * @brief 訳語をゲット
+ * @brief 品詞IDをゲット
  *
- * @return const std::map<std::string, std::vector<std::string>>
+ * @return const std::vector<int>
  */
-const std::map<std::string, std::vector<std::string>> Word::GetTranslations() const
+const std::vector<int> Word::GetPartIDs() const
 {
-    std::map<std::string, std::vector<std::string>> result;
-    for (const auto &[_, pair] : Translations_)
+    std::vector<int> result;
+    for (const auto &[partID, _] : Translations_)
     {
-        const auto &[part, translations] = pair;
-        result[part] = {};
-        for (const auto &[__, translation] : translations)
-        {
-            result[part].emplace_back(translation);
-        }
+        result.emplace_back(partID);
     }
     return result;
+}
+
+/**
+ * @brief 訳語IDをゲット
+ *
+ * @param partID 品詞ID
+ * @return const std::vector<int>
+ */
+const std::vector<int> Word::GetTranslationIDs(const int partID) const
+{
+    std::vector<int> result;
+    if (Translations_.count(partID) == 0)
+    {
+        return result;
+    }
+    for (const auto &[translationID, _] : Translations_.at(partID).second)
+    {
+        result.emplace_back(translationID);
+    }
+    return result;
+}
+
+/**
+ * @brief 品詞をゲット
+ *
+ * @param partID 品詞ID
+ * @return const std::string
+ */
+const std::string Word::GetPart(const int partID) const
+{
+    if (Translations_.count(partID) == 0)
+    {
+        return "";
+    }
+    return Translations_.at(partID).first;
+}
+
+/**
+ * @brief 訳語をゲット
+ *
+ * @param partID 品詞ID
+ * @param translationID 訳語ID
+ * @return const std::string
+ */
+const std::string Word::GetTranslation(const int partID, const int translationID) const
+{
+    if (Translations_.count(partID) == 0)
+    {
+        return "";
+    }
+    if (Translations_.at(partID).second.count(translationID) == 0)
+    {
+        return "";
+    }
+    return Translations_.at(partID).second.at(translationID);
 }
 
 /**

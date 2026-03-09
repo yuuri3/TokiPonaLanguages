@@ -157,8 +157,14 @@ void EditWordDialog::UpdateDialog()
 
         // 訳語
         std::vector<std::vector<std::string>> translations;
-        for (const auto &[title, forms] : word->GetTranslations())
+        for (const int partID : word->GetPartIDs())
         {
+            std::vector<std::string> forms;
+            const auto title = word->GetPart(partID);
+            for (const int translationID : word->GetTranslationIDs(partID))
+            {
+                forms.emplace_back(word->GetTranslation(partID, translationID));
+            }
             std::string formsStr = JoinStrs(forms, ",");
             translations.push_back({title, formsStr});
         }
