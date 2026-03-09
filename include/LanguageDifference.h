@@ -36,6 +36,7 @@ public:
     static LanguageDifference CreateEditTranslation(const std::string &place, const int period, const int wordID, const int partID, const int translationID, const std::string &translation);
     static LanguageDifference CreateDeleteTranslation(const std::string &place, const int period, const int wordID, const int partID, const int translationID);
     static LanguageDifference CreateEditTag(const std::string &place, const int period, const int wordID, const int tagID, const std::string &tag);
+    static LanguageDifference CreateDeleteTag(const std::string &place, const int period, const int wordID, const int tagID);
 
     const LanguageDifferenceType &GetType() const;
     const int GetPeriod() const;

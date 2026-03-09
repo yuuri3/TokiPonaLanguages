@@ -240,11 +240,31 @@ LanguageDifference LanguageDifference::CreateEditTag(const std::string &place, c
 {
     LanguageDifference diff;
     diff.Period_ = period;
-    diff.Type_ = LanguageDifferenceType::DeleteTranslation;
+    diff.Type_ = LanguageDifferenceType::EditTag;
     diff.StringParam_.emplace_back(place);
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(tagID);
     diff.StringParam_.emplace_back(tag);
+    return diff;
+}
+
+/**
+ * @brief タグ削除
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param tagID タグID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateDeleteTag(const std::string &place, const int period, const int wordID, const int tagID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeleteTag;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(tagID);
     return diff;
 }
 
