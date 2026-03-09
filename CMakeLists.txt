@@ -14,7 +14,7 @@ add_subdirectory(src)
 
 # 1. バージョン定義
 set(APP_VERSION "0.4.1")
-set(EXE_VERSION "0.4.1.1")
+set(EXE_VERSION "0.4.1.2")
 string(REPLACE "." "," APP_VERSION_COMMA "${APP_VERSION},0") 
 string(REPLACE "." "," EXE_VERSION_COMMA "${EXE_VERSION}") 
 
