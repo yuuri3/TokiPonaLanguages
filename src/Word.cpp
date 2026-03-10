@@ -214,12 +214,14 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
 
     // 5. variations (title -> Phonemeリスト)
     QJsonArray variationsArray = obj["variations"].toArray();
+    int variationID = 0;
     for (const auto &varValue : variationsArray)
     {
         QJsonObject varObj = varValue.toObject();
         std::string title = varObj["title"].toString().toStdString();
         std::string form = varObj["form"].toString().toStdString();
-        word.Variations_[title] = converter.ConvertToPhoneme(form);
+        word.Variations_[variationID] = {title, converter.ConvertToPhoneme(form)};
+        variationID++;
     }
 
     // 6. relations (title -> entry ID)
@@ -484,13 +486,48 @@ void Word::DeleteContent(const int contentID)
 }
 
 /**
- * @brief 変化形をゲット
+ * @brief 変化形IDゲット
  *
- * @return const std::map<std::string, std::vector<Phoneme>>
+ * @return const std::vector<int>
  */
-const std::map<std::string, std::vector<Phoneme>> Word::GetVariations() const
+const std::vector<int> Word::GetVariationIDs() const
 {
-    return Variations_;
+    std::vector<int> result;
+    for (const auto &[variationID, _] : Variations_)
+    {
+        result.emplace_back(variationID);
+    }
+    return result;
+}
+
+/**
+ * @brief 変化形タイトルゲット
+ *
+ * @param contentID 変化形ID
+ * @return const std::string
+ */
+const std::string Word::GetVariationTitle(const int variationID) const
+{
+    if (Variations_.count(variationID) == 0)
+    {
+        return "";
+    }
+    return Variations_.at(variationID).first;
+}
+
+/**
+ * @brief 変化形ゲット
+ *
+ * @param contentID 変化形ID
+ * @return const std::vector<Phoneme>
+ */
+const std::vector<Phoneme> Word::GetVariation(const int variationID) const
+{
+    if (Variations_.count(variationID) == 0)
+    {
+        return {};
+    }
+    return Variations_.at(variationID).second;
 }
 
 /**

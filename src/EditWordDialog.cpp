@@ -194,8 +194,10 @@ void EditWordDialog::UpdateDialog()
 
         // 変化形
         std::vector<std::vector<std::string>> variationsData;
-        for (const auto &[title, variation] : word->GetVariations())
+        for (const int variationID : word->GetVariationIDs())
         {
+            const auto title = word->GetVariationTitle(variationID);
+            const auto variation = word->GetVariation(variationID);
             variationsData.push_back({title, converter.ConvertToString(variation)});
         }
         variationsData.push_back({"", ""});
