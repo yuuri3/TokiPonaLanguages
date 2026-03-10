@@ -229,6 +229,20 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         }
         Words_[*wordID].SetTag(*tagID, *tag);
     }
+    case LanguageDifferenceType::DeleteTag:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto tagID = dif.IntParam(1);
+        if (!tagID)
+        {
+            break;
+        }
+        Words_[*wordID].DeleteTag(*tagID);
+    }
 
     default:
         break;
@@ -410,6 +424,7 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
     case LanguageDifferenceType::DeletePart:
     case LanguageDifferenceType::DeleteTranslation:
     case LanguageDifferenceType::EditTag:
+    case LanguageDifferenceType::DeleteTag:
     {
         const auto geometry = diff.StringParam(0);
         if (!geometry)
