@@ -169,9 +169,11 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
 
     // 2. tags
     QJsonArray tagsArray = obj["tags"].toArray();
+    int tagID = 0;
     for (const auto &tag : tagsArray)
     {
-        word.Tags_.push_back(tag.toString().toStdString());
+        word.Tags_[tagID] = tag.toString().toStdString();
+        tagID++;
     }
 
     // 3. translations (title -> forms のリスト)
@@ -200,12 +202,14 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
 
     // 4. contents (title -> text)
     QJsonArray contentsArray = obj["contents"].toArray();
+    int contentID = 0;
     for (const auto &contValue : contentsArray)
     {
         QJsonObject contObj = contValue.toObject();
         std::string title = contObj["title"].toString().toStdString();
         std::string text = contObj["text"].toString().toStdString();
-        word.Contents_[title] = text;
+        word.Contents_[contentID] = {title, text};
+        contentID++;
     }
 
     // 5. variations (title -> Phonemeリスト)
@@ -362,23 +366,121 @@ void Word::DeleteTranslation(const int partID, const int translationID)
 }
 
 /**
+ * @brief タグを編集
+ *
+ * @param tagID タグID
+ * @param tag タグ
+ */
+void Word::SetTag(const int tagID, const std::string &tag)
+{
+    Tags_[tagID] = tag;
+}
+
+/**
+ * @brief タグを削除
+ *
+ * @param tagID タグID
+ */
+void Word::DeleteTag(const int tagID)
+{
+    Tags_.erase(tagID);
+}
+
+/**
+ * @brief タグIDをゲット
+ *
+ * @return const std::vector<int>
+ */
+const std::vector<int> Word::GetTagIDs() const
+{
+    std::vector<int> result;
+    for (const auto &[tagID, _] : Tags_)
+    {
+        result.emplace_back(tagID);
+    }
+    return result;
+}
+
+/**
  * @brief タグをゲット
  *
- * @return const std::vector<std::string>
+ * @param tagID タグID
+ * @return const std::string
  */
-const std::vector<std::string> Word::GetTags() const
+const std::string Word::GetTag(const int tagID) const
 {
-    return Tags_;
+    if (Tags_.count(tagID) == 0)
+    {
+        return "";
+    }
+    return Tags_.at(tagID);
+}
+
+/**
+ * @brief 自由記述IDをゲット
+ *
+ * @return const std::vector<int>
+ */
+const std::vector<int> Word::GetContentIDs() const
+{
+    std::vector<int> result;
+    for (const auto &[contentID, _] : Contents_)
+    {
+        result.emplace_back(contentID);
+    }
+    return result;
+}
+
+/**
+ * @brief 自由記述タイトルをゲット
+ *
+ * @param contentID 自由記述ID
+ * @return const std::vector
+ */
+const std::string Word::GetContentTitle(const int contentID) const
+{
+    if (Contents_.count(contentID) == 0)
+    {
+        return "";
+    }
+    return Contents_.at(contentID).first;
 }
 
 /**
  * @brief 自由記述をゲット
  *
- * @return const std::map<std::string, std::string>
+ * @param contentID 自由記述ID
+ * @return const std::vector
  */
-const std::map<std::string, std::string> Word::GetContents() const
+const std::string Word::GetContent(const int contentID) const
 {
-    return Contents_;
+    if (Contents_.count(contentID) == 0)
+    {
+        return "";
+    }
+    return Contents_.at(contentID).second;
+}
+
+/**
+ * @brief 自由記述をセット
+ *
+ * @param contentID 自由記述ID
+ * @param title タイトル
+ * @param content 自由記述
+ */
+void Word::SetContent(const int contentID, const std::string &title, const std::string &content)
+{
+    Contents_[contentID] = {title, content};
+}
+
+/**
+ * @brief 自由記述削除
+ *
+ * @param contentID 自由記述ID
+ */
+void Word::DeleteContent(const int contentID)
+{
+    Contents_.erase(contentID);
 }
 
 /**

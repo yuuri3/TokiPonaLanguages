@@ -478,6 +478,21 @@ bool LanguageFamily::ImportJson(const std::string &filename)
                 languageDifference_.emplace_back(dif);
             }
         }
+        int tagID = 0;
+        for (const int tagID : word.GetTagIDs())
+        {
+            const auto tag = word.GetTag(tagID);
+            dif = LanguageDifference::CreateEditTag("0", 0, wordID, tagID, tag);
+            languageDifference_.emplace_back(dif);
+        }
+        int contentID = 0;
+        for (const int contentID : word.GetContentIDs())
+        {
+            const auto title = word.GetContentTitle(contentID);
+            const auto content = word.GetContent(contentID);
+            dif = LanguageDifference::CreateEditContent("0", 0, wordID, contentID, title, content);
+            languageDifference_.emplace_back(dif);
+        }
         wordID++;
     }
 

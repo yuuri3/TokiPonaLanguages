@@ -22,9 +22,9 @@ private:
     // translation <title,form>
     std::map<int, std::pair<std::string, std::map<int, std::string>>> Translations_;
     // tags
-    std::vector<std::string> Tags_;
+    std::map<int, std::string> Tags_;
     // contents <title,text>
-    std::map<std::string, std::string> Contents_;
+    std::map<int, std::pair<std::string, std::string>> Contents_;
     // variations <title,form>
     std::map<std::string, std::vector<Phoneme>> Variations_;
     // relations <title,entry>
@@ -59,8 +59,15 @@ public:
     void DeletePart(const int partID);
     void SetTranslation(const int partID, const int translationID, const std::string &translation);
     void DeleteTranslation(const int partID, const int translationID);
-    const std::vector<std::string> GetTags() const;
-    const std::map<std::string, std::string> GetContents() const;
+    const std::vector<int> GetTagIDs() const;
+    const std::string GetTag(const int tagID) const;
+    void SetTag(const int tagID, const std::string &tag);
+    void DeleteTag(const int tagID);
+    const std::vector<int> GetContentIDs() const;
+    const std::string GetContentTitle(const int contentID) const;
+    const std::string GetContent(const int contentID) const;
+    void SetContent(const int contentID, const std::string &title, const std::string &content);
+    void DeleteContent(const int contentID);
     const std::map<std::string, std::vector<Phoneme>> GetVariations() const;
     const std::map<std::string, int> GetRealtions() const;
     const std::vector<std::string> GetAllTranslations() const;

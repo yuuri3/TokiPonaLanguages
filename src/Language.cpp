@@ -210,6 +210,81 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         Words_[*wordID].DeleteTranslation(*partID, *translationID);
         break;
     }
+    case LanguageDifferenceType::EditTag:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto tagID = dif.IntParam(1);
+        if (!tagID)
+        {
+            break;
+        }
+        const auto tag = dif.StringParam(1);
+        if (!tag)
+        {
+            break;
+        }
+        Words_[*wordID].SetTag(*tagID, *tag);
+        break;
+    }
+    case LanguageDifferenceType::DeleteTag:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto tagID = dif.IntParam(1);
+        if (!tagID)
+        {
+            break;
+        }
+        Words_[*wordID].DeleteTag(*tagID);
+        break;
+    }
+    case LanguageDifferenceType::EditContent:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto contentID = dif.IntParam(1);
+        if (!contentID)
+        {
+            break;
+        }
+        const auto title = dif.StringParam(1);
+        if (!title)
+        {
+            break;
+        }
+        const auto content = dif.StringParam(2);
+        if (!content)
+        {
+            break;
+        }
+        Words_[*wordID].SetContent(*contentID, *title, *content);
+        break;
+    }
+    case LanguageDifferenceType::DeleteContent:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto contentID = dif.IntParam(1);
+        if (!contentID)
+        {
+            break;
+        }
+        Words_[*wordID].DeleteContent(*contentID);
+        break;
+    }
 
     default:
         break;
@@ -382,28 +457,6 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
 
     switch (diff.GetType())
     {
-    case LanguageDifferenceType::ChangeStrength:
-    case LanguageDifferenceType::PhonologicalChange:
-    case LanguageDifferenceType::AddCompound:
-    case LanguageDifferenceType::ObsoleteWord:
-    case LanguageDifferenceType::EditPart:
-    case LanguageDifferenceType::EditTranslation:
-    case LanguageDifferenceType::DeletePart:
-    case LanguageDifferenceType::DeleteTranslation:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-
-        if (languages.count(*geometry) == 1)
-        {
-            languages[*geometry].ApplyDifference(diff);
-        }
-        break;
-    }
-
     case LanguageDifferenceType::AddWord:
     {
         const auto geometry = diff.StringParam(0);
@@ -425,7 +478,6 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
         languages[*geometry].AddWord(diff, converter.ConvertToPhoneme(*form));
         break;
     }
-
     case LanguageDifferenceType::Loanword:
     {
         const auto referenceGeometry = diff.StringParam(0);
@@ -456,10 +508,19 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
         }
         break;
     }
-
     default:
     {
-        return false;
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+
+        if (languages.count(*geometry) == 1)
+        {
+            languages[*geometry].ApplyDifference(diff);
+        }
+        break;
     }
     }
     return true;

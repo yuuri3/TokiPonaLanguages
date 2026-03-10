@@ -227,6 +227,91 @@ LanguageDifference LanguageDifference::CreateDeleteTranslation(const std::string
 }
 
 /**
+ * @brief タグ編集
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param tagID タグID
+ * @param tag タグ
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateEditTag(const std::string &place, const int period, const int wordID, const int tagID, const std::string &tag)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::EditTag;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(tagID);
+    diff.StringParam_.emplace_back(tag);
+    return diff;
+}
+
+/**
+ * @brief タグ削除
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param tagID タグID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateDeleteTag(const std::string &place, const int period, const int wordID, const int tagID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeleteTag;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(tagID);
+    return diff;
+}
+
+/**
+ * @brief 自由記述編集
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param contentID 自由記述ID
+ * @param title タイトル
+ * @param content 自由記述
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateEditContent(const std::string &place, const int period, const int wordID, const int contentID, const std::string &title, const std::string &content)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::EditContent;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(contentID);
+    diff.StringParam_.emplace_back(title);
+    diff.StringParam_.emplace_back(content);
+    return diff;
+}
+
+/**
+ * @brief 自由記述削除
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param contentID 自由記述ID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateDeleteContent(const std::string &place, const int period, const int wordID, const int contentID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeleteContent;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(contentID);
+    return diff;
+}
+
+/**
  * @brief タイプをゲット
  *
  * @return const LanguageDifferenceType
