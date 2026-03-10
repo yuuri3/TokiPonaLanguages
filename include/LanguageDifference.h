@@ -21,11 +21,13 @@ private:
     std::vector<double> DoubleParam_;
     // 文字列パラメータ
     std::vector<std::string> StringParam_;
+    // 音素パラメータ
+    std::vector<Phoneme> PhonemeParam_;
     // 音韻変化（あとで消す）
     PhonologicalChange PhonologicalChanges_;
 
 public:
-    static LanguageDifference CreateAddWord(const std::string &place, const int period, const int wordID, const std::string &wordForm);
+    static LanguageDifference CreateAddWord(const std::string &place, const int period, const int wordID, const std::vector<Phoneme> &wordForm);
     static LanguageDifference CreateChangeStrength(const std::string &place, const int period, const double strength);
     static LanguageDifference CreatePhonologicalChange(const std::string &place, const int period, const PhonologicalChange phonologicalChange);
     static LanguageDifference CreateLoanword(const std::string &place1, const std::string &place2, const int period, const int wordID1, const int wordID2);
@@ -51,6 +53,7 @@ public:
     const int DoubleParamSize() const;
     const std::optional<std::string> StringParam(const int i) const;
     const int StringParamSize() const;
+    const std::vector<Phoneme> &GetPhonemeParam() const;
     const PhonologicalChange &GetPhonologicalChange() const;
 
     static bool Import(std::ifstream &file, LanguageDifference &dif);

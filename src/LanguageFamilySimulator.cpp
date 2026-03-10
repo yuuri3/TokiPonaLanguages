@@ -140,7 +140,7 @@ void LanguageFamilySimulator::SetProtoLanguageOnGeography(
     {
         const auto &[wordID, word] = protoLanguage.GetNthWord(i);
 
-        LanguageFamily_.AddDifference(LanguageDifference::CreateAddWord(startPlace, Period_, wordID, converter.ConvertToString(word.GetForm())));
+        LanguageFamily_.AddDifference(LanguageDifference::CreateAddWord(startPlace, Period_, wordID, word.GetForm()));
     }
 }
 

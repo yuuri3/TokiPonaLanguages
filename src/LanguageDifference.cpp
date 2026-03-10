@@ -31,14 +31,14 @@ namespace
  * @param wordForm 語形
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateAddWord(const std::string &place, const int period, const int wordID, const std::string &wordForm)
+LanguageDifference LanguageDifference::CreateAddWord(const std::string &place, const int period, const int wordID, const std::vector<Phoneme> &wordForm)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::AddWord;
     diff.StringParam_.emplace_back(place);
     diff.IntParam_.emplace_back(wordID);
-    diff.StringParam_.emplace_back(wordForm);
+    diff.PhonemeParam_ = wordForm;
     return diff;
 }
 
@@ -446,6 +446,16 @@ const int LanguageDifference::StringParamSize() const
 }
 
 /**
+ * @brief 音素列パラメータ
+ *
+ * @return const std::vector<Phoneme>&
+ */
+const std::vector<Phoneme> &LanguageDifference::GetPhonemeParam() const
+{
+    return PhonemeParam_;
+}
+
+/**
  * @brief 音韻変化を取得
  *
  */
@@ -504,6 +514,13 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
         const auto param = ParseVector(line);
         dif.StringParam_ = param;
     }
+    // PhonemeParam
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto param = ParsePhonemeVector(line);
+        dif.PhonemeParam_ = param;
+    }
     // PhonologicalChange
     {
         if (!std::getline(file, line))
@@ -533,6 +550,7 @@ void LanguageDifference::Export(std::ofstream &file) const
     file << FormatVector<int>(IntParam_) << "\n";
     file << FormatVector<double>(DoubleParam_) << "\n";
     file << FormatVector<std::string>(StringParam_) << "\n";
+    file << FormatPhonemesToVector(PhonemeParam_) << "\n";
     std::vector<int> soundChange = {
         GetPhonologicalChange().BeforePhoneme_.GetPlace(),
         GetPhonologicalChange().BeforePhoneme_.GetManner(),

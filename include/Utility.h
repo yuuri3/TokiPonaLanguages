@@ -2,6 +2,8 @@
 
 #include "stdafx.h"
 
+struct Phoneme;
+
 static std::string APPLICATION_NAME = "うなぎエディタ";
 static std::string APPLICATION_VERSION = "0.4.1";
 
@@ -33,9 +35,13 @@ const std::string FormatVector(const std::vector<T> &vec)
     return ss.str();
 }
 
+// ヘルパー関数：ベクトルをカンマ区切りのリスト形式にする
+const std::string FormatPhonemesToVector(const std::vector<Phoneme> &vec);
+
 const std::vector<std::string> ParseVector(const std::string &line);
 const std::vector<int> ParseIntVector(const std::string &line);
 const std::vector<double> ParseDoubleVector(const std::string &line);
+const std::vector<Phoneme> ParsePhonemeVector(const std::string &line);
 
 struct ImportData
 {

@@ -463,7 +463,7 @@ bool LanguageFamily::ImportJson(const std::string &filename)
     for (const auto &qWord : data.words)
     {
         const auto word = Word::CreateFromJsonObject(qWord.toObject(), converter);
-        auto dif = LanguageDifference::CreateAddWord("0", 0, wordID, converter.ConvertToString(word.GetForm()));
+        auto dif = LanguageDifference::CreateAddWord("0", 0, wordID, word.GetForm());
         languageDifference_.emplace_back(dif);
 
         for (const auto partID : word.GetPartIDs())

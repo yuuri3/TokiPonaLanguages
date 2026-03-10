@@ -86,6 +86,17 @@ void Language::ApplyDifference(const LanguageDifference &dif)
 {
     switch (dif.GetType())
     {
+    case LanguageDifferenceType::AddWord:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto form = dif.GetPhonemeParam();
+        Words_[*wordID] = Word::Create(form);
+        break;
+    }
     case LanguageDifferenceType::ChangeStrength:
     {
         const auto strength = dif.DoubleParam(0);
@@ -294,22 +305,6 @@ void Language::ApplyDifference(const LanguageDifference &dif)
 /**
  * @brief 単語を追加
  *
- * @param dif 差分
- * @param form 語形
- */
-void Language::AddWord(const LanguageDifference &dif, const std::vector<Phoneme> &form)
-{
-    const auto wordID = dif.IntParam(0);
-    if (!wordID)
-    {
-        return;
-    }
-    Words_[*wordID] = Word::Create(form);
-}
-
-/**
- * @brief 単語を追加
- *
  * @param form 語形
  */
 void Language::AddWord(const std::vector<Phoneme> &form)
@@ -457,27 +452,6 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
 
     switch (diff.GetType())
     {
-    case LanguageDifferenceType::AddWord:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-        const auto wordID = diff.IntParam(0);
-        if (!wordID)
-        {
-            return false;
-        }
-        const auto form = diff.StringParam(1);
-        if (!form)
-        {
-            return false;
-        }
-
-        languages[*geometry].AddWord(diff, converter.ConvertToPhoneme(*form));
-        break;
-    }
     case LanguageDifferenceType::Loanword:
     {
         const auto referenceGeometry = diff.StringParam(0);
@@ -516,10 +490,7 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
             return false;
         }
 
-        if (languages.count(*geometry) == 1)
-        {
-            languages[*geometry].ApplyDifference(diff);
-        }
+        languages[*geometry].ApplyDifference(diff);
         break;
     }
     }
