@@ -373,6 +373,16 @@ void Word::SetTag(const int tagID, const std::string &tag)
 }
 
 /**
+ * @brief タグを削除
+ *
+ * @param tagID タグID
+ */
+void Word::DeleteTag(const int tagID)
+{
+    Tags_.erase(tagID);
+}
+
+/**
  * @brief タグをゲット
  *
  * @return const std::vector<std::string>
