@@ -462,6 +462,18 @@ const std::string Word::GetContent(const int contentID) const
 }
 
 /**
+ * @brief 自由記述をセット
+ *
+ * @param contentID 自由記述ID
+ * @param title タイトル
+ * @param content 自由記述
+ */
+void Word::SetContent(const int contentID, const std::string &title, const std::string &content)
+{
+    Contents_[contentID] = {title, content};
+}
+
+/**
  * @brief 変化形をゲット
  *
  * @return const std::map<std::string, std::vector<Phoneme>>
