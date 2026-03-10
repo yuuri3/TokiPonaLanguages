@@ -457,32 +457,6 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
 
     switch (diff.GetType())
     {
-    case LanguageDifferenceType::ChangeStrength:
-    case LanguageDifferenceType::PhonologicalChange:
-    case LanguageDifferenceType::AddCompound:
-    case LanguageDifferenceType::ObsoleteWord:
-    case LanguageDifferenceType::EditPart:
-    case LanguageDifferenceType::EditTranslation:
-    case LanguageDifferenceType::DeletePart:
-    case LanguageDifferenceType::DeleteTranslation:
-    case LanguageDifferenceType::EditTag:
-    case LanguageDifferenceType::DeleteTag:
-    case LanguageDifferenceType::EditContent:
-    case LanguageDifferenceType::DeleteContent:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-
-        if (languages.count(*geometry) == 1)
-        {
-            languages[*geometry].ApplyDifference(diff);
-        }
-        break;
-    }
-
     case LanguageDifferenceType::AddWord:
     {
         const auto geometry = diff.StringParam(0);
@@ -504,7 +478,6 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
         languages[*geometry].AddWord(diff, converter.ConvertToPhoneme(*form));
         break;
     }
-
     case LanguageDifferenceType::Loanword:
     {
         const auto referenceGeometry = diff.StringParam(0);
@@ -535,10 +508,19 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
         }
         break;
     }
-
     default:
     {
-        return false;
+        const auto geometry = diff.StringParam(0);
+        if (!geometry)
+        {
+            return false;
+        }
+
+        if (languages.count(*geometry) == 1)
+        {
+            languages[*geometry].ApplyDifference(diff);
+        }
+        break;
     }
     }
     return true;
