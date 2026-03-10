@@ -61,6 +61,7 @@ public:
     void DeleteTranslation(const int partID, const int translationID);
     void SetTag(const int tagID, const std::string &tag);
     const std::vector<std::string> GetTags() const;
+    void DeleteTag(const int tagID);
     const std::map<std::string, std::string> GetContents() const;
     const std::map<std::string, std::vector<Phoneme>> GetVariations() const;
     const std::map<std::string, int> GetRealtions() const;
