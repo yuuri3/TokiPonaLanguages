@@ -202,12 +202,14 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
 
     // 4. contents (title -> text)
     QJsonArray contentsArray = obj["contents"].toArray();
+    int contentID = 0;
     for (const auto &contValue : contentsArray)
     {
         QJsonObject contObj = contValue.toObject();
         std::string title = contObj["title"].toString().toStdString();
         std::string text = contObj["text"].toString().toStdString();
-        word.Contents_[title] = text;
+        word.Contents_[contentID] = {title, text};
+        contentID++;
     }
 
     // 5. variations (title -> Phonemeリスト)
@@ -415,13 +417,48 @@ const std::string Word::GetTag(const int tagID) const
 }
 
 /**
+ * @brief 自由記述IDをゲット
+ *
+ * @return const std::vector<int>
+ */
+const std::vector<int> Word::GetContentIDs() const
+{
+    std::vector<int> result;
+    for (const auto &[contentID, _] : Contents_)
+    {
+        result.emplace_back(contentID);
+    }
+    return result;
+}
+
+/**
+ * @brief 自由記述タイトルをゲット
+ *
+ * @param contentID 自由記述ID
+ * @return const std::vector
+ */
+const std::string Word::GetContentTitle(const int contentID) const
+{
+    if (Contents_.count(contentID) == 0)
+    {
+        return "";
+    }
+    return Contents_.at(contentID).first;
+}
+
+/**
  * @brief 自由記述をゲット
  *
- * @return const std::map<std::string, std::string>
+ * @param contentID 自由記述ID
+ * @return const std::vector
  */
-const std::map<std::string, std::string> Word::GetContents() const
+const std::string Word::GetContent(const int contentID) const
 {
-    return Contents_;
+    if (Contents_.count(contentID) == 0)
+    {
+        return "";
+    }
+    return Contents_.at(contentID).second;
 }
 
 /**

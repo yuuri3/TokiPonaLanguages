@@ -24,7 +24,7 @@ private:
     // tags
     std::map<int, std::string> Tags_;
     // contents <title,text>
-    std::map<std::string, std::string> Contents_;
+    std::map<int, std::pair<std::string, std::string>> Contents_;
     // variations <title,form>
     std::map<std::string, std::vector<Phoneme>> Variations_;
     // relations <title,entry>
@@ -63,7 +63,9 @@ public:
     const std::string GetTag(const int tagID) const;
     void SetTag(const int tagID, const std::string &tag);
     void DeleteTag(const int tagID);
-    const std::map<std::string, std::string> GetContents() const;
+    const std::vector<int> GetContentIDs() const;
+    const std::string GetContentTitle(const int contentID) const;
+    const std::string GetContent(const int contentID) const;
     const std::map<std::string, std::vector<Phoneme>> GetVariations() const;
     const std::map<std::string, int> GetRealtions() const;
     const std::vector<std::string> GetAllTranslations() const;

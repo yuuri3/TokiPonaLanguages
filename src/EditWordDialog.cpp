@@ -183,8 +183,10 @@ void EditWordDialog::UpdateDialog()
 
         // 自由記述
         std::vector<std::vector<std::string>> contentsData;
-        for (const auto &[title, content] : word->GetContents())
+        for (const int contentID : word->GetContentIDs())
         {
+            const auto title = word->GetContentTitle(contentID);
+            const auto content = word->GetContent(contentID);
             contentsData.push_back({title, content});
         }
         contentsData.push_back({"", ""});
