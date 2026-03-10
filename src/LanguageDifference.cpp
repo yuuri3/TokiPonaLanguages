@@ -270,6 +270,9 @@ LanguageDifference LanguageDifference::CreateDeleteTag(const std::string &place,
 
 /**
  * @brief 自由記述編集
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
  * @param contentID 自由記述ID
  * @param title タイトル
  * @param content 自由記述
@@ -285,6 +288,26 @@ LanguageDifference LanguageDifference::CreateEditContent(const std::string &plac
     diff.IntParam_.emplace_back(contentID);
     diff.StringParam_.emplace_back(title);
     diff.StringParam_.emplace_back(content);
+    return diff;
+}
+
+/**
+ * @brief 自由記述削除
+ *
+ * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param contentID 自由記述ID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateDeleteContent(const std::string &place, const int period, const int wordID, const int contentID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeleteContent;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(contentID);
     return diff;
 }
 
