@@ -474,6 +474,16 @@ void Word::SetContent(const int contentID, const std::string &title, const std::
 }
 
 /**
+ * @brief 自由記述削除
+ *
+ * @param contentID 自由記述ID
+ */
+void Word::DeleteContent(const int contentID)
+{
+    Contents_.erase(contentID);
+}
+
+/**
  * @brief 変化形をゲット
  *
  * @return const std::map<std::string, std::vector<Phoneme>>

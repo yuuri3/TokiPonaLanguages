@@ -67,6 +67,7 @@ public:
     const std::string GetContentTitle(const int contentID) const;
     const std::string GetContent(const int contentID) const;
     void SetContent(const int contentID, const std::string &title, const std::string &content);
+    void DeleteContent(const int contentID);
     const std::map<std::string, std::vector<Phoneme>> GetVariations() const;
     const std::map<std::string, int> GetRealtions() const;
     const std::vector<std::string> GetAllTranslations() const;
