@@ -22,7 +22,7 @@ private:
     // translation <title,form>
     std::map<int, std::pair<std::string, std::map<int, std::string>>> Translations_;
     // tags
-    std::vector<std::string> Tags_;
+    std::map<int, std::string> Tags_;
     // contents <title,text>
     std::map<std::string, std::string> Contents_;
     // variations <title,form>
@@ -59,8 +59,9 @@ public:
     void DeletePart(const int partID);
     void SetTranslation(const int partID, const int translationID, const std::string &translation);
     void DeleteTranslation(const int partID, const int translationID);
+    const std::vector<int> GetTagIDs() const;
+    const std::string GetTag(const int tagID) const;
     void SetTag(const int tagID, const std::string &tag);
-    const std::vector<std::string> GetTags() const;
     void DeleteTag(const int tagID);
     const std::map<std::string, std::string> GetContents() const;
     const std::map<std::string, std::vector<Phoneme>> GetVariations() const;

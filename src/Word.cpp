@@ -169,9 +169,11 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
 
     // 2. tags
     QJsonArray tagsArray = obj["tags"].toArray();
+    int tagID = 0;
     for (const auto &tag : tagsArray)
     {
-        word.Tags_.push_back(tag.toString().toStdString());
+        word.Tags_[tagID] = tag.toString().toStdString();
+        tagID++;
     }
 
     // 3. translations (title -> forms のリスト)
@@ -383,13 +385,33 @@ void Word::DeleteTag(const int tagID)
 }
 
 /**
+ * @brief タグIDをゲット
+ *
+ * @return const std::vector<int>
+ */
+const std::vector<int> Word::GetTagIDs() const
+{
+    std::vector<int> result;
+    for (const auto &[tagID, _] : Tags_)
+    {
+        result.emplace_back(tagID);
+    }
+    return result;
+}
+
+/**
  * @brief タグをゲット
  *
- * @return const std::vector<std::string>
+ * @param tagID タグID
+ * @return const std::string
  */
-const std::vector<std::string> Word::GetTags() const
+const std::string Word::GetTag(const int tagID) const
 {
-    return Tags_;
+    if (Tags_.count(tagID) == 0)
+    {
+        return "";
+    }
+    return Tags_.at(tagID);
 }
 
 /**

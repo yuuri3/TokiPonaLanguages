@@ -173,8 +173,9 @@ void EditWordDialog::UpdateDialog()
 
         // タグ
         std::vector<std::vector<std::string>> tags;
-        for (const auto &tag : word->GetTags())
+        for (const int tagID : word->GetTagIDs())
         {
+            const auto tag = word->GetTag(tagID);
             tags.push_back({tag});
         }
         tags.push_back({""});

@@ -479,8 +479,9 @@ bool LanguageFamily::ImportJson(const std::string &filename)
             }
         }
         int tagID = 0;
-        for (const auto &tag : word.GetTags())
+        for (const int tagID : word.GetTagIDs())
         {
+            const auto tag = word.GetTag(tagID);
             dif = LanguageDifference::CreateEditTag("0", 0, wordID, tagID, tag);
         }
         wordID++;
