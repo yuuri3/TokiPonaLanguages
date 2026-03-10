@@ -279,7 +279,7 @@ LanguageDifference LanguageDifference::CreateEditContent(const std::string &plac
 {
     LanguageDifference diff;
     diff.Period_ = period;
-    diff.Type_ = LanguageDifferenceType::DeleteTranslation;
+    diff.Type_ = LanguageDifferenceType::EditContent;
     diff.StringParam_.emplace_back(place);
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(contentID);

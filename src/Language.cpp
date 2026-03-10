@@ -228,6 +228,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
             break;
         }
         Words_[*wordID].SetTag(*tagID, *tag);
+        break;
     }
     case LanguageDifferenceType::DeleteTag:
     {
@@ -242,6 +243,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
             break;
         }
         Words_[*wordID].DeleteTag(*tagID);
+        break;
     }
     case LanguageDifferenceType::EditContent:
     {
@@ -266,6 +268,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
             break;
         }
         Words_[*wordID].SetContent(*contentID, *title, *content);
+        break;
     }
 
     default:
