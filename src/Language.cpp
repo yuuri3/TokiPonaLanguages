@@ -347,6 +347,19 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         Words_[*wordID].SetRelation(*relationID, *title, *targetWordID);
         break;
     }
+    case LanguageDifferenceType::DeleteRelation:
+    {
+        const auto wordID = dif.IntParam(0);
+        const auto relationID = dif.IntParam(1);
+
+        if (!wordID || !relationID)
+        {
+            break;
+        }
+
+        Words_[*wordID].DeleteRelation(*relationID);
+        break;
+    }
 
     default:
         break;
