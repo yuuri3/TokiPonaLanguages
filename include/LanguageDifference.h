@@ -41,6 +41,7 @@ public:
     static LanguageDifference CreateDeleteTag(const std::string &place, const int period, const int wordID, const int tagID);
     static LanguageDifference CreateEditContent(const std::string &place, const int period, const int wordID, const int contentID, const std::string &title, const std::string &content);
     static LanguageDifference CreateDeleteContent(const std::string &place, const int period, const int wordID, const int contentID);
+    static LanguageDifference CreateEditVariation(const std::string &place, const int period, const int wordID, const int variationID, const std::string &title, const std::vector<Phoneme> variation);
 
     const LanguageDifferenceType &GetType() const;
     const int GetPeriod() const;

@@ -312,6 +312,42 @@ LanguageDifference LanguageDifference::CreateDeleteContent(const std::string &pl
 }
 
 /**
+ * @brief 変化形の編集オブジェクトを作成
+ * * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param variationID バリエーションID
+ * @param title 項目名（変化形のタイトル）
+ * @param variation 変化形
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateEditVariation(
+    const std::string &place,
+    const int period,
+    const int wordID,
+    const int variationID,
+    const std::string &title,
+    const std::vector<Phoneme> variation)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::EditTranslation; // 列挙型にこの値があることを想定
+
+    // 文字列パラメータ: 0:地域, 1:タイトル
+    diff.StringParam_.emplace_back(place);
+    diff.StringParam_.emplace_back(title);
+
+    // 数値パラメータ: 0:単語ID, 1:変化形ID
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(variationID);
+
+    // 音素パラメータ
+    diff.PhonemeParam_ = variation;
+
+    return diff;
+}
+
+/**
  * @brief タイプをゲット
  *
  * @return const LanguageDifferenceType
