@@ -593,6 +593,17 @@ const int Word::GetRelationWordID(const int relationID) const
 }
 
 /**
+ * @brief 関連語を設定（新規追加・更新）する
+ * @param relationID 関連ID
+ * @param title 関連のタイトル（ラベル）
+ * @param targetWordID 参照先の単語ID
+ */
+void Word::SetRelation(const int relationID, const std::string &title, const int targetWordID)
+{
+    Relations_[relationID] = std::make_pair(title, targetWordID);
+}
+
+/**
  * @brief 訳語の集合を取得
  *
  * @return const std::vector<std::string>
