@@ -531,6 +531,17 @@ const std::vector<Phoneme> Word::GetVariation(const int variationID) const
 }
 
 /**
+ * @brief バリエーション（語形変化など）を設定・更新する
+ * @param variationID バリエーションの識別ID
+ * @param title バリエーションのタイトル（例: "過去形", "複数形"）
+ * @param content 変化後の音素列
+ */
+void Word::SetVariation(const int variationID, const std::string &title, const std::vector<Phoneme> &content)
+{
+    Variations_[variationID] = std::make_pair(title, content);
+}
+
+/**
  * @brief 関連語をゲット
  *
  * @return const std::map<std::string, int>
