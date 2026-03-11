@@ -604,6 +604,15 @@ void Word::SetRelation(const int relationID, const std::string &title, const int
 }
 
 /**
+ * @brief 関連語を削除する
+ * @param relationID 削除対象の関連ID
+ */
+void Word::DeleteRelation(const int relationID)
+{
+    Relations_.erase(relationID);
+}
+
+/**
  * @brief 訳語の集合を取得
  *
  * @return const std::vector<std::string>

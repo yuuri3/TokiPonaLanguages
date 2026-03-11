@@ -77,6 +77,7 @@ public:
     const std::string GetRelationTitle(const int relationID) const;
     const int GetRelationWordID(const int relationID) const;
     void SetRelation(const int relationID, const std::string &title, const int targetWordID);
+    void DeleteRelation(const int relationID);
 
     const std::vector<std::string> GetAllTranslations() const;
     void ChangeSound(PhonologicalChange phon, const bool isProhibitSoundDuplication);
