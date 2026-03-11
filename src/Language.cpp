@@ -296,6 +296,27 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         Words_[*wordID].DeleteContent(*contentID);
         break;
     }
+    case LanguageDifferenceType::EditVariation:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto variationID = dif.IntParam(1);
+        if (!variationID)
+        {
+            break;
+        }
+        const auto title = dif.StringParam(1);
+        if (!title)
+        {
+            break;
+        }
+        const auto variationForm = dif.GetPhonemeParam();
+        Words_[*wordID].SetVariation(*variationID, *title, variationForm);
+        break;
+    }
 
     default:
         break;
