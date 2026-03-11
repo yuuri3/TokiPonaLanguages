@@ -542,6 +542,15 @@ void Word::SetVariation(const int variationID, const std::string &title, const s
 }
 
 /**
+ * @brief バリエーションを削除する
+ * @param variationID 削除対象のバリエーションID
+ */
+void Word::DeleteVariation(const int variationID)
+{
+    Variations_.erase(variationID);
+}
+
+/**
  * @brief 関連語をゲット
  *
  * @return const std::map<std::string, int>

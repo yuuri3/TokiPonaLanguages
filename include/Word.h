@@ -72,6 +72,7 @@ public:
     const std::string GetVariationTitle(const int contentID) const;
     const std::vector<Phoneme> GetVariation(const int contentID) const;
     void SetVariation(const int cariationID, const std::string &title, const std::vector<Phoneme> &content);
+    void DeleteVariation(const int variationID);
     const std::map<std::string, int> GetRealtions() const;
     const std::vector<std::string> GetAllTranslations() const;
     void ChangeSound(PhonologicalChange phon, const bool isProhibitSoundDuplication);
