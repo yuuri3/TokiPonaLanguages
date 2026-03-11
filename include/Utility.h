@@ -5,7 +5,7 @@
 struct Phoneme;
 
 static std::string APPLICATION_NAME = "うなぎエディタ";
-static std::string APPLICATION_VERSION = "0.4.1";
+static std::string APPLICATION_VERSION = "0.5.0";
 
 std::vector<std::vector<std::string>> readCSV(const std::string &filename);
 bool writeCSV(const std::string &filename, const std::vector<std::vector<std::string>> &data);
