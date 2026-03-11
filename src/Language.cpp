@@ -86,6 +86,17 @@ void Language::ApplyDifference(const LanguageDifference &dif)
 {
     switch (dif.GetType())
     {
+    case LanguageDifferenceType::AddWord:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto form = dif.GetPhonemeParam();
+        Words_[*wordID] = Word::Create(form);
+        break;
+    }
     case LanguageDifferenceType::ChangeStrength:
     {
         const auto strength = dif.DoubleParam(0);
@@ -285,26 +296,74 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         Words_[*wordID].DeleteContent(*contentID);
         break;
     }
+    case LanguageDifferenceType::EditVariation:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto variationID = dif.IntParam(1);
+        if (!variationID)
+        {
+            break;
+        }
+        const auto title = dif.StringParam(1);
+        if (!title)
+        {
+            break;
+        }
+        const auto variationForm = dif.GetPhonemeParam();
+        Words_[*wordID].SetVariation(*variationID, *title, variationForm);
+        break;
+    }
+    case LanguageDifferenceType::DeleteVariation:
+    {
+        const auto wordID = dif.IntParam(0);
+        if (!wordID)
+        {
+            break;
+        }
+        const auto variationID = dif.IntParam(1);
+        if (!variationID)
+        {
+            break;
+        }
+        Words_[*wordID].DeleteVariation(*variationID);
+        break;
+    }
+    case LanguageDifferenceType::SetRelation:
+    {
+        const auto wordID = dif.IntParam(0);
+        const auto relationID = dif.IntParam(1);
+        const auto targetWordID = dif.IntParam(2);
+        const auto title = dif.StringParam(1); // 0はplace
+
+        if (!wordID || !relationID || !targetWordID || !title)
+        {
+            break;
+        }
+
+        Words_[*wordID].SetRelation(*relationID, *title, *targetWordID);
+        break;
+    }
+    case LanguageDifferenceType::DeleteRelation:
+    {
+        const auto wordID = dif.IntParam(0);
+        const auto relationID = dif.IntParam(1);
+
+        if (!wordID || !relationID)
+        {
+            break;
+        }
+
+        Words_[*wordID].DeleteRelation(*relationID);
+        break;
+    }
 
     default:
         break;
     }
-}
-
-/**
- * @brief 単語を追加
- *
- * @param dif 差分
- * @param form 語形
- */
-void Language::AddWord(const LanguageDifference &dif, const std::vector<Phoneme> &form)
-{
-    const auto wordID = dif.IntParam(0);
-    if (!wordID)
-    {
-        return;
-    }
-    Words_[*wordID] = Word::Create(form);
 }
 
 /**
@@ -457,27 +516,6 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
 
     switch (diff.GetType())
     {
-    case LanguageDifferenceType::AddWord:
-    {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
-        {
-            return false;
-        }
-        const auto wordID = diff.IntParam(0);
-        if (!wordID)
-        {
-            return false;
-        }
-        const auto form = diff.StringParam(1);
-        if (!form)
-        {
-            return false;
-        }
-
-        languages[*geometry].AddWord(diff, converter.ConvertToPhoneme(*form));
-        break;
-    }
     case LanguageDifferenceType::Loanword:
     {
         const auto referenceGeometry = diff.StringParam(0);
@@ -516,10 +554,7 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
             return false;
         }
 
-        if (languages.count(*geometry) == 1)
-        {
-            languages[*geometry].ApplyDifference(diff);
-        }
+        languages[*geometry].ApplyDifference(diff);
         break;
     }
     }

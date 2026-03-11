@@ -45,7 +45,7 @@ enum class LanguageDifferenceType
     // int 単語ID
     // string 品詞ID
     DeletePart = 8,
-    // 品詞追加
+    // 訳語編集
     // string 地理
     // int 単語ID
     // int 品詞ID
@@ -81,6 +81,30 @@ enum class LanguageDifferenceType
     // int 単語ID
     // int 自由記述ID
     DeleteContent = 14,
+    // 変化形編集
+    // string 地理
+    // int 単語ID
+    // int 変化形ID
+    // string 変化形タイトル
+    // phoneme 変化形
+    EditVariation = 15,
+    // 変化形削除
+    // string 地理
+    // int 単語ID
+    // int 変化形ID
+    DeleteVariation = 16,
+    // 関連語設定（新規追加・編集共通）
+    // string 地理
+    // int 単語ID
+    // int 関連語内ID (relationID)
+    // string 関連タイトル
+    // int 参照先単語ID
+    SetRelation = 17,
+    // 関連語削除
+    // string 地理
+    // int 単語ID
+    // int 関連語内ID (relationID)
+    DeleteRelation = 18,
 };
 
 inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
@@ -115,6 +139,14 @@ inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
         return LanguageDifferenceType::EditContent;
     case 14:
         return LanguageDifferenceType::DeleteContent;
+    case 15:
+        return LanguageDifferenceType::EditVariation;
+    case 16:
+        return LanguageDifferenceType::DeleteVariation;
+    case 17:
+        return LanguageDifferenceType::SetRelation;
+    case 18:
+        return LanguageDifferenceType::DeleteRelation;
     default:
         return LanguageDifferenceType::UnDefined;
     }

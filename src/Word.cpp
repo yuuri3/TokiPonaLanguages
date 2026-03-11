@@ -214,22 +214,27 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
 
     // 5. variations (title -> Phonemeリスト)
     QJsonArray variationsArray = obj["variations"].toArray();
+    int variationID = 0;
     for (const auto &varValue : variationsArray)
     {
         QJsonObject varObj = varValue.toObject();
         std::string title = varObj["title"].toString().toStdString();
         std::string form = varObj["form"].toString().toStdString();
-        word.Variations_[title] = converter.ConvertToPhoneme(form);
+        word.Variations_[variationID] = {title, converter.ConvertToPhoneme(form)};
+        variationID++;
     }
 
-    // 6. relations (title -> entry ID)
+    // 6. relations (index -> <title, entry ID>)
     QJsonArray relationsArray = obj["relations"].toArray();
+    int relationId = 0;
     for (const auto &relValue : relationsArray)
     {
         QJsonObject relObj = relValue.toObject();
         std::string title = relObj["title"].toString().toStdString();
         int entryId = relObj["entry"].toObject()["id"].toInt();
-        word.Relations_[title] = entryId;
+
+        word.Relations_[relationId] = std::make_pair(title, entryId);
+        relationId++;
     }
 
     return word;
@@ -484,23 +489,127 @@ void Word::DeleteContent(const int contentID)
 }
 
 /**
- * @brief 変化形をゲット
+ * @brief 変化形IDゲット
  *
- * @return const std::map<std::string, std::vector<Phoneme>>
+ * @return const std::vector<int>
  */
-const std::map<std::string, std::vector<Phoneme>> Word::GetVariations() const
+const std::vector<int> Word::GetVariationIDs() const
 {
-    return Variations_;
+    std::vector<int> result;
+    for (const auto &[variationID, _] : Variations_)
+    {
+        result.emplace_back(variationID);
+    }
+    return result;
 }
 
 /**
- * @brief 関連語をゲット
+ * @brief 変化形タイトルゲット
  *
- * @return const std::map<std::string, int>
+ * @param contentID 変化形ID
+ * @return const std::string
  */
-const std::map<std::string, int> Word::GetRealtions() const
+const std::string Word::GetVariationTitle(const int variationID) const
 {
-    return Relations_;
+    if (Variations_.count(variationID) == 0)
+    {
+        return "";
+    }
+    return Variations_.at(variationID).first;
+}
+
+/**
+ * @brief 変化形ゲット
+ *
+ * @param contentID 変化形ID
+ * @return const std::vector<Phoneme>
+ */
+const std::vector<Phoneme> Word::GetVariation(const int variationID) const
+{
+    if (Variations_.count(variationID) == 0)
+    {
+        return {};
+    }
+    return Variations_.at(variationID).second;
+}
+
+/**
+ * @brief バリエーション（語形変化など）を設定・更新する
+ * @param variationID バリエーションの識別ID
+ * @param title バリエーションのタイトル（例: "過去形", "複数形"）
+ * @param content 変化後の音素列
+ */
+void Word::SetVariation(const int variationID, const std::string &title, const std::vector<Phoneme> &content)
+{
+    Variations_[variationID] = std::make_pair(title, content);
+}
+
+/**
+ * @brief バリエーションを削除する
+ * @param variationID 削除対象のバリエーションID
+ */
+void Word::DeleteVariation(const int variationID)
+{
+    Variations_.erase(variationID);
+}
+
+/**
+ * @brief 関連単語のIDリストを取得
+ */
+const std::vector<int> Word::GetRelationIDs() const
+{
+    std::vector<int> ids;
+    for (const auto &[id, _] : Relations_)
+    {
+        ids.emplace_back(id);
+    }
+    return ids;
+}
+
+/**
+ * @brief 関連単語のタイトル（ラベル）を取得
+ */
+const std::string Word::GetRelationTitle(const int relationID) const
+{
+    auto it = Relations_.find(relationID);
+    if (it != Relations_.end())
+    {
+        return it->second.first;
+    }
+    return std::string();
+}
+
+/**
+ * @brief 関連先の単語IDを取得
+ */
+const int Word::GetRelationWordID(const int relationID) const
+{
+    auto it = Relations_.find(relationID);
+    if (it != Relations_.end())
+    {
+        return it->second.second;
+    }
+    return -1;
+}
+
+/**
+ * @brief 関連語を設定（新規追加・更新）する
+ * @param relationID 関連ID
+ * @param title 関連のタイトル（ラベル）
+ * @param targetWordID 参照先の単語ID
+ */
+void Word::SetRelation(const int relationID, const std::string &title, const int targetWordID)
+{
+    Relations_[relationID] = std::make_pair(title, targetWordID);
+}
+
+/**
+ * @brief 関連語を削除する
+ * @param relationID 削除対象の関連ID
+ */
+void Word::DeleteRelation(const int relationID)
+{
+    Relations_.erase(relationID);
 }
 
 /**

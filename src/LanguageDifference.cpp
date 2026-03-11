@@ -31,14 +31,14 @@ namespace
  * @param wordForm 語形
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateAddWord(const std::string &place, const int period, const int wordID, const std::string &wordForm)
+LanguageDifference LanguageDifference::CreateAddWord(const std::string &place, const int period, const int wordID, const std::vector<Phoneme> &wordForm)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::AddWord;
     diff.StringParam_.emplace_back(place);
     diff.IntParam_.emplace_back(wordID);
-    diff.StringParam_.emplace_back(wordForm);
+    diff.PhonemeParam_ = wordForm;
     return diff;
 }
 
@@ -312,6 +312,100 @@ LanguageDifference LanguageDifference::CreateDeleteContent(const std::string &pl
 }
 
 /**
+ * @brief 変化形の編集オブジェクトを作成
+ * * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param variationID バリエーションID
+ * @param title 項目名（変化形のタイトル）
+ * @param variation 変化形
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateEditVariation(
+    const std::string &place,
+    const int period,
+    const int wordID,
+    const int variationID,
+    const std::string &title,
+    const std::vector<Phoneme> variation)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::EditTranslation; // 列挙型にこの値があることを想定
+
+    // 文字列パラメータ: 0:地域, 1:タイトル
+    diff.StringParam_.emplace_back(place);
+    diff.StringParam_.emplace_back(title);
+
+    // 数値パラメータ: 0:単語ID, 1:変化形ID
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(variationID);
+
+    // 音素パラメータ
+    diff.PhonemeParam_ = variation;
+
+    return diff;
+}
+
+/**
+ * @brief 変化形削除オブジェクトを作成
+ * * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param variationID 変化形ID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateDeleteVariation(const std::string &place, const int period, const int wordID, const int variationID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeleteVariation;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(variationID);
+    return diff;
+}
+
+/**
+ * @brief 関連語の設定オブジェクトを作成
+ * * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param relationID 関連ID
+ * @param title 関連タイトル（例: "語源", "派生語"）
+ * @param targetWordID 参照先の単語ID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateSetRelation(const std::string &place, const int period, const int wordID, const int relationID, const std::string &title, const int targetWordID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::SetRelation;
+
+    // StringParam: [0]=place, [1]=title
+    diff.StringParam_.emplace_back(place);
+    diff.StringParam_.emplace_back(title);
+
+    // IntParam: [0]=wordID, [1]=relationID, [2]=targetWordID
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(relationID);
+    diff.IntParam_.emplace_back(targetWordID);
+
+    return diff;
+}
+
+LanguageDifference LanguageDifference::CreateDeleteRelation(const std::string &place, const int period, const int wordID, const int relationID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeleteRelation;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(relationID);
+    return diff;
+}
+
+/**
  * @brief タイプをゲット
  *
  * @return const LanguageDifferenceType
@@ -446,6 +540,16 @@ const int LanguageDifference::StringParamSize() const
 }
 
 /**
+ * @brief 音素列パラメータ
+ *
+ * @return const std::vector<Phoneme>&
+ */
+const std::vector<Phoneme> &LanguageDifference::GetPhonemeParam() const
+{
+    return PhonemeParam_;
+}
+
+/**
  * @brief 音韻変化を取得
  *
  */
@@ -504,6 +608,13 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
         const auto param = ParseVector(line);
         dif.StringParam_ = param;
     }
+    // PhonemeParam
+    {
+        if (!std::getline(file, line))
+            return false;
+        const auto param = ParsePhonemeVector(line);
+        dif.PhonemeParam_ = param;
+    }
     // PhonologicalChange
     {
         if (!std::getline(file, line))
@@ -533,6 +644,7 @@ void LanguageDifference::Export(std::ofstream &file) const
     file << FormatVector<int>(IntParam_) << "\n";
     file << FormatVector<double>(DoubleParam_) << "\n";
     file << FormatVector<std::string>(StringParam_) << "\n";
+    file << FormatPhonemesToVector(PhonemeParam_) << "\n";
     std::vector<int> soundChange = {
         GetPhonologicalChange().BeforePhoneme_.GetPlace(),
         GetPhonologicalChange().BeforePhoneme_.GetManner(),

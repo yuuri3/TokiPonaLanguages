@@ -194,8 +194,10 @@ void EditWordDialog::UpdateDialog()
 
         // 変化形
         std::vector<std::vector<std::string>> variationsData;
-        for (const auto &[title, variation] : word->GetVariations())
+        for (const int variationID : word->GetVariationIDs())
         {
+            const auto title = word->GetVariationTitle(variationID);
+            const auto variation = word->GetVariation(variationID);
             variationsData.push_back({title, converter.ConvertToString(variation)});
         }
         variationsData.push_back({"", ""});
@@ -203,13 +205,12 @@ void EditWordDialog::UpdateDialog()
 
         // 関連語
         std::vector<std::vector<std::string>> relationsData;
-        for (const auto &[title, relatedWordID] : word->GetRealtions())
+        for (const int relationID : word->GetRelationIDs())
         {
+            const auto title = word->GetRelationTitle(relationID);
+            const int relatedWordID = word->GetRelationWordID(relationID);
             const auto relatedWord = Language_.GetWord(relatedWordID);
-            if (relatedWord)
-            {
-                relationsData.push_back({title, converter.ConvertToString(relatedWord->GetForm())});
-            }
+            relationsData.push_back({title, converter.ConvertToString(relatedWord->GetForm())});
         }
         relationsData.push_back({"", ""});
         DisplayLine(Relations_, relationsData, TWO_WIDTHS);

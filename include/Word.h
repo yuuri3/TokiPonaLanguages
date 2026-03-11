@@ -26,9 +26,9 @@ private:
     // contents <title,text>
     std::map<int, std::pair<std::string, std::string>> Contents_;
     // variations <title,form>
-    std::map<std::string, std::vector<Phoneme>> Variations_;
+    std::map<int, std::pair<std::string, std::vector<Phoneme>>> Variations_;
     // relations <title,entry>
-    std::map<std::string, int> Relations_;
+    std::map<int, std::pair<std::string, int>> Relations_;
 
 public:
     bool operator==(const Word &other) const
@@ -68,8 +68,17 @@ public:
     const std::string GetContent(const int contentID) const;
     void SetContent(const int contentID, const std::string &title, const std::string &content);
     void DeleteContent(const int contentID);
-    const std::map<std::string, std::vector<Phoneme>> GetVariations() const;
-    const std::map<std::string, int> GetRealtions() const;
+    const std::vector<int> GetVariationIDs() const;
+    const std::string GetVariationTitle(const int contentID) const;
+    const std::vector<Phoneme> GetVariation(const int contentID) const;
+    void SetVariation(const int cariationID, const std::string &title, const std::vector<Phoneme> &content);
+    void DeleteVariation(const int variationID);
+    const std::vector<int> GetRelationIDs() const;
+    const std::string GetRelationTitle(const int relationID) const;
+    const int GetRelationWordID(const int relationID) const;
+    void SetRelation(const int relationID, const std::string &title, const int targetWordID);
+    void DeleteRelation(const int relationID);
+
     const std::vector<std::string> GetAllTranslations() const;
     void ChangeSound(PhonologicalChange phon, const bool isProhibitSoundDuplication);
 };
