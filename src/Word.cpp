@@ -224,14 +224,17 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
         variationID++;
     }
 
-    // 6. relations (title -> entry ID)
+    // 6. relations (index -> <title, entry ID>)
     QJsonArray relationsArray = obj["relations"].toArray();
+    int relationId = 0;
     for (const auto &relValue : relationsArray)
     {
         QJsonObject relObj = relValue.toObject();
         std::string title = relObj["title"].toString().toStdString();
         int entryId = relObj["entry"].toObject()["id"].toInt();
-        word.Relations_[title] = entryId;
+
+        word.Relations_[relationId] = std::make_pair(title, entryId);
+        relationId++;
     }
 
     return word;
@@ -551,13 +554,42 @@ void Word::DeleteVariation(const int variationID)
 }
 
 /**
- * @brief 関連語をゲット
- *
- * @return const std::map<std::string, int>
+ * @brief 関連単語のIDリストを取得
  */
-const std::map<std::string, int> Word::GetRealtions() const
+const std::vector<int> Word::GetRelationIDs() const
 {
-    return Relations_;
+    std::vector<int> ids;
+    for (const auto &[id, _] : Relations_)
+    {
+        ids.emplace_back(id);
+    }
+    return ids;
+}
+
+/**
+ * @brief 関連単語のタイトル（ラベル）を取得
+ */
+const std::string Word::GetRelationTitle(const int relationID) const
+{
+    auto it = Relations_.find(relationID);
+    if (it != Relations_.end())
+    {
+        return it->second.first;
+    }
+    return std::string();
+}
+
+/**
+ * @brief 関連先の単語IDを取得
+ */
+const int Word::GetRelationWordID(const int relationID) const
+{
+    auto it = Relations_.find(relationID);
+    if (it != Relations_.end())
+    {
+        return it->second.second;
+    }
+    return -1;
 }
 
 /**

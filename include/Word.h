@@ -28,7 +28,7 @@ private:
     // variations <title,form>
     std::map<int, std::pair<std::string, std::vector<Phoneme>>> Variations_;
     // relations <title,entry>
-    std::map<std::string, int> Relations_;
+    std::map<int, std::pair<std::string, int>> Relations_;
 
 public:
     bool operator==(const Word &other) const
@@ -73,7 +73,10 @@ public:
     const std::vector<Phoneme> GetVariation(const int contentID) const;
     void SetVariation(const int cariationID, const std::string &title, const std::vector<Phoneme> &content);
     void DeleteVariation(const int variationID);
-    const std::map<std::string, int> GetRealtions() const;
+    const std::vector<int> GetRelationIDs() const;
+    const std::string GetRelationTitle(const int relationID) const;
+    const int GetRelationWordID(const int relationID) const;
+
     const std::vector<std::string> GetAllTranslations() const;
     void ChangeSound(PhonologicalChange phon, const bool isProhibitSoundDuplication);
 };
