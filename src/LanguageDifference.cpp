@@ -367,6 +367,34 @@ LanguageDifference LanguageDifference::CreateDeleteVariation(const std::string &
 }
 
 /**
+ * @brief 関連語の設定オブジェクトを作成
+ * * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param relationID 関連ID
+ * @param title 関連タイトル（例: "語源", "派生語"）
+ * @param targetWordID 参照先の単語ID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateSetRelation(const std::string &place, const int period, const int wordID, const int relationID, const std::string &title, const int targetWordID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::SetRelation;
+
+    // StringParam: [0]=place, [1]=title
+    diff.StringParam_.emplace_back(place);
+    diff.StringParam_.emplace_back(title);
+
+    // IntParam: [0]=wordID, [1]=relationID, [2]=targetWordID
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(relationID);
+    diff.IntParam_.emplace_back(targetWordID);
+
+    return diff;
+}
+
+/**
  * @brief タイプをゲット
  *
  * @return const LanguageDifferenceType
