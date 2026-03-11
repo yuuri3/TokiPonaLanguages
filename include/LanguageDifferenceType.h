@@ -93,6 +93,13 @@ enum class LanguageDifferenceType
     // int 単語ID
     // int 変化形ID
     DeleteVariation = 16,
+    // 関連語設定（新規追加・編集共通）
+    // string 地理
+    // int 単語ID
+    // int 関連語内ID (relationID)
+    // string 関連タイトル
+    // int 参照先単語ID
+    SetRelation = 17,
 };
 
 inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
@@ -131,6 +138,8 @@ inline const LanguageDifferenceType ConvertToLanguageDifferenceType(const int i)
         return LanguageDifferenceType::EditVariation;
     case 16:
         return LanguageDifferenceType::DeleteVariation;
+    case 17:
+        return LanguageDifferenceType::SetRelation;
     default:
         return LanguageDifferenceType::UnDefined;
     }
