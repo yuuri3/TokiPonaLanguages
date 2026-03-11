@@ -348,6 +348,25 @@ LanguageDifference LanguageDifference::CreateEditVariation(
 }
 
 /**
+ * @brief 変化形削除オブジェクトを作成
+ * * @param place 地域
+ * @param period 時代
+ * @param wordID 単語ID
+ * @param variationID 変化形ID
+ * @return LanguageDifference
+ */
+LanguageDifference LanguageDifference::CreateDeleteVariation(const std::string &place, const int period, const int wordID, const int variationID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeleteVariation;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(variationID);
+    return diff;
+}
+
+/**
  * @brief タイプをゲット
  *
  * @return const LanguageDifferenceType
