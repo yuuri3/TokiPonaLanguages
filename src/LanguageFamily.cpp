@@ -498,6 +498,13 @@ bool LanguageFamily::ImportJson(const std::string &filename)
             dif = LanguageDifference::CreateEditVariation("0", 0, wordID, variationID, title, variation);
             languageDifference_.emplace_back(dif);
         }
+        for (const int relationID : word.GetRelationIDs())
+        {
+            const auto title = word.GetRelationTitle(relationID);
+            const int targetWordID = word.GetRelationWordID(relationID);
+            dif = LanguageDifference::CreateSetRelation("0", 0, wordID, relationID, title, targetWordID);
+            languageDifference_.emplace_back(dif);
+        }
         wordID++;
     }
 
