@@ -44,6 +44,7 @@ public:
     static LanguageDifference CreateEditVariation(const std::string &place, const int period, const int wordID, const int variationID, const std::string &title, const std::vector<Phoneme> variation);
     static LanguageDifference CreateDeleteVariation(const std::string &place, const int period, const int wordID, const int variationID);
     static LanguageDifference CreateSetRelation(const std::string &place, const int period, const int wordID, const int relationID, const std::string &title, const int targetWordID);
+    static LanguageDifference CreateDeleteRelation(const std::string &place, const int period, const int wordID, const int relationID);
 
     const LanguageDifferenceType &GetType() const;
     const int GetPeriod() const;

@@ -394,6 +394,17 @@ LanguageDifference LanguageDifference::CreateSetRelation(const std::string &plac
     return diff;
 }
 
+LanguageDifference LanguageDifference::CreateDeleteRelation(const std::string &place, const int period, const int wordID, const int relationID)
+{
+    LanguageDifference diff;
+    diff.Period_ = period;
+    diff.Type_ = LanguageDifferenceType::DeleteRelation;
+    diff.StringParam_.emplace_back(place);
+    diff.IntParam_.emplace_back(wordID);
+    diff.IntParam_.emplace_back(relationID);
+    return diff;
+}
+
 /**
  * @brief タイプをゲット
  *
