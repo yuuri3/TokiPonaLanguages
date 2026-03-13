@@ -7,6 +7,7 @@
 #include "EditPeriodDialog.h"
 #include "EditGeometryDialog.h"
 #include "HelpDialog.h"
+#include "EditPhonologicalChangeDialog.h"
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -51,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
     //     * 音韻変化
     PhonologicalChangeAction_ = new QAction("音韻変化", this);
     EditMenu_->addAction(PhonologicalChangeAction_);
-    connect(PhonologicalChangeAction_, &QAction::triggered, this, &MainWindow::Unimplemented);
+    connect(PhonologicalChangeAction_, &QAction::triggered, this, &MainWindow::EditPhonologicalChange);
 
     //     * 借用
     LoanwordAction_ = new QAction("借用", this);
@@ -205,6 +206,16 @@ void MainWindow::SaveFile()
             "保存するファイルがありません。");
     }
     IsLanguagesSaved_ = true;
+}
+
+/**
+ * @brief 音韻変化編集
+ *
+ */
+void MainWindow::EditPhonologicalChange()
+{
+    EditPhonologicalChangeDialog subWindow(this);
+    subWindow.exec();
 }
 
 /**

@@ -12,6 +12,7 @@ add_library(src
     EditGeometryDialog.cpp
     EditLanguageWindow.cpp
     EditPeriodDialog.cpp
+    EditPhonologicalChangeDialog.cpp
     EditWordDialog.cpp
     Evolution.cpp
     HelpDialog.cpp
@@ -30,6 +31,7 @@ add_library(src
     ../include/EditGeometryDialog.h
     ../include/EditLanguageWindow.h
     ../include/EditPeriodDialog.h
+    ../include/EditPhonologicalChangeDialog.h
     ../include/EditWordDialog.h
     ../include/Evolution.h
     ../include/HelpDialog.h

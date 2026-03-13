@@ -15,6 +15,7 @@ private slots:
     void Unimplemented();
     void Simulate();
     void SaveFile();
+    void EditPhonologicalChange();
     void OpenFile();
     void NewFile();
     void ShowContextMenu(const QPoint &pos);
