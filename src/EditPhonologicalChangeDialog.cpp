@@ -1,5 +1,6 @@
 #include "EditPhonologicalChangeDialog.h"
 #include "DialogLayout.h"
+#include "HelpDialog.h"
 
 namespace
 {
@@ -51,7 +52,7 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     // 3. シグナルとスロットの接続・初期設定
     // ==========================================
     if (ui.HelpButton)
-        connect(ui.HelpButton, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
+        connect(ui.HelpButton, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::ShowHelp);
     if (ui.OkButton)
         connect(ui.OkButton, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented); // 実装時は accept などに変更
     if (ui.CancelButton)
@@ -102,4 +103,19 @@ void EditPhonologicalChangeDialog::ShowContextMenu(const QPoint &pos)
     // リストウィジェット上のグローバル座標にメニューを表示
     auto rulesListWidget = qobject_cast<QListWidget *>(LayoutData_.GetUI().Inputs.at(PHONOLOGICAL_CHANGE_ID));
     menu.exec(rulesListWidget->mapToGlobal(pos));
+}
+
+void EditPhonologicalChangeDialog::ShowHelp()
+{
+    HelpDialogContent contents;
+
+    contents.AddHeader("音韻変化編集");
+    contents.AddContent("言語名", "音韻変化させる言語です。「選択」ボタンから選択できます。");
+    contents.AddContent("音韻変化", "ここに音韻変化を記述します。音韻変化は上の行から適用されていきます");
+    contents.AddContent("音節構造", "音節構造を制限したい場合、ここに音節構造を記述してください。");
+    contents.AddContent("同音語を許容する", "これをチェックした場合、同音語が生まれるかどうかに関わらず音韻変化を実行します。");
+
+    HelpDialog subWindow(this);
+    subWindow.SetContents(contents);
+    subWindow.exec();
 }
