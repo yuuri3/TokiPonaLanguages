@@ -1,5 +1,19 @@
 #include "HelpDialog.h"
 
+void HelpDialogContent::AddHeader(const QString &header)
+{
+    Headers.emplace_back(header);
+}
+void HelpDialogContent::AddContent(const QString &title, const QString &content)
+{
+    if (Contents.size() < Headers.size())
+    {
+        std::vector<std::pair<QString, QString>> cont = {{title, content}};
+        Contents.emplace_back(cont);
+    }
+    Contents.back().emplace_back(title, content);
+}
+
 /**
  * @brief ヘルプダイアログのコンストラクタ
  *
@@ -9,7 +23,15 @@ HelpDialog::HelpDialog(QWidget *parent)
 {
     setWindowTitle("ヘルプ");
     setMinimumSize(500, 500);
+}
 
+/**
+ * @brief レイアウト構築
+ *
+ * @param contents 内容
+ */
+void HelpDialog::SetContents(const HelpDialogContent &contents)
+{
     // メインレイアウト
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
@@ -44,28 +66,18 @@ HelpDialog::HelpDialog(QWidget *parent)
 
     // --- コンテンツ構成 ---
 
-    // ■ ファイル
-    addHeader("ファイル");
-    addContent("新規作成", "新しく空のプロジェクト（語族データ）を作成します。");
-    addContent("ファイルを開く", "保存済みの語族データ（.ulng）や、個別言語のデータ（.json）を読み込みます。");
-    addContent("プロジェクトを保存", "編集中の語族データ全体（構成する全言語を含む）を .ulng ファイルに書き出します。");
-    addContent("個別言語をエクスポート", "現在選択している特定の言語データのみを .json ファイルとして保存します。");
-
-    layout->addSpacing(10);
-
-    // ■ 編集
-    addHeader("編集");
-    addContent("音韻変化", "設定した音韻変化規則に基づき、単語の語形を世代ごとに一斉更新します。");
-    addContent("借用", "隣接する他言語の語彙を参照し、新しい単語として自言語に取り込みます。");
-    addContent("地理編集", "言語が話されている地域（セル）の追加・削除や、その接続関係を編集します。");
-    addContent("時間軸編集", "言語変化の単位となる時代の追加・削除を行います。");
-    addContent("個別言語編集", "特定の時代・場所...の詳細な編集を行います。");
-
-    layout->addSpacing(10);
-
-    // ■ シミュレーション
-    addHeader("シミュレーション");
-    addContent("シミュレーション", "変化の頻度や伝播率などのパラメータを入力し、計算された言語変遷の結果を表示します。");
+    for (int i = 0; i < contents.Headers.size(); i++)
+    {
+        if (i != 0)
+        {
+            layout->addSpacing(10);
+        }
+        addHeader(contents.Headers[i]);
+        for (const auto &[title, cont] : contents.Contents[i])
+        {
+            addContent(title, cont);
+        }
+    }
 
     // 下部に余白を追加して上寄せにする
     layout->addStretch();

@@ -365,7 +365,32 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
  */
 void MainWindow::ShowHelp()
 {
+    HelpDialogContent contents;
+    // ■ ファイル
+    contents.AddHeader("ファイル");
+    contents.AddContent("新規作成", "新しく空のプロジェクト（語族データ）を作成します。");
+    contents.AddContent("ファイルを開く", "保存済みの語族データ（.ulng）や、個別言語のデータ（.json）を読み込みます。");
+    contents.AddContent("プロジェクトを保存", "編集中の語族データ全体（構成する全言語を含む）を .ulng ファイルに書き出します。");
+    contents.AddContent("個別言語をエクスポート", "現在選択している特定の言語データのみを .json ファイルとして保存します。");
+
+    // layout->addSpacing(10);
+
+    // ■ 編集
+    contents.AddHeader("編集");
+    contents.AddContent("音韻変化", "設定した音韻変化規則に基づき、単語の語形を世代ごとに一斉更新します。");
+    contents.AddContent("借用", "隣接する他言語の語彙を参照し、新しい単語として自言語に取り込みます。");
+    contents.AddContent("地理編集", "言語が話されている地域（セル）の追加・削除や、その接続関係を編集します。");
+    contents.AddContent("時間軸編集", "言語変化の単位となる時代の追加・削除を行います。");
+    contents.AddContent("個別言語編集", "特定の時代・場所...の詳細な編集を行います。");
+
+    // layout->addSpacing(10);
+
+    // // ■ シミュレーション
+    contents.AddHeader("シミュレーション");
+    contents.AddContent("シミュレーション", "変化の頻度や伝播率などのパラメータを入力し、計算された言語変遷の結果を表示します。");
+
     HelpDialog subWindow(this);
+    subWindow.SetContents(contents);
     subWindow.exec();
 }
 
