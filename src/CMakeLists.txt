@@ -9,6 +9,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 # ヘッダーファイルもリストに含める
 add_library(src
   SHARED
+    DialogLayout.cpp
     EditGeometryDialog.cpp
     EditLanguageWindow.cpp
     EditPeriodDialog.cpp
@@ -28,6 +29,7 @@ add_library(src
     UnimplementedDialog.cpp
     Utility.cpp
     Word.cpp
+    ../include/DialogLayout.h
     ../include/EditGeometryDialog.h
     ../include/EditLanguageWindow.h
     ../include/EditPeriodDialog.h
