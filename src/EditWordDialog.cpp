@@ -3,104 +3,92 @@
 #include "LanguageFamilySimulator.h"
 #include "PhonemeConverter.h"
 #include "Utility.h"
+#include "DialogLayout.h"
+
+namespace
+{
+    constexpr int FORM_ID = 0;
+    constexpr int TRANSLATION_ID = 1;
+    constexpr int TAG_ID = 2;
+    constexpr int CONTENT_ID = 3;
+    constexpr int VARIATION_ID = 4;
+    constexpr int RELATION_ID = 5;
+}
 
 EditWordDialog::EditWordDialog(QWidget *parent)
+    : QDialog(parent)
 {
-    setWindowTitle("単語編集");
+    // ==========================================
+    // 1. レイアウトデータの構築
+    // ==========================================
+    // ※元のコードにヘルプ・OK・キャンセルボタンが無いため false に設定しています
+    LayoutData_ = DialogLayout::Create("単語編集", false, false, false);
 
-    // メインレイアウト
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    // ID 0: 見出し語
+    LayoutData_.SetTitle(FORM_ID, "見出し語");
+    LayoutData_.SetDataType(FORM_ID, DialogDataType::String);
+    LayoutData_.SetIsEditable(FORM_ID, true);
 
-    // スクロールエリアの設定
-    QScrollArea *scrollArea = new QScrollArea(this);
-    scrollArea->setWidgetResizable(true);       // 中身のサイズに合わせて伸縮させる
-    scrollArea->setFrameShape(QFrame::NoFrame); // 枠線を消してダイアログになじませる
-    mainLayout->addWidget(scrollArea);
+    // ID 1: 訳語
+    LayoutData_.SetTitle(TRANSLATION_ID, "訳語");
+    LayoutData_.SetDataType(TRANSLATION_ID, DialogDataType::StringPairArray);
+    LayoutData_.SetHasAddButton(TRANSLATION_ID, true);
 
-    // スクロールエリアの中身となるメインウィジェット
-    QWidget *scrollContent = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(scrollContent);
-    scrollArea->setWidget(scrollContent);
+    // ID 2: タグ
+    LayoutData_.SetTitle(TAG_ID, "タグ");
+    LayoutData_.SetDataType(TAG_ID, DialogDataType::StringPairArray);
+    LayoutData_.SetHasAddButton(TAG_ID, true);
 
-    // * 見出し語
-    layout->addWidget(new QLabel("見出し語", scrollContent));
+    // ID 3: 自由記述
+    LayoutData_.SetTitle(CONTENT_ID, "自由記述");
+    LayoutData_.SetDataType(CONTENT_ID, DialogDataType::StringPairArray);
+    LayoutData_.SetHasAddButton(CONTENT_ID, true);
 
-    Entry_ = new QLineEdit(scrollContent);
-    Entry_->setText("テスト単語");
-    layout->addWidget(Entry_);
+    // ID 4: 変化形
+    LayoutData_.SetTitle(VARIATION_ID, "変化形");
+    LayoutData_.SetDataType(VARIATION_ID, DialogDataType::StringPairArray);
+    LayoutData_.SetHasAddButton(VARIATION_ID, true);
 
-    // * 訳語
-    QHBoxLayout *translationsTitleLayout = new QHBoxLayout();
-    translationsTitleLayout->addWidget(new QLabel("訳語", scrollContent));
-    layout->addLayout(translationsTitleLayout);
+    // ID 5: 関連語
+    LayoutData_.SetTitle(RELATION_ID, "関連語");
+    LayoutData_.SetDataType(RELATION_ID, DialogDataType::StringPairArray);
+    LayoutData_.SetHasAddButton(RELATION_ID, true);
 
-    Translations_ = new QWidget(scrollContent);
-    layout->addWidget(Translations_);
+    // ==========================================
+    // 2. UIの自動生成と適用
+    // ==========================================
+    LayoutData_.GenerateLayout(this);
+    const auto &ui = LayoutData_.GetUI();
+    setLayout(ui.MainLayout);
 
-    //   * 訳語追加ボタン
-    AddTranslationButton_ = new QPushButton("追加", scrollContent);
-    AddTranslationButton_->setFixedWidth(BUTTON_WIDTH);
-    connect(AddTranslationButton_, &QPushButton::clicked, this, &EditWordDialog::AddTranslationButtonPushed);
-    translationsTitleLayout->addWidget(AddTranslationButton_);
-
-    // * タグ
-    QHBoxLayout *tagsTitleLayout = new QHBoxLayout();
-    tagsTitleLayout->addWidget(new QLabel("タグ", scrollContent));
-    layout->addLayout(tagsTitleLayout);
-
-    Tags_ = new QWidget(scrollContent);
-    layout->addWidget(Tags_);
-
-    //   * タグ追加ボタン
-    AddTagsButton_ = new QPushButton("追加", scrollContent);
-    AddTagsButton_->setFixedWidth(BUTTON_WIDTH);
-    connect(AddTagsButton_, &QPushButton::clicked, this, &EditWordDialog::AddTagsButtonPushed);
-    tagsTitleLayout->addWidget(AddTagsButton_);
-
-    // * 自由記述
-    QHBoxLayout *contentsTitleLayout = new QHBoxLayout();
-    contentsTitleLayout->addWidget(new QLabel("自由記述", scrollContent));
-    layout->addLayout(contentsTitleLayout);
-
-    Contents_ = new QWidget(scrollContent);
-    layout->addWidget(Contents_);
-
-    //   * 自由記述追加ボタン
-    AddContentsButton_ = new QPushButton("追加", scrollContent);
-    AddContentsButton_->setFixedWidth(BUTTON_WIDTH);
-    connect(AddContentsButton_, &QPushButton::clicked, this, &EditWordDialog::AddContentsButtonPushed);
-    contentsTitleLayout->addWidget(AddContentsButton_);
-
-    // * 変化形
-    QHBoxLayout *variationsTitleLayout = new QHBoxLayout();
-    variationsTitleLayout->addWidget(new QLabel("変化形", scrollContent));
-    layout->addLayout(variationsTitleLayout);
-
-    Variations_ = new QWidget(scrollContent);
-    layout->addWidget(Variations_);
-
-    //   * 変化形追加ボタン
-    AddVariationsButton_ = new QPushButton("追加", scrollContent);
-    AddVariationsButton_->setFixedWidth(BUTTON_WIDTH);
-    connect(AddVariationsButton_, &QPushButton::clicked, this, &EditWordDialog::AddVariationsButtonPushed);
-    variationsTitleLayout->addWidget(AddVariationsButton_);
-
-    // * 関連語
-    QHBoxLayout *RelationsTitleLayout = new QHBoxLayout();
-    RelationsTitleLayout->addWidget(new QLabel("関連語", scrollContent));
-    layout->addLayout(RelationsTitleLayout);
-
-    Relations_ = new QWidget(scrollContent);
-    layout->addWidget(Relations_);
-
-    //   * 関連語追加ボタン
-    AddRelationsButton_ = new QPushButton("追加", scrollContent);
-    AddRelationsButton_->setFixedWidth(BUTTON_WIDTH);
-    connect(AddRelationsButton_, &QPushButton::clicked, this, &EditWordDialog::AddRelationsButtonPushed);
-    RelationsTitleLayout->addWidget(AddRelationsButton_);
-
-    // 下部に余白を追加して上寄せにする
-    layout->addStretch();
+    // ==========================================
+    // 3. ボタンの幅設定とシグナル・スロットの接続
+    // ==========================================
+    auto addTranslationButton = ui.AddButtons.at(TRANSLATION_ID);
+    if (addTranslationButton)
+    {
+        connect(addTranslationButton, &QPushButton::clicked, this, &EditWordDialog::AddTranslationButtonPushed);
+    }
+    auto addTagsButton = ui.AddButtons.at(TAG_ID);
+    if (addTagsButton)
+    {
+        connect(addTagsButton, &QPushButton::clicked, this, &EditWordDialog::AddTagsButtonPushed);
+    }
+    auto addContentsButton = ui.AddButtons.at(CONTENT_ID);
+    if (addContentsButton)
+    {
+        connect(addContentsButton, &QPushButton::clicked, this, &EditWordDialog::AddContentsButtonPushed);
+    }
+    auto addVariationsButton = ui.AddButtons.at(VARIATION_ID);
+    if (addVariationsButton)
+    {
+        connect(addVariationsButton, &QPushButton::clicked, this, &EditWordDialog::AddVariationsButtonPushed);
+    }
+    auto addRelationsButton = ui.AddButtons.at(RELATION_ID);
+    if (addRelationsButton)
+    {
+        connect(addRelationsButton, &QPushButton::clicked, this, &EditWordDialog::AddRelationsButtonPushed);
+    }
 }
 
 /**
@@ -153,7 +141,8 @@ void EditWordDialog::UpdateDialog()
 
         // 語形
         const auto form = word->GetForm();
-        Entry_->setText(QString::fromStdString(converter.ConvertToString(form)));
+        auto entry = qobject_cast<QLineEdit *>(LayoutData_.GetUI().Inputs.at(FORM_ID));
+        entry->setText(QString::fromStdString(converter.ConvertToString(form)));
 
         // 訳語
         std::vector<std::vector<std::string>> translations;
@@ -169,7 +158,7 @@ void EditWordDialog::UpdateDialog()
             translations.push_back({title, formsStr});
         }
         translations.push_back({"", ""});
-        DisplayLine(Translations_, translations, TWO_WIDTHS);
+        DisplayLine(TRANSLATION_ID, translations, TWO_WIDTHS);
 
         // タグ
         std::vector<std::vector<std::string>> tags;
@@ -179,7 +168,7 @@ void EditWordDialog::UpdateDialog()
             tags.push_back({tag});
         }
         tags.push_back({""});
-        DisplayLine(Tags_, tags, ONE_WIDTH);
+        DisplayLine(TAG_ID, tags, ONE_WIDTH);
 
         // 自由記述
         std::vector<std::vector<std::string>> contentsData;
@@ -190,7 +179,7 @@ void EditWordDialog::UpdateDialog()
             contentsData.push_back({title, content});
         }
         contentsData.push_back({"", ""});
-        DisplayLine(Contents_, contentsData, TWO_WIDTHS);
+        DisplayLine(CONTENT_ID, contentsData, TWO_WIDTHS);
 
         // 変化形
         std::vector<std::vector<std::string>> variationsData;
@@ -201,7 +190,7 @@ void EditWordDialog::UpdateDialog()
             variationsData.push_back({title, converter.ConvertToString(variation)});
         }
         variationsData.push_back({"", ""});
-        DisplayLine(Variations_, variationsData, TWO_WIDTHS);
+        DisplayLine(VARIATION_ID, variationsData, TWO_WIDTHS);
 
         // 関連語
         std::vector<std::vector<std::string>> relationsData;
@@ -213,7 +202,7 @@ void EditWordDialog::UpdateDialog()
             relationsData.push_back({title, converter.ConvertToString(relatedWord->GetForm())});
         }
         relationsData.push_back({"", ""});
-        DisplayLine(Relations_, relationsData, TWO_WIDTHS);
+        DisplayLine(RELATION_ID, relationsData, TWO_WIDTHS);
     }
 }
 
@@ -224,12 +213,12 @@ void EditWordDialog::UpdateDialog()
  * @param values 値のリスト
  * @param widths 各列の幅
  */
-void EditWordDialog::DisplayLine(QWidget *widget, const std::vector<std::vector<std::string>> &values, const std::vector<int> &widths)
+void EditWordDialog::DisplayLine(const int id, const std::vector<std::vector<std::string>> &values, const std::vector<int> &widths)
 {
-    ClearWidget(widget);
-    for (const auto &line : values)
+    LayoutData_.Clear(id);
+    for (const auto value : values)
     {
-        AddLine(widget, line, widths);
+        AddLine(id, value, widths);
     }
 }
 
@@ -239,7 +228,7 @@ void EditWordDialog::DisplayLine(QWidget *widget, const std::vector<std::vector<
  */
 void EditWordDialog::AddTranslationButtonPushed()
 {
-    AddLine(Translations_, {"", ""}, TWO_WIDTHS);
+    AddLine(TRANSLATION_ID, {"", ""}, TWO_WIDTHS);
 }
 
 /**
@@ -248,7 +237,7 @@ void EditWordDialog::AddTranslationButtonPushed()
  */
 void EditWordDialog::AddTagsButtonPushed()
 {
-    AddLine(Tags_, {""}, ONE_WIDTH);
+    AddLine(TAG_ID, {""}, ONE_WIDTH);
 }
 
 /**
@@ -257,7 +246,7 @@ void EditWordDialog::AddTagsButtonPushed()
  */
 void EditWordDialog::AddContentsButtonPushed()
 {
-    AddLine(Contents_, {"", ""}, TWO_WIDTHS);
+    AddLine(CONTENT_ID, {"", ""}, TWO_WIDTHS);
 }
 
 /**
@@ -266,7 +255,7 @@ void EditWordDialog::AddContentsButtonPushed()
  */
 void EditWordDialog::AddVariationsButtonPushed()
 {
-    AddLine(Variations_, {"", ""}, TWO_WIDTHS);
+    AddLine(VARIATION_ID, {"", ""}, TWO_WIDTHS);
 }
 
 /**
@@ -275,7 +264,7 @@ void EditWordDialog::AddVariationsButtonPushed()
  */
 void EditWordDialog::AddRelationsButtonPushed()
 {
-    AddLine(Relations_, {"", ""}, TWO_WIDTHS);
+    AddLine(RELATION_ID, {"", ""}, TWO_WIDTHS);
 }
 
 /**
@@ -285,44 +274,17 @@ void EditWordDialog::AddRelationsButtonPushed()
  * @param values 入力値（[0]: タイトル, [1]: 内容）
  * @param widths 幅のリスト
  */
-void EditWordDialog::AddLine(QWidget *widget, const std::vector<std::string> &values, const std::vector<int> &widths)
+void EditWordDialog::AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths)
 {
-    if (!widget->layout())
+    auto widgets = LayoutData_.AddLine(id, values, widths);
+    for (auto line : widgets)
     {
-        widget->setLayout(new QVBoxLayout(widget));
-        widget->layout()->setContentsMargins(0, 0, 0, 0);
-    }
-
-    QWidget *rowContainer = new QWidget(widget);
-    QHBoxLayout *subLayout = new QHBoxLayout(rowContainer);
-    subLayout->setContentsMargins(0, 0, 0, 0);
-    subLayout->setAlignment(Qt::AlignTop); // 複数行入力時に左側のボックスが上に寄るように設定
-
-    for (size_t i = 0; i < values.size(); i++)
-    {
-        // 自由記述(Contents_)セクションの2番目のボックスのみ QTextEdit を使用
-        if (widget == Contents_ && i == 1)
+        if (!line)
         {
-            auto textEdit = new QTextEdit(rowContainer);
-            textEdit->setPlainText(QString::fromStdString(values[i]));
-            textEdit->setFixedWidth(widths[i]);
-            textEdit->setFixedHeight(80); // 複数行用に高さを確保
-            textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
-            connect(textEdit, &QTextEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
-            subLayout->addWidget(textEdit);
+            continue;
         }
-        else
-        {
-            auto line = new QLineEdit(rowContainer);
-            line->setText(QString::fromStdString(values[i]));
-            line->setFixedWidth(widths[i]);
-            line->setContextMenuPolicy(Qt::CustomContextMenu);
-            connect(line, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
-            subLayout->addWidget(line);
-        }
+        connect(line, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
     }
-
-    widget->layout()->addWidget(rowContainer);
 }
 
 /**
@@ -347,6 +309,14 @@ void EditWordDialog::ClickLine(const QPoint &pos)
     {
         QWidget *rowContainer = senderWidget->parentWidget();
         QWidget *targetWidget = rowContainer->parentWidget();
+        int targetWidgetID = -1;
+        for (const auto [id, widget] : LayoutData_.GetUI().Inputs)
+        {
+            if (widget == targetWidget)
+            {
+                targetWidgetID = id;
+            }
+        }
 
         // 1つの rowContainer 内にある入力要素（QLineEdit と QTextEdit）の合計数を取得
         int boxCount = rowContainer->findChildren<QLineEdit *>().count() +
@@ -355,7 +325,7 @@ void EditWordDialog::ClickLine(const QPoint &pos)
         // ボックスの数に応じた幅設定を維持
         auto widths = (boxCount == 1) ? ONE_WIDTH : TWO_WIDTHS;
         std::vector<std::string> newValues(boxCount, "");
-        AddLine(targetWidget, newValues, widths);
+        AddLine(targetWidgetID, newValues, widths);
     }
     else if (selectedAction == removeAction)
     {
