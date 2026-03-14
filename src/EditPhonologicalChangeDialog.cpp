@@ -1,94 +1,81 @@
 #include "EditPhonologicalChangeDialog.h"
+#include "DialogLayout.h"
+
+namespace
+{
+    constexpr int NAME_ID = 0;
+    constexpr int PHONOLOGICAL_CHANGE_ID = 1;
+    constexpr int SYLLABLE_ID = 2;
+    constexpr int MINIMAL_PAIR_ID = 3;
+}
 
 EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     : QDialog(parent)
 {
-    setWindowTitle(tr("音韻変化編集"));
-    resize(400, 500);
+    // ==========================================
+    // 1. レイアウトデータの構築
+    // ==========================================
+    LayoutData_ = DialogLayout::Create("音韻変化編集", true, true, true);
 
-    auto *mainLayout = new QVBoxLayout(this);
+    // ID 0: 言語名
+    LayoutData_.SetTitle(NAME_ID, "言語名");
+    LayoutData_.SetDataType(NAME_ID, DialogDataType::String);
+    LayoutData_.SetIsEditable(NAME_ID, false);
+    LayoutData_.SetHasEditButton(NAME_ID, true);
+
+    // ID 1: 音韻変化
+    LayoutData_.SetTitle(PHONOLOGICAL_CHANGE_ID, "音韻変化");
+    LayoutData_.SetDataType(PHONOLOGICAL_CHANGE_ID, DialogDataType::StringArray);
+    LayoutData_.SetIsEditable(PHONOLOGICAL_CHANGE_ID, true);
+    LayoutData_.SetHasAddButton(PHONOLOGICAL_CHANGE_ID, true);
+    LayoutData_.SetHasContextMenu(PHONOLOGICAL_CHANGE_ID, true);
+
+    // ID 2: 音節構造
+    LayoutData_.SetTitle(SYLLABLE_ID, "音節構造");
+    LayoutData_.SetDataType(SYLLABLE_ID, DialogDataType::String);
+    LayoutData_.SetIsEditable(SYLLABLE_ID, true);
+
+    // ID 3: 同音語を許容する
+    LayoutData_.SetTitle(MINIMAL_PAIR_ID, "同音語を許容する");
+    LayoutData_.SetDataType(MINIMAL_PAIR_ID, DialogDataType::Boolean);
+    LayoutData_.SetIsEditable(MINIMAL_PAIR_ID, true);
 
     // ==========================================
-    // ヘルプボタン
+    // 2. UIの自動生成と適用
     // ==========================================
-    auto *helpLayout = new QHBoxLayout();
-    helpButton_ = new QPushButton(tr("ヘルプ"), this);
-    connect(helpButton_, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
-    helpLayout->addStretch();
-    helpLayout->addWidget(helpButton_);
-    mainLayout->addLayout(helpLayout);
+    LayoutData_.GenerateLayout(this);
+    const auto &ui = LayoutData_.GetUI();
+    setLayout(ui.MainLayout);
 
     // ==========================================
-    // 言語名セクション
+    // 3. シグナルとスロットの接続・初期設定
     // ==========================================
-    auto *langLabelLayout = new QHBoxLayout();
-    langLabelLayout->addWidget(new QLabel(tr("言語名:"), this));
-    selectLanguageButton_ = new QPushButton(tr("言語選択"), this);
-    connect(selectLanguageButton_, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
-    langLabelLayout->addWidget(selectLanguageButton_);
-    langLabelLayout->addStretch();
-    mainLayout->addLayout(langLabelLayout);
+    if (ui.HelpButton)
+        connect(ui.HelpButton, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
+    if (ui.OkButton)
+        connect(ui.OkButton, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented); // 実装時は accept などに変更
+    if (ui.CancelButton)
+        connect(ui.CancelButton, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::reject);
 
-    languageNameEdit_ = new QLineEdit(this);
-    languageNameEdit_->setReadOnly(true); // 編集不可
-    languageNameEdit_->setPlaceholderText(tr("未選択"));
-    mainLayout->addWidget(languageNameEdit_);
+    if (ui.EditButtons.at(NAME_ID))
+        connect(ui.EditButtons.at(NAME_ID), &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
+    if (ui.AddButtons.at(PHONOLOGICAL_CHANGE_ID))
+        connect(ui.AddButtons.at(PHONOLOGICAL_CHANGE_ID), &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
+    auto allowHomophonesCheckBox = qobject_cast<QCheckBox *>(ui.Inputs.at(MINIMAL_PAIR_ID));
+    if (allowHomophonesCheckBox)
+        connect(allowHomophonesCheckBox, &QCheckBox::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
 
-    // ==========================================
-    // 音韻変化セクション
-    // ==========================================
-    auto *ruleLabelLayout = new QHBoxLayout();
-    ruleLabelLayout->addWidget(new QLabel(tr("音韻変化:"), this));
-    addRuleButton_ = new QPushButton(tr("追加"), this);
-    connect(addRuleButton_, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
-    ruleLabelLayout->addWidget(addRuleButton_);
-    ruleLabelLayout->addStretch();
-    mainLayout->addLayout(ruleLabelLayout);
+    auto rulesListWidget = qobject_cast<QListWidget *>(ui.Inputs.at(PHONOLOGICAL_CHANGE_ID));
+    if (rulesListWidget)
+    {
+        // UI確認用のダミーアイテム追加
+        auto *dummyItem = new QListWidgetItem(tr("a > b / _c"));
+        dummyItem->setFlags(dummyItem->flags() | Qt::ItemIsEditable);
+        rulesListWidget->addItem(dummyItem);
 
-    // 複数のテキストボックスの代わりとして QListWidget を使用
-    rulesListWidget_ = new QListWidget(this);
-    rulesListWidget_->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(rulesListWidget_, &QListWidget::customContextMenuRequested, this, &EditPhonologicalChangeDialog::ShowContextMenu);
-
-    // UI確認用のダミーアイテム（ダブルクリック等で編集可能）
-    auto *dummyItem = new QListWidgetItem(tr("a > b / _c"));
-    dummyItem->setFlags(dummyItem->flags() | Qt::ItemIsEditable);
-    rulesListWidget_->addItem(dummyItem);
-
-    mainLayout->addWidget(rulesListWidget_);
-
-    // ==========================================
-    // 音節構造セクション
-    // ==========================================
-    auto *syllableLayout = new QHBoxLayout();
-    syllableLayout->addWidget(new QLabel(tr("音節構造:"), this));
-    syllableStructureEdit_ = new QLineEdit(this);
-    syllableLayout->addWidget(syllableStructureEdit_);
-    mainLayout->addLayout(syllableLayout);
-
-    // ==========================================
-    // 同音語を許容するボタン
-    // ==========================================
-    // 状態を持つため QCheckBox を使用（QPushButton をトグル化しても可）
-    allowHomophonesCheckBox_ = new QCheckBox(tr("同音語を許容する"), this);
-    mainLayout->addWidget(allowHomophonesCheckBox_);
-
-    // ==========================================
-    // 下部ボタンセクション
-    // ==========================================
-    auto *buttonLayout = new QHBoxLayout();
-    okButton_ = new QPushButton(tr("OK"), this);
-    cancelButton_ = new QPushButton(tr("キャンセル"), this);
-
-    connect(okButton_, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
-    connect(cancelButton_, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::reject);
-
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(okButton_);
-    buttonLayout->addWidget(cancelButton_);
-    mainLayout->addLayout(buttonLayout);
-
-    setLayout(mainLayout);
+        // 右クリックメニューの接続
+        connect(rulesListWidget, &QListWidget::customContextMenuRequested, this, &EditPhonologicalChangeDialog::ShowContextMenu);
+    }
 }
 
 void EditPhonologicalChangeDialog::Unimplemented()
@@ -113,5 +100,6 @@ void EditPhonologicalChangeDialog::ShowContextMenu(const QPoint &pos)
     connect(deleteAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::Unimplemented);
 
     // リストウィジェット上のグローバル座標にメニューを表示
-    menu.exec(rulesListWidget_->mapToGlobal(pos));
+    auto rulesListWidget = qobject_cast<QListWidget *>(LayoutData_.GetUI().Inputs.at(PHONOLOGICAL_CHANGE_ID));
+    menu.exec(rulesListWidget->mapToGlobal(pos));
 }

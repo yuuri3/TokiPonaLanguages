@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "DialogLayout.h"
 
 class EditPhonologicalChangeDialog : public QDialog
 {
@@ -18,24 +19,5 @@ private slots:
     void ShowContextMenu(const QPoint &pos);
 
 private:
-    // ヘルプ
-    QPushButton *helpButton_;
-
-    // 言語名
-    QPushButton *selectLanguageButton_;
-    QLineEdit *languageNameEdit_;
-
-    // 音韻変化
-    QPushButton *addRuleButton_;
-    QListWidget *rulesListWidget_;
-
-    // 音節構造
-    QLineEdit *syllableStructureEdit_;
-
-    // 同音語許容ボタン (チェックボックスとして実装)
-    QCheckBox *allowHomophonesCheckBox_;
-
-    // 保存ボタン
-    QPushButton *okButton_;
-    QPushButton *cancelButton_;
+    DialogLayout LayoutData_;
 };
