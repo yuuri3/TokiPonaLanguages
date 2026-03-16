@@ -164,17 +164,24 @@ void MainWindow::Simulate()
  */
 void MainWindow::DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> languages)
 {
-    SaveFileAction_->setEnabled(false);
-    if (languages->Empty())
-    {
-        return;
-    }
     const auto table = languages->ToString();
     DisplayTable(MainTable_, table);
 
-    if (!table.empty())
+    if (table.empty() || table[0].empty())
+    {
+        SaveFileAction_->setEnabled(false);
+        PhonologicalChangeAction_->setEnabled(false);
+        LoanwordAction_->setEnabled(false);
+        EditGeometry_->setEnabled(false);
+        EditPeriod_->setEnabled(false);
+    }
+    else
     {
         SaveFileAction_->setEnabled(true);
+        PhonologicalChangeAction_->setEnabled(true);
+        LoanwordAction_->setEnabled(true);
+        EditGeometry_->setEnabled(true);
+        EditPeriod_->setEnabled(true);
     }
 }
 
