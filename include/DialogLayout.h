@@ -23,9 +23,10 @@ struct DialogElement
     std::string Title;                                // タイトル
     DialogDataType DataType = DialogDataType::String; // データ型（デフォルトを設定）
 
-    bool IsEditable = true;     // 編集可能か（テキストボックスのReadOnly等）
-    bool HasEditButton = false; // 編集ボタン（言語選択ボタンなど）の有無
-    bool HasAddButton = false;  // 追加ボタンの有無
+    bool IsEditable = true;       // 編集可能か（テキストボックスのReadOnly等）
+    bool HasEditButton = false;   // 編集ボタンの有無
+    bool HasSelectButton = false; // 選択ボタンの有無
+    bool HasAddButton = false;    // 追加ボタンの有無
 
     // 右クリックメニュー設定
     bool HasContextMenu = false;
@@ -45,8 +46,9 @@ struct GeneratedDialogUI
     // IDをキーにして、生成された各ウィジェットのポインタを保持
     // QLineEdit, QListWidget, QCheckBox, QTableWidget(StringPairArray用) など
     std::map<int, class QWidget *> Inputs;
-    std::map<int, class QPushButton *> EditButtons; // 「編集」や「言語選択」ボタン
-    std::map<int, class QPushButton *> AddButtons;  // 「追加」ボタン
+    std::map<int, class QPushButton *> EditButtons;   // 「編集」ボタン
+    std::map<int, class QPushButton *> SelectButtons; // 「選択」ボタン
+    std::map<int, class QPushButton *> AddButtons;    // 「追加」ボタン
 };
 
 /**
@@ -68,6 +70,7 @@ public:
     void SetDataType(int id, DialogDataType dataType);
     void SetIsEditable(int id, bool isEditable);
     void SetHasEditButton(int id, bool hasEditButton);
+    void SetHasSelectButton(int id, bool hasSelectButton);
     void SetHasAddButton(int id, bool hasAddButton);
     void SetHasContextMenu(int id, bool hasContextMenu);
 

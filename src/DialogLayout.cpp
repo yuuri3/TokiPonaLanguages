@@ -60,6 +60,17 @@ void DialogLayout::SetHasEditButton(int id, bool hasEditButton)
 }
 
 /**
+ * @brief 指定したIDの要素に選択ボタンの有無を設定する
+ *
+ * @param id 要素のID
+ * @param hasSelectButton 選択ボタンを持たせる場合は true
+ */
+void DialogLayout::SetHasSelectButton(int id, bool hasSelectButton)
+{
+    Elements[id].HasSelectButton = hasSelectButton;
+}
+
+/**
  * @brief 指定したIDの要素に追加ボタンの有無を設定する
  * @param id 要素のID
  * @param hasAddButton 追加ボタンを持たせる場合は true
@@ -137,7 +148,14 @@ void DialogLayout::GenerateLayout(QWidget *parent)
 
         if (element.HasEditButton)
         {
-            UI.EditButtons[id] = new QPushButton("編集", scrollContent);
+            UI.SelectButtons[id] = new QPushButton("編集", scrollContent);
+            UI.SelectButtons[id]->setObjectName(QString("SelectButton_%1").arg(id));
+            UI.SelectButtons[id]->setFixedWidth(50);
+            titleLayout->addWidget(UI.SelectButtons[id]);
+        }
+        if (element.HasSelectButton)
+        {
+            UI.EditButtons[id] = new QPushButton("選択", scrollContent);
             UI.EditButtons[id]->setObjectName(QString("EditButton_%1").arg(id));
             UI.EditButtons[id]->setFixedWidth(50);
             titleLayout->addWidget(UI.EditButtons[id]);
