@@ -211,6 +211,14 @@ void DialogLayout::GenerateLayout(QWidget *parent)
             contentLayout->addWidget(containerWidget);
             UI.Inputs[id] = containerWidget; // Translations_ などの QWidget* に代入される
         }
+        else if (element.DataType == DialogDataType::Table)
+        {
+            auto table = new QTableWidget(scrollContent);
+            contentLayout->addWidget(table);
+
+            table->setContextMenuPolicy(Qt::CustomContextMenu);
+            UI.Inputs[id] = table;
+        }
     }
 
     contentLayout->addStretch(); // コンテンツを上に寄せる
