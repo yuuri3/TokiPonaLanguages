@@ -32,6 +32,7 @@ private:
     QMenu *HelpMenu_;
 
     std::shared_ptr<LanguageFamily> Languages_;
+    std::optional<std::vector<std::vector<std::string>>> LanguageNames_;
 
     QAction *SimulateAction_;
     QAction *NewFileAction_;

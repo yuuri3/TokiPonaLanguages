@@ -1,6 +1,7 @@
 #include "EditPhonologicalChangeDialog.h"
 #include "DialogLayout.h"
 #include "HelpDialog.h"
+#include "SelectLanguageDialog.h"
 
 namespace
 {
@@ -58,8 +59,8 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     if (ui.CancelButton)
         connect(ui.CancelButton, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::reject);
 
-    if (ui.EditButtons.at(NAME_ID))
-        connect(ui.EditButtons.at(NAME_ID), &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
+    if (ui.SelectButtons.at(NAME_ID))
+        connect(ui.SelectButtons.at(NAME_ID), &QPushButton::clicked, this, &EditPhonologicalChangeDialog::SelectLanguageName);
     if (ui.AddButtons.at(PHONOLOGICAL_CHANGE_ID))
         connect(ui.AddButtons.at(PHONOLOGICAL_CHANGE_ID), &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
     auto allowHomophonesCheckBox = qobject_cast<QCheckBox *>(ui.Inputs.at(MINIMAL_PAIR_ID));
@@ -77,6 +78,26 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
         // 右クリックメニューの接続
         connect(rulesListWidget, &QListWidget::customContextMenuRequested, this, &EditPhonologicalChangeDialog::ShowContextMenu);
     }
+}
+
+/**
+ * @brief 語族をセット
+ *
+ * @param languages 語族
+ */
+void EditPhonologicalChangeDialog::SetLanguages(const std::shared_ptr<LanguageFamily> languages)
+{
+    Languages_ = languages;
+}
+
+/**
+ * @brief 言語名をセット
+ *
+ * @param languageNames 言語名
+ */
+void EditPhonologicalChangeDialog::SetLanguageNames(const std::vector<std::vector<std::string>> languageNames)
+{
+    LanguageNames_ = languageNames;
 }
 
 void EditPhonologicalChangeDialog::Unimplemented()
@@ -118,4 +139,27 @@ void EditPhonologicalChangeDialog::ShowHelp()
     HelpDialog subWindow(this);
     subWindow.SetContents(contents);
     subWindow.exec();
+}
+
+/**
+ * @brief 言語名選択
+ *
+ */
+void EditPhonologicalChangeDialog::SelectLanguageName()
+{
+    if (!LanguageNames_)
+    {
+        return;
+    }
+    auto subWindow = SelectLanguageDialog(this);
+    int place = -1;
+    int period = -1;
+    subWindow.Set(*LanguageNames_, &place, &period);
+    subWindow.exec();
+    if (place < 0 || period < 0)
+    {
+        return;
+    }
+
+    qobject_cast<QLineEdit *>(LayoutData_.GetUI().Inputs.at(NAME_ID))->setText(QString::fromStdString(LanguageNames_->at(period).at(place)));
 }

@@ -25,6 +25,7 @@ add_library(src
     Phoneme.cpp
     PhonemeConverter.cpp
     Random.cpp
+    SelectLanguageDialog.cpp
     SimulationDialog.cpp
     UnimplementedDialog.cpp
     Utility.cpp
@@ -47,6 +48,7 @@ add_library(src
     ../include/PhonemeConverter.h
     ../include/PhoneticEnvironment.h
     ../include/Random.h
+    ../include/SelectLanguageDialog.h
     ../include/SimulationDialog.h
     ../include/UnimplementedDialog.h
     ../include/Utility.h

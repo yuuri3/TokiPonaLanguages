@@ -164,10 +164,14 @@ void MainWindow::Simulate()
  */
 void MainWindow::DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> languages)
 {
-    const auto table = languages->ToString();
-    DisplayTable(MainTable_, table);
+    LanguageNames_ = languages->ToString();
+    if (!LanguageNames_)
+    {
+        return;
+    }
+    DisplayTable(MainTable_, *LanguageNames_);
 
-    if (table.empty() || table[0].empty())
+    if (LanguageNames_->empty() || LanguageNames_->at(0).empty())
     {
         SaveFileAction_->setEnabled(false);
         PhonologicalChangeAction_->setEnabled(false);
@@ -221,7 +225,17 @@ void MainWindow::SaveFile()
  */
 void MainWindow::EditPhonologicalChange()
 {
+    if (!LanguageNames_)
+    {
+        QMessageBox::critical(
+            this,
+            "実行エラー",
+            "編集するファイルがありません。");
+        return;
+    }
     EditPhonologicalChangeDialog subWindow(this);
+    subWindow.SetLanguages(Languages_);
+    subWindow.SetLanguageNames(*LanguageNames_);
     subWindow.exec();
 }
 

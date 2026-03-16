@@ -148,17 +148,17 @@ void DialogLayout::GenerateLayout(QWidget *parent)
 
         if (element.HasEditButton)
         {
-            UI.SelectButtons[id] = new QPushButton("編集", scrollContent);
-            UI.SelectButtons[id]->setObjectName(QString("SelectButton_%1").arg(id));
-            UI.SelectButtons[id]->setFixedWidth(50);
-            titleLayout->addWidget(UI.SelectButtons[id]);
+            UI.EditButtons[id] = new QPushButton("編集", scrollContent);
+            UI.EditButtons[id]->setObjectName(QString("SelectButton_%1").arg(id));
+            UI.EditButtons[id]->setFixedWidth(50);
+            titleLayout->addWidget(UI.EditButtons[id]);
         }
         if (element.HasSelectButton)
         {
-            UI.EditButtons[id] = new QPushButton("選択", scrollContent);
-            UI.EditButtons[id]->setObjectName(QString("EditButton_%1").arg(id));
-            UI.EditButtons[id]->setFixedWidth(50);
-            titleLayout->addWidget(UI.EditButtons[id]);
+            UI.SelectButtons[id] = new QPushButton("選択", scrollContent);
+            UI.SelectButtons[id]->setObjectName(QString("EditButton_%1").arg(id));
+            UI.SelectButtons[id]->setFixedWidth(50);
+            titleLayout->addWidget(UI.SelectButtons[id]);
         }
         if (element.HasAddButton)
         {
