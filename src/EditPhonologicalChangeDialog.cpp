@@ -21,7 +21,7 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     LayoutData_.SetTitle(NAME_ID, "言語名");
     LayoutData_.SetDataType(NAME_ID, DialogDataType::String);
     LayoutData_.SetIsEditable(NAME_ID, false);
-    LayoutData_.SetHasEditButton(NAME_ID, true);
+    LayoutData_.SetHasSelectButton(NAME_ID, true);
 
     // ID 1: 音韻変化
     LayoutData_.SetTitle(PHONOLOGICAL_CHANGE_ID, "音韻変化");
