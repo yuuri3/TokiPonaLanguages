@@ -32,3 +32,5 @@
 #include <QFormLayout>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QListWidget>
+#include <QCheckBox>

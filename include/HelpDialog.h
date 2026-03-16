@@ -2,6 +2,14 @@
 
 #include "stdafx.h"
 
+struct HelpDialogContent
+{
+    std::vector<QString> Headers;
+    std::vector<std::vector<std::pair<QString, QString>>> Contents;
+    void AddHeader(const QString &header);
+    void AddContent(const QString &title, const QString &content);
+};
+
 class HelpDialog : public QDialog
 {
     Q_OBJECT
@@ -9,6 +17,7 @@ class HelpDialog : public QDialog
 public:
     HelpDialog(QWidget *parent = nullptr);
     ~HelpDialog() = default;
+    void SetContents(const HelpDialogContent &contents);
 
 private slots:
 

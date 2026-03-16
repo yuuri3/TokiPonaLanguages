@@ -9,9 +9,11 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 # ヘッダーファイルもリストに含める
 add_library(src
   SHARED
+    DialogLayout.cpp
     EditGeometryDialog.cpp
     EditLanguageWindow.cpp
     EditPeriodDialog.cpp
+    EditPhonologicalChangeDialog.cpp
     EditWordDialog.cpp
     Evolution.cpp
     HelpDialog.cpp
@@ -23,13 +25,16 @@ add_library(src
     Phoneme.cpp
     PhonemeConverter.cpp
     Random.cpp
+    SelectLanguageDialog.cpp
     SimulationDialog.cpp
     UnimplementedDialog.cpp
     Utility.cpp
     Word.cpp
+    ../include/DialogLayout.h
     ../include/EditGeometryDialog.h
     ../include/EditLanguageWindow.h
     ../include/EditPeriodDialog.h
+    ../include/EditPhonologicalChangeDialog.h
     ../include/EditWordDialog.h
     ../include/Evolution.h
     ../include/HelpDialog.h
@@ -43,6 +48,7 @@ add_library(src
     ../include/PhonemeConverter.h
     ../include/PhoneticEnvironment.h
     ../include/Random.h
+    ../include/SelectLanguageDialog.h
     ../include/SimulationDialog.h
     ../include/UnimplementedDialog.h
     ../include/Utility.h
