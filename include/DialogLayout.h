@@ -78,6 +78,7 @@ public:
     void GenerateLayout(class QWidget *parent);
     void Clear(const int id);
     std::vector<QWidget *> AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths);
+    void MoveUp(const int id, const int lineIndex);
 
     const GeneratedDialogUI &GetUI() const;
 

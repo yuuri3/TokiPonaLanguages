@@ -22,6 +22,7 @@ private slots:
     void ShowHelp();
     void SelectLanguageName();
     void AddPhonologicalChange();
+    void MoveRuleUp();
 
 private:
     DialogLayout LayoutData_;

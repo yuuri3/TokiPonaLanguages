@@ -117,7 +117,7 @@ void EditPhonologicalChangeDialog::ShowContextMenu(const QPoint &pos)
     QAction *deleteAction = menu.addAction(tr("削除"));
 
     // 各アクションを未実装スロットに接続
-    connect(moveUpAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::Unimplemented);
+    connect(moveUpAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::MoveRuleUp);
     connect(moveDownAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::Unimplemented);
     connect(deleteAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::Unimplemented);
 
@@ -167,4 +167,18 @@ void EditPhonologicalChangeDialog::SelectLanguageName()
 void EditPhonologicalChangeDialog::AddPhonologicalChange()
 {
     LayoutData_.AddLine(PHONOLOGICAL_CHANGE_ID, {""}, {});
+}
+
+/**
+ * @brief 選択された音韻変化規則を1つ上へ移動する
+ */
+void EditPhonologicalChangeDialog::MoveRuleUp()
+{
+    auto rulesListWidget = qobject_cast<QListWidget *>(LayoutData_.GetUI().Inputs.at(PHONOLOGICAL_CHANGE_ID));
+    if (!rulesListWidget)
+        return;
+
+    // 現在選択されている行を取得
+    int currentRow = rulesListWidget->currentRow();
+    LayoutData_.MoveUp(PHONOLOGICAL_CHANGE_ID, currentRow);
 }

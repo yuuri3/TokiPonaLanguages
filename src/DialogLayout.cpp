@@ -337,6 +337,34 @@ std::vector<QWidget *> DialogLayout::AddLine(const int id, const std::vector<std
 }
 
 /**
+ * @brief 選択された行を1つ上へ移動する
+ *
+ * @param id 要素ID
+ * @param lineIndex 行
+ */
+void DialogLayout::MoveUp(const int id, const int lineIndex)
+{
+    if (Elements[id].DataType == DialogDataType::StringArray)
+    {
+        auto widget = qobject_cast<QListWidget *>(UI.Inputs.at(id));
+        if (!widget)
+            return;
+
+        if (lineIndex > 0)
+        {
+            // アイテムをリストから一度取り外す（削除はされない）
+            QListWidgetItem *currentItem = widget->takeItem(lineIndex);
+
+            // 1つ上のインデックスに挿入し直す
+            widget->insertItem(lineIndex - 1, currentItem);
+
+            // 移動した後のアイテムを再び選択状態にする
+            widget->setCurrentRow(lineIndex - 1);
+        }
+    }
+}
+
+/**
  * @brief UI情報を取得
  *
  * @return const GeneratedDialogUI&
