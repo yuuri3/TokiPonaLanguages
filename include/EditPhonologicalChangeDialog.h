@@ -21,6 +21,7 @@ private slots:
     void ShowContextMenu(const QPoint &pos);
     void ShowHelp();
     void SelectLanguageName();
+    void AddPhonologicalChange();
 
 private:
     DialogLayout LayoutData_;

@@ -62,7 +62,7 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     if (ui.SelectButtons.at(NAME_ID))
         connect(ui.SelectButtons.at(NAME_ID), &QPushButton::clicked, this, &EditPhonologicalChangeDialog::SelectLanguageName);
     if (ui.AddButtons.at(PHONOLOGICAL_CHANGE_ID))
-        connect(ui.AddButtons.at(PHONOLOGICAL_CHANGE_ID), &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
+        connect(ui.AddButtons.at(PHONOLOGICAL_CHANGE_ID), &QPushButton::clicked, this, &EditPhonologicalChangeDialog::AddPhonologicalChange);
     auto allowHomophonesCheckBox = qobject_cast<QCheckBox *>(ui.Inputs.at(MINIMAL_PAIR_ID));
     if (allowHomophonesCheckBox)
         connect(allowHomophonesCheckBox, &QCheckBox::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
@@ -162,4 +162,9 @@ void EditPhonologicalChangeDialog::SelectLanguageName()
     }
 
     qobject_cast<QLineEdit *>(LayoutData_.GetUI().Inputs.at(NAME_ID))->setText(QString::fromStdString(LanguageNames_->at(period).at(place)));
+}
+
+void EditPhonologicalChangeDialog::AddPhonologicalChange()
+{
+    LayoutData_.AddLine(PHONOLOGICAL_CHANGE_ID, {""}, {});
 }
