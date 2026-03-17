@@ -365,6 +365,35 @@ void DialogLayout::MoveUp(const int id, const int lineIndex)
 }
 
 /**
+ * @brief 選択された行を1つ下へ移動する
+ *
+ * @param id 要素ID
+ * @param lineIndex 行
+ */
+void DialogLayout::MoveDown(const int id, const int lineIndex)
+{
+    if (Elements[id].DataType == DialogDataType::StringArray)
+    {
+        auto widget = qobject_cast<QListWidget *>(UI.Inputs.at(id));
+        if (!widget)
+            return;
+
+        // 何も選択されていない(-1)場合や、すでに一番下にある場合は何もしない
+        if (lineIndex >= 0 && lineIndex < widget->count() - 1)
+        {
+            // アイテムをリストから一度取り外す（削除はされない）
+            QListWidgetItem *currentItem = widget->takeItem(lineIndex);
+
+            // 1つ下のインデックスに挿入し直す
+            widget->insertItem(lineIndex + 1, currentItem);
+
+            // 移動した後のアイテムを再び選択状態にする
+            widget->setCurrentRow(lineIndex + 1);
+        }
+    }
+}
+
+/**
  * @brief UI情報を取得
  *
  * @return const GeneratedDialogUI&

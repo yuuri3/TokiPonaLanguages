@@ -118,7 +118,7 @@ void EditPhonologicalChangeDialog::ShowContextMenu(const QPoint &pos)
 
     // 各アクションを未実装スロットに接続
     connect(moveUpAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::MoveRuleUp);
-    connect(moveDownAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::Unimplemented);
+    connect(moveDownAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::MoveRuleDown);
     connect(deleteAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::Unimplemented);
 
     // リストウィジェット上のグローバル座標にメニューを表示
@@ -181,4 +181,18 @@ void EditPhonologicalChangeDialog::MoveRuleUp()
     // 現在選択されている行を取得
     int currentRow = rulesListWidget->currentRow();
     LayoutData_.MoveUp(PHONOLOGICAL_CHANGE_ID, currentRow);
+}
+
+/**
+ * @brief 選択された音韻変化規則を1つ下へ移動する
+ */
+void EditPhonologicalChangeDialog::MoveRuleDown()
+{
+    auto rulesListWidget = qobject_cast<QListWidget *>(LayoutData_.GetUI().Inputs.at(PHONOLOGICAL_CHANGE_ID));
+    if (!rulesListWidget)
+        return;
+
+    // 現在選択されている行を取得
+    int currentRow = rulesListWidget->currentRow();
+    LayoutData_.MoveDown(PHONOLOGICAL_CHANGE_ID, currentRow);
 }
