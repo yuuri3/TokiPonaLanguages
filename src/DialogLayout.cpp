@@ -394,6 +394,32 @@ void DialogLayout::MoveDown(const int id, const int lineIndex)
 }
 
 /**
+ * @brief 選択された行を削除する
+ *
+ * @param id 要素ID
+ * @param lineIndex 行
+ */
+void DialogLayout::DeleteLine(const int id, const int lineIndex)
+{
+    if (Elements[id].DataType == DialogDataType::StringArray)
+    {
+        auto widget = qobject_cast<QListWidget *>(UI.Inputs.at(id));
+        if (!widget)
+            return;
+
+        // 指定された行が存在するかチェック
+        if (lineIndex >= 0 && lineIndex < widget->count())
+        {
+            // アイテムをリストから取り外す
+            QListWidgetItem *item = widget->takeItem(lineIndex);
+
+            // 取り外したアイテムのメモリを解放して完全に削除する
+            delete item;
+        }
+    }
+}
+
+/**
  * @brief UI情報を取得
  *
  * @return const GeneratedDialogUI&

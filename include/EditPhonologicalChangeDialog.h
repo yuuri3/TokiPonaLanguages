@@ -24,6 +24,7 @@ private slots:
     void AddPhonologicalChange();
     void MoveRuleUp();
     void MoveRuleDown();
+    void DeleteRule();
 
 private:
     DialogLayout LayoutData_;
