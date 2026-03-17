@@ -283,7 +283,7 @@ void EditWordDialog::AddLine(const int id, const std::vector<std::string> &value
         {
             continue;
         }
-        connect(line, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
+        connect(qobject_cast<QLineEdit *>(line), &QLineEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
     }
 }
 
