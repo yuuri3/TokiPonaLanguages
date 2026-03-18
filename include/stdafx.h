@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <type_traits>
 
 #include <QString>
 #include <QMainWindow>

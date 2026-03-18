@@ -20,7 +20,7 @@ public:
 
 private slots:
     void AddTranslationButtonPushed();
-    void ClickLine(const QPoint &pos);
+    void ClickLine(const int id, const QPoint &pos);
     void AddTagsButtonPushed();
     void AddContentsButtonPushed();
     void AddVariationsButtonPushed();

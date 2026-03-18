@@ -24,14 +24,9 @@ SelectLanguageDialog::SelectLanguageDialog(QWidget *parent)
     LayoutData_.GenerateLayout(this);
 
     // ダイアログの要素とイベントの関連
-    auto &ui = LayoutData_.GetUI();
-    if (ui.OkButton)
-        connect(ui.OkButton, &QPushButton::clicked, this, &SelectLanguageDialog::OKButtonPushed); // 実装時は accept などに変更
-    if (ui.CancelButton)
-        connect(ui.CancelButton, &QPushButton::clicked, this, &SelectLanguageDialog::reject);
-    // メインテーブル
-    auto mainTable = qobject_cast<QTableWidget *>(ui.Inputs.at(TABLE_ID));
-    connect(mainTable, &QTableWidget::cellClicked, this, &SelectLanguageDialog::SelectLanguage);
+    LayoutData_.ConnectOKButtonClicked(this, &SelectLanguageDialog::OKButtonPushed);
+    LayoutData_.ConnectCancelButtonClicked(this, reject);
+    LayoutData_.ConnectClicked(TABLE_ID, this, &SelectLanguageDialog::SelectLanguage);
 }
 
 /**
@@ -44,8 +39,7 @@ SelectLanguageDialog::SelectLanguageDialog(QWidget *parent)
 void SelectLanguageDialog::Set(const std::vector<std::vector<std::string>> languageNames, int *place, int *period)
 {
     LanguageNames_ = languageNames;
-    auto mainTable = qobject_cast<QTableWidget *>(LayoutData_.GetUI().Inputs.at(TABLE_ID));
-    DisplayTable(mainTable, *LanguageNames_);
+    LayoutData_.SetDataToTable(TABLE_ID, languageNames);
     Place_ = place;
     Period_ = period;
 }
@@ -69,7 +63,7 @@ void SelectLanguageDialog::SelectLanguage(int row, int column)
 {
     SelectedPlace_ = column;
     SelectedPeriod_ = row;
-    qobject_cast<QLineEdit *>(LayoutData_.GetUI().Inputs.at(SELECTED_LANGUAGE_ID))->setText(QString::fromStdString((*LanguageNames_)[row][column]));
+    LayoutData_.SetText(SELECTED_LANGUAGE_ID, (*LanguageNames_)[row][column]);
 }
 
 /**

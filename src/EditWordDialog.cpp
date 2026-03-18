@@ -32,63 +32,41 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     // ID 1: 訳語
     LayoutData_.SetTitle(TRANSLATION_ID, "訳語");
     LayoutData_.SetDataType(TRANSLATION_ID, DialogDataType::StringPairArray);
-    LayoutData_.SetHasAddButton(TRANSLATION_ID, true);
+    LayoutData_.SetButton(TRANSLATION_ID, "追加");
 
     // ID 2: タグ
     LayoutData_.SetTitle(TAG_ID, "タグ");
     LayoutData_.SetDataType(TAG_ID, DialogDataType::StringPairArray);
-    LayoutData_.SetHasAddButton(TAG_ID, true);
+    LayoutData_.SetButton(TAG_ID, "追加");
 
     // ID 3: 自由記述
     LayoutData_.SetTitle(CONTENT_ID, "自由記述");
     LayoutData_.SetDataType(CONTENT_ID, DialogDataType::StringPairArray);
-    LayoutData_.SetHasAddButton(CONTENT_ID, true);
+    LayoutData_.SetButton(CONTENT_ID, "追加");
 
     // ID 4: 変化形
     LayoutData_.SetTitle(VARIATION_ID, "変化形");
     LayoutData_.SetDataType(VARIATION_ID, DialogDataType::StringPairArray);
-    LayoutData_.SetHasAddButton(VARIATION_ID, true);
+    LayoutData_.SetButton(VARIATION_ID, "追加");
 
     // ID 5: 関連語
     LayoutData_.SetTitle(RELATION_ID, "関連語");
     LayoutData_.SetDataType(RELATION_ID, DialogDataType::StringPairArray);
-    LayoutData_.SetHasAddButton(RELATION_ID, true);
+    LayoutData_.SetButton(RELATION_ID, "追加");
 
     // ==========================================
     // 2. UIの自動生成と適用
     // ==========================================
     LayoutData_.GenerateLayout(this);
-    const auto &ui = LayoutData_.GetUI();
-    setLayout(ui.MainLayout);
 
     // ==========================================
     // 3. ボタンの幅設定とシグナル・スロットの接続
     // ==========================================
-    auto addTranslationButton = ui.AddButtons.at(TRANSLATION_ID);
-    if (addTranslationButton)
-    {
-        connect(addTranslationButton, &QPushButton::clicked, this, &EditWordDialog::AddTranslationButtonPushed);
-    }
-    auto addTagsButton = ui.AddButtons.at(TAG_ID);
-    if (addTagsButton)
-    {
-        connect(addTagsButton, &QPushButton::clicked, this, &EditWordDialog::AddTagsButtonPushed);
-    }
-    auto addContentsButton = ui.AddButtons.at(CONTENT_ID);
-    if (addContentsButton)
-    {
-        connect(addContentsButton, &QPushButton::clicked, this, &EditWordDialog::AddContentsButtonPushed);
-    }
-    auto addVariationsButton = ui.AddButtons.at(VARIATION_ID);
-    if (addVariationsButton)
-    {
-        connect(addVariationsButton, &QPushButton::clicked, this, &EditWordDialog::AddVariationsButtonPushed);
-    }
-    auto addRelationsButton = ui.AddButtons.at(RELATION_ID);
-    if (addRelationsButton)
-    {
-        connect(addRelationsButton, &QPushButton::clicked, this, &EditWordDialog::AddRelationsButtonPushed);
-    }
+    LayoutData_.ConnectButtonClicked(TRANSLATION_ID, this, &EditWordDialog::AddTranslationButtonPushed);
+    LayoutData_.ConnectButtonClicked(TAG_ID, this, &EditWordDialog::AddTagsButtonPushed);
+    LayoutData_.ConnectButtonClicked(CONTENT_ID, this, &EditWordDialog::AddContentsButtonPushed);
+    LayoutData_.ConnectButtonClicked(VARIATION_ID, this, &EditWordDialog::AddVariationsButtonPushed);
+    LayoutData_.ConnectButtonClicked(RELATION_ID, this, &EditWordDialog::AddRelationsButtonPushed);
 }
 
 /**
@@ -141,8 +119,7 @@ void EditWordDialog::UpdateDialog()
 
         // 語形
         const auto form = word->GetForm();
-        auto entry = qobject_cast<QLineEdit *>(LayoutData_.GetUI().Inputs.at(FORM_ID));
-        entry->setText(QString::fromStdString(converter.ConvertToString(form)));
+        LayoutData_.SetText(FORM_ID, converter.ConvertToString(form));
 
         // 訳語
         std::vector<std::vector<std::string>> translations;
@@ -276,15 +253,8 @@ void EditWordDialog::AddRelationsButtonPushed()
  */
 void EditWordDialog::AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths)
 {
-    auto widgets = LayoutData_.AddLine(id, values, widths);
-    for (auto line : widgets)
-    {
-        if (!line)
-        {
-            continue;
-        }
-        connect(qobject_cast<QLineEdit *>(line), &QLineEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
-    }
+    LayoutData_.AddLineAndConnectRightClicked(id, values, widths, this, [this, id](const QPoint &pos)
+                                              { ClickLine(id, pos); });
 }
 
 /**
@@ -292,7 +262,7 @@ void EditWordDialog::AddLine(const int id, const std::vector<std::string> &value
  *
  * @param pos クリック位置
  */
-void EditWordDialog::ClickLine(const QPoint &pos)
+void EditWordDialog::ClickLine(const int id, const QPoint &pos)
 {
     // QLineEdit か QTextEdit かを問わず QWidget として取得
     QWidget *senderWidget = qobject_cast<QWidget *>(sender());
@@ -308,15 +278,6 @@ void EditWordDialog::ClickLine(const QPoint &pos)
     if (selectedAction == addAction)
     {
         QWidget *rowContainer = senderWidget->parentWidget();
-        QWidget *targetWidget = rowContainer->parentWidget();
-        int targetWidgetID = -1;
-        for (const auto [id, widget] : LayoutData_.GetUI().Inputs)
-        {
-            if (widget == targetWidget)
-            {
-                targetWidgetID = id;
-            }
-        }
 
         // 1つの rowContainer 内にある入力要素（QLineEdit と QTextEdit）の合計数を取得
         int boxCount = rowContainer->findChildren<QLineEdit *>().count() +
@@ -325,7 +286,7 @@ void EditWordDialog::ClickLine(const QPoint &pos)
         // ボックスの数に応じた幅設定を維持
         auto widths = (boxCount == 1) ? ONE_WIDTH : TWO_WIDTHS;
         std::vector<std::string> newValues(boxCount, "");
-        AddLine(targetWidgetID, newValues, widths);
+        AddLine(id, newValues, widths);
     }
     else if (selectedAction == removeAction)
     {

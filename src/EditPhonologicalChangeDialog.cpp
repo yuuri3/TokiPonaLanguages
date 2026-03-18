@@ -23,13 +23,13 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     LayoutData_.SetTitle(NAME_ID, "言語名");
     LayoutData_.SetDataType(NAME_ID, DialogDataType::String);
     LayoutData_.SetIsEditable(NAME_ID, false);
-    LayoutData_.SetHasSelectButton(NAME_ID, true);
+    LayoutData_.SetButton(NAME_ID, "言語選択");
 
     // ID 1: 音韻変化
     LayoutData_.SetTitle(PHONOLOGICAL_CHANGE_ID, "音韻変化");
     LayoutData_.SetDataType(PHONOLOGICAL_CHANGE_ID, DialogDataType::StringArray);
     LayoutData_.SetIsEditable(PHONOLOGICAL_CHANGE_ID, true);
-    LayoutData_.SetHasAddButton(PHONOLOGICAL_CHANGE_ID, true);
+    LayoutData_.SetButton(PHONOLOGICAL_CHANGE_ID, "追加");
     LayoutData_.SetHasContextMenu(PHONOLOGICAL_CHANGE_ID, true);
 
     // ID 2: 音節構造
@@ -46,38 +46,16 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     // 2. UIの自動生成と適用
     // ==========================================
     LayoutData_.GenerateLayout(this);
-    const auto &ui = LayoutData_.GetUI();
-    setLayout(ui.MainLayout);
 
     // ==========================================
     // 3. シグナルとスロットの接続・初期設定
     // ==========================================
-    if (ui.HelpButton)
-        connect(ui.HelpButton, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::ShowHelp);
-    if (ui.OkButton)
-        connect(ui.OkButton, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::Unimplemented); // 実装時は accept などに変更
-    if (ui.CancelButton)
-        connect(ui.CancelButton, &QPushButton::clicked, this, &EditPhonologicalChangeDialog::reject);
-
-    if (ui.SelectButtons.at(NAME_ID))
-        connect(ui.SelectButtons.at(NAME_ID), &QPushButton::clicked, this, &EditPhonologicalChangeDialog::SelectLanguageName);
-    if (ui.AddButtons.at(PHONOLOGICAL_CHANGE_ID))
-        connect(ui.AddButtons.at(PHONOLOGICAL_CHANGE_ID), &QPushButton::clicked, this, &EditPhonologicalChangeDialog::AddPhonologicalChange);
-    auto allowHomophonesCheckBox = qobject_cast<QCheckBox *>(ui.Inputs.at(MINIMAL_PAIR_ID));
-    if (allowHomophonesCheckBox)
-        connect(allowHomophonesCheckBox, &QCheckBox::clicked, this, &EditPhonologicalChangeDialog::Unimplemented);
-
-    auto rulesListWidget = qobject_cast<QListWidget *>(ui.Inputs.at(PHONOLOGICAL_CHANGE_ID));
-    if (rulesListWidget)
-    {
-        // UI確認用のダミーアイテム追加
-        auto *dummyItem = new QListWidgetItem(tr("a > b / _c"));
-        dummyItem->setFlags(dummyItem->flags() | Qt::ItemIsEditable);
-        rulesListWidget->addItem(dummyItem);
-
-        // 右クリックメニューの接続
-        connect(rulesListWidget, &QListWidget::customContextMenuRequested, this, &EditPhonologicalChangeDialog::ShowContextMenu);
-    }
+    LayoutData_.ConnectHelpButtonClicked(this, &EditPhonologicalChangeDialog::ShowHelp);
+    LayoutData_.ConnectOKButtonClicked(this, &EditPhonologicalChangeDialog::Unimplemented); // 実装時は accept などに変更
+    LayoutData_.ConnectCancelButtonClicked(this, reject);
+    LayoutData_.ConnectButtonClicked(NAME_ID, this, &EditPhonologicalChangeDialog::SelectLanguageName);
+    LayoutData_.ConnectButtonClicked(PHONOLOGICAL_CHANGE_ID, this, &EditPhonologicalChangeDialog::AddPhonologicalChange);
+    LayoutData_.ConnectClicked(MINIMAL_PAIR_ID, this, &EditPhonologicalChangeDialog::Unimplemented);
 }
 
 /**
@@ -108,6 +86,11 @@ void EditPhonologicalChangeDialog::Unimplemented()
 
 void EditPhonologicalChangeDialog::ShowContextMenu(const QPoint &pos)
 {
+    // 1. シグナルの送信元（右クリックされたウィジェット）を取得する
+    auto *senderWidget = qobject_cast<QWidget *>(sender());
+    if (!senderWidget)
+        return;
+
     // 右クリックメニューの構築
     QMenu menu(this);
 
@@ -116,14 +99,13 @@ void EditPhonologicalChangeDialog::ShowContextMenu(const QPoint &pos)
     menu.addSeparator();
     QAction *deleteAction = menu.addAction(tr("削除"));
 
-    // 各アクションを未実装スロットに接続
+    // 各アクションをスロットに接続
     connect(moveUpAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::MoveRuleUp);
     connect(moveDownAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::MoveRuleDown);
     connect(deleteAction, &QAction::triggered, this, &EditPhonologicalChangeDialog::DeleteRule);
 
-    // リストウィジェット上のグローバル座標にメニューを表示
-    auto rulesListWidget = qobject_cast<QListWidget *>(LayoutData_.GetUI().Inputs.at(PHONOLOGICAL_CHANGE_ID));
-    menu.exec(rulesListWidget->mapToGlobal(pos));
+    // 2. 送信元ウィジェットの座標を使って、ローカル座標をグローバル座標に変換しメニューを表示
+    menu.exec(senderWidget->mapToGlobal(pos));
 }
 
 void EditPhonologicalChangeDialog::ShowHelp()
@@ -161,7 +143,7 @@ void EditPhonologicalChangeDialog::SelectLanguageName()
         return;
     }
 
-    qobject_cast<QLineEdit *>(LayoutData_.GetUI().Inputs.at(NAME_ID))->setText(QString::fromStdString(LanguageNames_->at(period).at(place)));
+    LayoutData_.SetText(NAME_ID, LanguageNames_->at(period).at(place));
 }
 
 void EditPhonologicalChangeDialog::AddPhonologicalChange()
@@ -174,13 +156,14 @@ void EditPhonologicalChangeDialog::AddPhonologicalChange()
  */
 void EditPhonologicalChangeDialog::MoveRuleUp()
 {
-    auto rulesListWidget = qobject_cast<QListWidget *>(LayoutData_.GetUI().Inputs.at(PHONOLOGICAL_CHANGE_ID));
-    if (!rulesListWidget)
-        return;
+    // DialogLayout に「現在の選択行」を尋ねるだけ
+    int currentRow = LayoutData_.GetCurrentRow(PHONOLOGICAL_CHANGE_ID);
 
-    // 現在選択されている行を取得
-    int currentRow = rulesListWidget->currentRow();
-    LayoutData_.MoveUp(PHONOLOGICAL_CHANGE_ID, currentRow);
+    // 何かしら行が選択されていれば、移動処理を実行
+    if (currentRow >= 0)
+    {
+        LayoutData_.MoveUp(PHONOLOGICAL_CHANGE_ID, currentRow);
+    }
 }
 
 /**
@@ -188,13 +171,14 @@ void EditPhonologicalChangeDialog::MoveRuleUp()
  */
 void EditPhonologicalChangeDialog::MoveRuleDown()
 {
-    auto rulesListWidget = qobject_cast<QListWidget *>(LayoutData_.GetUI().Inputs.at(PHONOLOGICAL_CHANGE_ID));
-    if (!rulesListWidget)
-        return;
+    // DialogLayout に「現在の選択行」を尋ねるだけ
+    int currentRow = LayoutData_.GetCurrentRow(PHONOLOGICAL_CHANGE_ID);
 
-    // 現在選択されている行を取得
-    int currentRow = rulesListWidget->currentRow();
-    LayoutData_.MoveDown(PHONOLOGICAL_CHANGE_ID, currentRow);
+    // 何かしら行が選択されていれば、移動処理を実行
+    if (currentRow >= 0)
+    {
+        LayoutData_.MoveDown(PHONOLOGICAL_CHANGE_ID, currentRow);
+    }
 }
 
 /**
@@ -202,14 +186,10 @@ void EditPhonologicalChangeDialog::MoveRuleDown()
  */
 void EditPhonologicalChangeDialog::DeleteRule()
 {
-    auto rulesListWidget = qobject_cast<QListWidget *>(LayoutData_.GetUI().Inputs.at(PHONOLOGICAL_CHANGE_ID));
-    if (!rulesListWidget)
-        return;
+    // DialogLayout に「現在の選択行」を尋ねるだけ
+    int currentRow = LayoutData_.GetCurrentRow(PHONOLOGICAL_CHANGE_ID);
 
-    // 現在選択されている行を取得
-    int currentRow = rulesListWidget->currentRow();
-
-    // 行が正しく選択されていれば削除を実行
+    // 何かしら行が選択されていれば、移動処理を実行
     if (currentRow >= 0)
     {
         LayoutData_.DeleteLine(PHONOLOGICAL_CHANGE_ID, currentRow);

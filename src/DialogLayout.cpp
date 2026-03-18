@@ -12,10 +12,10 @@
 DialogLayout DialogLayout::Create(const std::string &title, bool hasHelpButton, bool hasOkButton, bool hasCancelButton)
 {
     DialogLayout layout;
-    layout.MainTitle = title;
-    layout.HasHelpButton = hasHelpButton;
-    layout.HasOkButton = hasOkButton;
-    layout.HasCancelButton = hasCancelButton;
+    layout.MainTitle_ = title;
+    layout.HasHelpButton_ = hasHelpButton;
+    layout.HasOKButton_ = hasOkButton;
+    layout.HasCancelButton_ = hasCancelButton;
     return layout;
 }
 
@@ -26,7 +26,7 @@ DialogLayout DialogLayout::Create(const std::string &title, bool hasHelpButton, 
  */
 void DialogLayout::SetTitle(int id, const std::string &title)
 {
-    Elements[id].Title = title;
+    Elements_[id].Title = title;
 }
 
 /**
@@ -36,7 +36,7 @@ void DialogLayout::SetTitle(int id, const std::string &title)
  */
 void DialogLayout::SetDataType(int id, DialogDataType dataType)
 {
-    Elements[id].DataType = dataType;
+    Elements_[id].DataType = dataType;
 }
 
 /**
@@ -46,38 +46,19 @@ void DialogLayout::SetDataType(int id, DialogDataType dataType)
  */
 void DialogLayout::SetIsEditable(int id, bool isEditable)
 {
-    Elements[id].IsEditable = isEditable;
+    Elements_[id].IsEditable = isEditable;
 }
 
 /**
- * @brief 指定したIDの要素に編集ボタンの有無を設定する
- * @param id 要素のID
- * @param hasEditButton 編集ボタンを持たせる場合は true
- */
-void DialogLayout::SetHasEditButton(int id, bool hasEditButton)
-{
-    Elements[id].HasEditButton = hasEditButton;
-}
-
-/**
- * @brief 指定したIDの要素に選択ボタンの有無を設定する
+ * @brief 指定したIDの要素にボタンを設定する
  *
  * @param id 要素のID
- * @param hasSelectButton 選択ボタンを持たせる場合は true
+ * @param buttonName ボタン名
  */
-void DialogLayout::SetHasSelectButton(int id, bool hasSelectButton)
+void DialogLayout::SetButton(int id, std::string buttonName)
 {
-    Elements[id].HasSelectButton = hasSelectButton;
-}
-
-/**
- * @brief 指定したIDの要素に追加ボタンの有無を設定する
- * @param id 要素のID
- * @param hasAddButton 追加ボタンを持たせる場合は true
- */
-void DialogLayout::SetHasAddButton(int id, bool hasAddButton)
-{
-    Elements[id].HasAddButton = hasAddButton;
+    Elements_[id].HasButton = true;
+    Elements_[id].ButtonName = buttonName;
 }
 
 /**
@@ -87,7 +68,7 @@ void DialogLayout::SetHasAddButton(int id, bool hasAddButton)
  */
 void DialogLayout::SetHasContextMenu(int id, bool hasContextMenu)
 {
-    Elements[id].HasContextMenu = hasContextMenu;
+    Elements_[id].HasContextMenu = hasContextMenu;
 }
 
 /**
@@ -96,20 +77,20 @@ void DialogLayout::SetHasContextMenu(int id, bool hasContextMenu)
  */
 void DialogLayout::GenerateLayout(QWidget *parent)
 {
-    parent->setWindowTitle(QString::fromStdString(MainTitle));
-    UI.MainLayout = new QVBoxLayout(parent);
+    parent->setWindowTitle(QString::fromStdString(MainTitle_));
+    UI_.MainLayout = new QVBoxLayout(parent);
 
     // ==========================================
     // 1. ヘルプボタン (最上部・右寄せ)
     // ==========================================
-    if (HasHelpButton)
+    if (HasHelpButton_)
     {
         auto *helpLayout = new QHBoxLayout();
-        UI.HelpButton = new QPushButton("ヘルプ", parent);
-        UI.HelpButton->setObjectName("HelpButton");
+        UI_.HelpButton = new QPushButton("ヘルプ", parent);
+        UI_.HelpButton->setObjectName("HelpButton");
         helpLayout->addStretch();
-        helpLayout->addWidget(UI.HelpButton);
-        UI.MainLayout->addLayout(helpLayout);
+        helpLayout->addWidget(UI_.HelpButton);
+        UI_.MainLayout->addLayout(helpLayout);
     }
 
     // ==========================================
@@ -118,7 +99,7 @@ void DialogLayout::GenerateLayout(QWidget *parent)
     auto *scrollArea = new QScrollArea(parent);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
-    UI.MainLayout->addWidget(scrollArea);
+    UI_.MainLayout->addWidget(scrollArea);
 
     auto *scrollContent = new QWidget(scrollArea);
     auto *contentLayout = new QVBoxLayout(scrollContent);
@@ -127,7 +108,7 @@ void DialogLayout::GenerateLayout(QWidget *parent)
     // ==========================================
     // 2. 各要素の生成 (map なので ID の昇順で処理される)
     // ==========================================
-    for (const auto &[id, element] : Elements)
+    for (const auto &[id, element] : Elements_)
     {
         // 真偽値（チェックボックス）の場合はタイトルと入力を兼ねるため特別扱い
         if (element.DataType == DialogDataType::Boolean)
@@ -136,8 +117,8 @@ void DialogLayout::GenerateLayout(QWidget *parent)
             checkBox->setEnabled(element.IsEditable);
             checkBox->setObjectName(QString("CheckBox_%1").arg(id));
             contentLayout->addWidget(checkBox);
-            UI.Inputs[id] = checkBox; // 構造体に保存
-            continue;                 // 次の要素へ
+            UI_.Inputs[id] = checkBox; // 構造体に保存
+            continue;                  // 次の要素へ
         }
 
         // --- それ以外のデータ型（文字列・配列）---
@@ -146,26 +127,12 @@ void DialogLayout::GenerateLayout(QWidget *parent)
         auto *titleLayout = new QHBoxLayout();
         titleLayout->addWidget(new QLabel(QString::fromStdString(element.Title), scrollContent));
 
-        if (element.HasEditButton)
+        if (element.HasButton)
         {
-            UI.EditButtons[id] = new QPushButton("編集", scrollContent);
-            UI.EditButtons[id]->setObjectName(QString("SelectButton_%1").arg(id));
-            UI.EditButtons[id]->setFixedWidth(50);
-            titleLayout->addWidget(UI.EditButtons[id]);
-        }
-        if (element.HasSelectButton)
-        {
-            UI.SelectButtons[id] = new QPushButton("選択", scrollContent);
-            UI.SelectButtons[id]->setObjectName(QString("EditButton_%1").arg(id));
-            UI.SelectButtons[id]->setFixedWidth(50);
-            titleLayout->addWidget(UI.SelectButtons[id]);
-        }
-        if (element.HasAddButton)
-        {
-            UI.AddButtons[id] = new QPushButton("追加", scrollContent);
-            UI.AddButtons[id]->setObjectName(QString("AddButton_%1").arg(id));
-            UI.AddButtons[id]->setFixedWidth(50);
-            titleLayout->addWidget(UI.AddButtons[id]);
+            UI_.Buttons[id] = new QPushButton(QString::fromStdString(element.ButtonName), scrollContent);
+            UI_.Buttons[id]->setObjectName(QString("AddButton_%1").arg(id));
+            UI_.Buttons[id]->setFixedWidth(50);
+            titleLayout->addWidget(UI_.Buttons[id]);
         }
         titleLayout->addStretch();
         contentLayout->addLayout(titleLayout);
@@ -177,7 +144,7 @@ void DialogLayout::GenerateLayout(QWidget *parent)
             lineEdit->setReadOnly(!element.IsEditable);
             lineEdit->setObjectName(QString("LineEdit_%1").arg(id));
             contentLayout->addWidget(lineEdit);
-            UI.Inputs[id] = lineEdit;
+            UI_.Inputs[id] = lineEdit;
         }
         else if (element.DataType == DialogDataType::StringArray)
         {
@@ -189,7 +156,7 @@ void DialogLayout::GenerateLayout(QWidget *parent)
                 listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
             }
             contentLayout->addWidget(listWidget);
-            UI.Inputs[id] = listWidget;
+            UI_.Inputs[id] = listWidget;
         }
         else if (element.DataType == DialogDataType::StringPairArray)
         {
@@ -209,7 +176,7 @@ void DialogLayout::GenerateLayout(QWidget *parent)
             }
 
             contentLayout->addWidget(containerWidget);
-            UI.Inputs[id] = containerWidget; // Translations_ などの QWidget* に代入される
+            UI_.Inputs[id] = containerWidget; // Translations_ などの QWidget* に代入される
         }
         else if (element.DataType == DialogDataType::Table)
         {
@@ -217,7 +184,7 @@ void DialogLayout::GenerateLayout(QWidget *parent)
             contentLayout->addWidget(table);
 
             table->setContextMenuPolicy(Qt::CustomContextMenu);
-            UI.Inputs[id] = table;
+            UI_.Inputs[id] = table;
         }
     }
 
@@ -226,25 +193,84 @@ void DialogLayout::GenerateLayout(QWidget *parent)
     // ==========================================
     // 3. 下部ボタン (OK / キャンセル)
     // ==========================================
-    if (HasOkButton || HasCancelButton)
+    if (HasOKButton_ || HasCancelButton_)
     {
         auto *buttonLayout = new QHBoxLayout();
         buttonLayout->addStretch();
 
-        if (HasOkButton)
+        if (HasOKButton_)
         {
-            UI.OkButton = new QPushButton("OK", parent);
-            UI.OkButton->setObjectName("OkButton");
-            buttonLayout->addWidget(UI.OkButton);
+            UI_.OkButton = new QPushButton("OK", parent);
+            UI_.OkButton->setObjectName("OkButton");
+            buttonLayout->addWidget(UI_.OkButton);
         }
-        if (HasCancelButton)
+        if (HasCancelButton_)
         {
-            UI.CancelButton = new QPushButton("キャンセル", parent);
-            UI.CancelButton->setObjectName("CancelButton");
-            buttonLayout->addWidget(UI.CancelButton);
+            UI_.CancelButton = new QPushButton("キャンセル", parent);
+            UI_.CancelButton->setObjectName("CancelButton");
+            buttonLayout->addWidget(UI_.CancelButton);
         }
-        UI.MainLayout->addLayout(buttonLayout);
+        UI_.MainLayout->addLayout(buttonLayout);
     }
+
+    parent->setLayout(UI_.MainLayout);
+}
+
+/**
+ * @brief ヘルプボタンが有効か
+ */
+bool DialogLayout::HasHelpButton() const
+{
+    return HasHelpButton_;
+}
+
+/**
+ * @brief OKボタンが有効か
+ */
+bool DialogLayout::HasOKButton() const
+{
+    return HasOKButton_;
+}
+
+/**
+ * @brief ボタンが有効か
+ *
+ * @param id ID
+ */
+bool DialogLayout::HasButton(const int id) const
+{
+    if (Elements_.count(id) == 0)
+    {
+        return false;
+    }
+    return Elements_.at(id).HasButton;
+}
+
+/**
+ * @brief 指定したIDのウィジェットで現在選択されている行番号を取得する
+ * @param id 要素ID
+ * @return int 選択されている行番号。選択されていない場合や非対応の型は -1
+ */
+int DialogLayout::GetCurrentRow(const int id) const
+{
+    // IDが存在しない場合は -1 を返す
+    if (UI_.Inputs.count(id) == 0)
+        return -1;
+
+    auto *widget = UI_.Inputs.at(id);
+
+    // QListWidget (StringArray) の場合
+    if (auto *listWidget = qobject_cast<QListWidget *>(widget))
+    {
+        return listWidget->currentRow();
+    }
+    // QTableWidget (Table) などの場合
+    else if (auto *tableWidget = qobject_cast<QTableWidget *>(widget))
+    {
+        return tableWidget->currentRow();
+    }
+
+    return -1;
 }
 
 /**
@@ -254,7 +280,7 @@ void DialogLayout::GenerateLayout(QWidget *parent)
  */
 void DialogLayout::Clear(const int id)
 {
-    auto widget = UI.Inputs.at(id);
+    auto widget = UI_.Inputs.at(id);
     if (!widget)
     {
         return;
@@ -269,25 +295,24 @@ void DialogLayout::Clear(const int id)
  * @param values 入力値（[0]: タイトル, [1]: 内容）
  * @param widths 幅のリスト
  */
-std::vector<QWidget *> DialogLayout::AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths)
+void DialogLayout::AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths)
 {
-    std::vector<QWidget *> result;
-    if (Elements[id].DataType == DialogDataType::StringArray)
+    if (Elements_[id].DataType == DialogDataType::StringArray)
     {
-        if (Elements[id].DataType == DialogDataType::StringArray)
+        if (Elements_[id].DataType == DialogDataType::StringArray)
         {
             // 対象のウィジェットを QListWidget として取得する
-            auto listWidget = qobject_cast<QListWidget *>(UI.Inputs.at(id));
+            auto listWidget = qobject_cast<QListWidget *>(UI_.Inputs.at(id));
             if (!listWidget)
             {
-                return {};
+                return;
             }
 
             // 渡された文字列の数だけリストアイテムを生成して追加
             for (const auto &value : values)
             {
                 auto *item = new QListWidgetItem(QString::fromStdString(value));
-                if (Elements[id].IsEditable)
+                if (Elements_[id].IsEditable)
                 {
                     // ダブルクリックで直接テキストを編集できるようにフラグを設定
                     item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
@@ -295,17 +320,14 @@ std::vector<QWidget *> DialogLayout::AddLine(const int id, const std::vector<std
 
                 listWidget->addItem(item);
             }
-
-            // QListWidget の場合は QLineEdit を直接生成しないため、空のベクターを返す
-            return result;
         }
     }
-    else if (Elements[id].DataType == DialogDataType::StringPairArray)
+    else if (Elements_[id].DataType == DialogDataType::StringPairArray)
     {
-        auto widget = UI.Inputs.at(id);
+        auto widget = UI_.Inputs.at(id);
         if (!widget)
         {
-            return {};
+            return;
         }
         if (!widget->layout())
         {
@@ -325,15 +347,12 @@ std::vector<QWidget *> DialogLayout::AddLine(const int id, const std::vector<std
                 line->setText(QString::fromStdString(values[i]));
                 line->setFixedWidth(widths[i]);
                 line->setContextMenuPolicy(Qt::CustomContextMenu);
-                // connect(line, &QLineEdit::customContextMenuRequested, this, &EditWordDialog::ClickLine);
                 subLayout->addWidget(line);
-                result.emplace_back(line);
             }
         }
 
         widget->layout()->addWidget(rowContainer);
     }
-    return result;
 }
 
 /**
@@ -344,9 +363,9 @@ std::vector<QWidget *> DialogLayout::AddLine(const int id, const std::vector<std
  */
 void DialogLayout::MoveUp(const int id, const int lineIndex)
 {
-    if (Elements[id].DataType == DialogDataType::StringArray)
+    if (Elements_[id].DataType == DialogDataType::StringArray)
     {
-        auto widget = qobject_cast<QListWidget *>(UI.Inputs.at(id));
+        auto widget = qobject_cast<QListWidget *>(UI_.Inputs.at(id));
         if (!widget)
             return;
 
@@ -372,9 +391,9 @@ void DialogLayout::MoveUp(const int id, const int lineIndex)
  */
 void DialogLayout::MoveDown(const int id, const int lineIndex)
 {
-    if (Elements[id].DataType == DialogDataType::StringArray)
+    if (Elements_[id].DataType == DialogDataType::StringArray)
     {
-        auto widget = qobject_cast<QListWidget *>(UI.Inputs.at(id));
+        auto widget = qobject_cast<QListWidget *>(UI_.Inputs.at(id));
         if (!widget)
             return;
 
@@ -401,9 +420,9 @@ void DialogLayout::MoveDown(const int id, const int lineIndex)
  */
 void DialogLayout::DeleteLine(const int id, const int lineIndex)
 {
-    if (Elements[id].DataType == DialogDataType::StringArray)
+    if (Elements_[id].DataType == DialogDataType::StringArray)
     {
-        auto widget = qobject_cast<QListWidget *>(UI.Inputs.at(id));
+        auto widget = qobject_cast<QListWidget *>(UI_.Inputs.at(id));
         if (!widget)
             return;
 
@@ -420,11 +439,39 @@ void DialogLayout::DeleteLine(const int id, const int lineIndex)
 }
 
 /**
- * @brief UI情報を取得
+ * @brief テキストをセット
  *
- * @return const GeneratedDialogUI&
+ * @param id ID
+ * @param text テキスト
  */
-const GeneratedDialogUI &DialogLayout::GetUI() const
+void DialogLayout::SetText(const int id, const std::string text)
 {
-    return UI;
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    {
+        return;
+    }
+    const auto type = Elements_.at(id).DataType;
+    if (type == DialogDataType::String)
+    {
+        qobject_cast<QLineEdit *>(UI_.Inputs.at(id))->setText(QString::fromStdString(text));
+    }
+}
+
+/**
+ * @brief 表にデータをセット
+ *
+ * @param id
+ * @param data
+ */
+void DialogLayout::SetDataToTable(const int id, const std::vector<std::vector<std::string>> &data)
+{
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    {
+        return;
+    }
+    const auto type = Elements_.at(id).DataType;
+    if (type == DialogDataType::Table)
+    {
+        DisplayTable(qobject_cast<QTableWidget *>(UI_.Inputs.at(id)), data);
+    }
 }
