@@ -6,33 +6,21 @@
 template <typename Receiver, typename Slot>
 void DialogLayout::ConnectButtonClicked(int id, Receiver *receiver, Slot slot) const
 {
-    if (UI_.Buttons.count(id))
-    {
-        QObject::connect(UI_.Buttons.at(id), &QPushButton::clicked, receiver, slot);
-    }
-}
-template <typename Receiver, typename Slot>
-void DialogLayout::ConnectHelpButtonClicked(Receiver *receiver, Slot slot) const
-{
-    if (UI_.HelpButton)
+    if (id == HELP_BUTTON_ID && UI_.HelpButton)
     {
         QObject::connect(UI_.HelpButton, &QPushButton::clicked, receiver, slot);
     }
-}
-template <typename Receiver, typename Slot>
-void DialogLayout::ConnectOKButtonClicked(Receiver *receiver, Slot slot) const
-{
-    if (UI_.OkButton)
+    else if (id == OK_BUTTON_ID && UI_.OkButton)
     {
         QObject::connect(UI_.OkButton, &QPushButton::clicked, receiver, slot);
     }
-}
-template <typename Receiver, typename Slot>
-void DialogLayout::ConnectCancelButtonClicked(Receiver *receiver, Slot slot) const
-{
-    if (UI_.CancelButton)
+    else if (id == CANCEL_BUTTON_ID && UI_.CancelButton)
     {
         QObject::connect(UI_.CancelButton, &QPushButton::clicked, receiver, slot);
+    }
+    if (UI_.Buttons.count(id))
+    {
+        QObject::connect(UI_.Buttons.at(id), &QPushButton::clicked, receiver, slot);
     }
 }
 template <typename Receiver, typename Slot>

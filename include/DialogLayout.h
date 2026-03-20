@@ -4,6 +4,10 @@
 #include <map>
 #include <string>
 
+constexpr int HELP_BUTTON_ID = -1;
+constexpr int OK_BUTTON_ID = -2;
+constexpr int CANCEL_BUTTON_ID = -3;
+
 /**
  * @brief 各要素が扱うデータ型
  */
@@ -95,6 +99,7 @@ public:
     void DeleteLine(const int id, const int lineIndex);
     void SetText(const int id, const std::string text);
     void SetDataToTable(const int id, const std::vector<std::vector<std::string>> &data);
+    void ActivateButton(const int id, const int isActivete);
 
     // ==========================================
     // イベントの接続
@@ -102,12 +107,6 @@ public:
 
     template <typename Receiver, typename Slot>
     void ConnectButtonClicked(const int id, Receiver *receiver, Slot slot) const;
-    template <typename Receiver, typename Slot>
-    void ConnectHelpButtonClicked(Receiver *receiver, Slot slot) const;
-    template <typename Receiver, typename Slot>
-    void ConnectOKButtonClicked(Receiver *receiver, Slot slot) const;
-    template <typename Receiver, typename Slot>
-    void ConnectCancelButtonClicked(Receiver *receiver, Slot slot) const;
     template <typename Receiver, typename Slot>
     void ConnectClicked(const int id, Receiver *receiver, Slot slot) const;
     template <typename Receiver, typename Slot>

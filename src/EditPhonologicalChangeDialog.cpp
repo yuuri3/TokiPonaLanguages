@@ -46,13 +46,15 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     // 2. UIの自動生成と適用
     // ==========================================
     LayoutData_.GenerateLayout(this);
+    LayoutData_.ActivateButton(PHONOLOGICAL_CHANGE_ID, false);
+    LayoutData_.ActivateButton(OK_BUTTON_ID, false);
 
     // ==========================================
     // 3. シグナルとスロットの接続・初期設定
     // ==========================================
-    LayoutData_.ConnectHelpButtonClicked(this, &EditPhonologicalChangeDialog::ShowHelp);
-    LayoutData_.ConnectOKButtonClicked(this, &EditPhonologicalChangeDialog::Unimplemented); // 実装時は accept などに変更
-    LayoutData_.ConnectCancelButtonClicked(this, reject);
+    LayoutData_.ConnectButtonClicked(HELP_BUTTON_ID, this, &EditPhonologicalChangeDialog::ShowHelp);
+    LayoutData_.ConnectButtonClicked(OK_BUTTON_ID, this, &EditPhonologicalChangeDialog::Unimplemented); // 実装時は accept などに変更
+    LayoutData_.ConnectButtonClicked(CANCEL_BUTTON_ID, this, reject);
     LayoutData_.ConnectButtonClicked(NAME_ID, this, &EditPhonologicalChangeDialog::SelectLanguageName);
     LayoutData_.ConnectButtonClicked(PHONOLOGICAL_CHANGE_ID, this, &EditPhonologicalChangeDialog::AddPhonologicalChange);
     LayoutData_.ConnectClicked(MINIMAL_PAIR_ID, this, &EditPhonologicalChangeDialog::Unimplemented);
@@ -144,6 +146,8 @@ void EditPhonologicalChangeDialog::SelectLanguageName()
     }
 
     LayoutData_.SetText(NAME_ID, LanguageNames_->at(period).at(place));
+    LayoutData_.ActivateButton(PHONOLOGICAL_CHANGE_ID, true);
+    LayoutData_.ActivateButton(OK_BUTTON_ID, true);
 }
 
 void EditPhonologicalChangeDialog::AddPhonologicalChange()

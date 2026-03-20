@@ -475,3 +475,29 @@ void DialogLayout::SetDataToTable(const int id, const std::vector<std::vector<st
         DisplayTable(qobject_cast<QTableWidget *>(UI_.Inputs.at(id)), data);
     }
 }
+
+/**
+ * @brief ボタンの有効状態を変化
+ *
+ * @param id ID
+ * @param isActivete ボタンを有効にするか
+ */
+void DialogLayout::ActivateButton(const int id, const int isActivete)
+{
+    if (id == HELP_BUTTON_ID && UI_.HelpButton)
+    {
+        UI_.HelpButton->setEnabled(isActivete);
+    }
+    else if (id == OK_BUTTON_ID && UI_.OkButton)
+    {
+        UI_.OkButton->setEnabled(isActivete);
+    }
+    else if (id == CANCEL_BUTTON_ID && UI_.CancelButton)
+    {
+        UI_.CancelButton->setEnabled(isActivete);
+    }
+    else if (UI_.Buttons.count(id))
+    {
+        UI_.Buttons.at(id)->setEnabled(isActivete);
+    }
+}

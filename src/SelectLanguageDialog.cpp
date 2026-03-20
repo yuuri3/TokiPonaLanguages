@@ -24,8 +24,8 @@ SelectLanguageDialog::SelectLanguageDialog(QWidget *parent)
     LayoutData_.GenerateLayout(this);
 
     // ダイアログの要素とイベントの関連
-    LayoutData_.ConnectOKButtonClicked(this, &SelectLanguageDialog::OKButtonPushed);
-    LayoutData_.ConnectCancelButtonClicked(this, reject);
+    LayoutData_.ConnectButtonClicked(OK_BUTTON_ID, this, &SelectLanguageDialog::OKButtonPushed);
+    LayoutData_.ConnectButtonClicked(CANCEL_BUTTON_ID, this, reject);
     LayoutData_.ConnectClicked(TABLE_ID, this, &SelectLanguageDialog::SelectLanguage);
 }
 
