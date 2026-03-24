@@ -1,6 +1,5 @@
 #include "MainWindow.h"
 #include "UnimplementedDialog.h"
-#include "SimulationDialog.h"
 #include "Utility.h"
 #include "stdafx.h"
 #include "EditLanguageWindow.h"
@@ -69,14 +68,6 @@ MainWindow::MainWindow(QWidget *parent)
     EditMenu_->addAction(EditPeriod_);
     connect(EditPeriod_, &QAction::triggered, this, &MainWindow::Unimplemented);
 
-    //   * シミュレーションメニュー
-    SimulationMenu_ = MenuBar_->addMenu("シミュレーション");
-
-    //     * シミュレーション
-    SimulateAction_ = new QAction("シミュレーション", this);
-    SimulationMenu_->addAction(SimulateAction_);
-    connect(SimulateAction_, &QAction::triggered, this, &MainWindow::Simulate);
-
     //   * ヘルプメニュー
     HelpMenu_ = MenuBar_->addMenu("ヘルプ");
 
@@ -137,25 +128,6 @@ void MainWindow::Unimplemented()
 {
     UnimplementedDialog sub(this);
     sub.exec();
-}
-
-/**
- * @brief シミュレート
- *
- */
-void MainWindow::Simulate()
-{
-    WarningUnsaveFile();
-    SimulationDialog sub(this);
-    sub.exec();
-    auto simulator = sub.GetSimulator();
-    if (simulator)
-    {
-        *Languages_ = simulator->GetLanguages();
-        DisplayLanguageFamily(Languages_);
-    }
-
-    IsLanguagesSaved_ = false;
 }
 
 /**
@@ -265,13 +237,13 @@ void MainWindow::OpenFile()
         if (fileName.endsWith(".json", Qt::CaseInsensitive))
         {
             // .json 読み込み
-            *Languages_ = LanguageFamily::Create({{""}}, {{""}});
+            *Languages_ = LanguageFamily();
             isOpenFile = Languages_->ImportJson(fileName.toStdString());
         }
         else if (fileName.endsWith(".ulng", Qt::CaseInsensitive))
         {
             // 従来の .ulng 読み込み処理
-            *Languages_ = LanguageFamily::Create({{""}}, {{""}});
+            *Languages_ = LanguageFamily();
             isOpenFile = Languages_->Import(fileName.toStdString());
         }
 
@@ -294,7 +266,7 @@ void MainWindow::NewFile()
 {
     if (IsLanguagesSaved_ || WarningUnsaveFile())
     {
-        *Languages_ = LanguageFamily::Create({{"0"}}, {{""}});
+        *Languages_ = LanguageFamily();
         DisplayLanguageFamily(Languages_);
 
         IsLanguagesSaved_ = true;

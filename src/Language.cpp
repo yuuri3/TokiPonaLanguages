@@ -1,7 +1,16 @@
 #include "Language.h"
 #include "Random.h"
-#include "PhonemeConverter.h"
 #include "LanguageDifference.h"
+#include "LanguageFamily.h"
+
+Language::Language(const LanguageFamily *parent)
+{
+    Parent_ = parent;
+}
+
+Language::~Language()
+{
+}
 
 /**
  * @brief リセット
@@ -27,53 +36,65 @@ void Language::Copy(const Language &lang)
 /**
  * @brief 音韻変化を言語に適用
  *
- * @param language 言語
  * @param phonologicalChange 音韻変化
  * @param isProhibitMinimalPair ミニマルペアを禁止するか
- * @param isSoundDuplication 音素の重複を禁止するか
  */
-void Language::ApplyPhonologicalChange(const PhonologicalChange &phonologicalChange, const bool isProhibitSoundDuplication, const bool isProhibitMinimalPair)
+void Language::ApplyPhonologicalChange(const PhonologicalChange &phonologicalChange, const bool isProhibitMinimalPair)
 {
-    // 変更が発生した単語を記録する一時的なマップ（インプレース更新用）
-    std::map<int, Word> phonologicalChangedWords;
+    if (!Parent_)
+    {
+        return;
+    }
 
-    // 1. 音韻変化の適用と音素重複チェックを同時に行う
-    for (auto &[wordID, word] : Words_)
+    // 変更が発生した単語を記録する一時的なマップ（インプレース更新用）
+    std::unordered_map<int, Word> phonologicalChangedWords;
+
+    // 1. 音韻変化の適用
+    for (auto &[wordId, word] : Words_)
     {
         auto changedWord = word;
-        changedWord.ChangeSound(phonologicalChange, isProhibitSoundDuplication);
+        // Word内部で新しいPhonologicalChange（IDベース）に基づき変換を行う
+        changedWord.ChangeSound(phonologicalChange, Parent_->GetPhonemeTable());
 
-        if (word != changedWord)
+        // 音素IDの配列（std::vector<int>）が変化したかチェック
+        if (word.GetForm() != changedWord.GetForm())
         {
-            phonologicalChangedWords[wordID] = std::move(changedWord);
+            phonologicalChangedWords[wordId] = std::move(changedWord);
         }
     }
 
-    // 2. 同音語（ミニマル・ペア）の禁止チェック (isProhibiteMinimalPair)
+    // 2. 同音語（ミニマル・ペア）の禁止チェック (isProhibitMinimalPair)
     if (isProhibitMinimalPair)
     {
-        // 現在の言語全体の単語分布を把握（変化しなかった単語 + 変化候補）
-        std::map<std::vector<Phoneme>, int> mimimalPairCount;
-        for (const auto &[wordID, word] : Words_)
+        // 現在の言語全体の単語分布を把握（音素IDの配列をキーにしてカウント）
+        std::map<std::vector<int>, int> formCount;
+        for (const auto &[wordId, word] : Words_)
         {
-            auto it = phonologicalChangedWords.find(wordID);
-            mimimalPairCount[it != phonologicalChangedWords.end() ? it->second.GetForm() : word.GetForm()]++;
+            auto it = phonologicalChangedWords.find(wordId);
+            // 変化が予定されている単語は変化後のフォームを、そうでないものは現在のフォームを使用
+            const auto &finalForm = (it != phonologicalChangedWords.end()) ? it->second.GetForm() : word.GetForm();
+            formCount[finalForm]++;
         }
 
-        // 重複が発生する変化を差し止める
+        // 重複が発生する変化（適用すると他の語と同音になってしまうケース）を差し止める
         for (auto it = phonologicalChangedWords.begin(); it != phonologicalChangedWords.end();)
         {
-            if (mimimalPairCount[it->second.GetForm()] > 1)
+            if (formCount[it->second.GetForm()] > 1)
+            {
+                // 他の単語と衝突するため、この変化は採用しない
                 it = phonologicalChangedWords.erase(it);
+            }
             else
+            {
                 ++it;
+            }
         }
     }
 
     // 3. 最終的な反映（一括代入）
-    for (auto &[wordID, phonologicalChangedWord] : phonologicalChangedWords)
+    for (auto &[wordId, changedWord] : phonologicalChangedWords)
     {
-        Words_[wordID] = std::move(phonologicalChangedWord);
+        Words_[wordId] = std::move(changedWord);
     }
 }
 
@@ -108,7 +129,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         break;
     }
     case LanguageDifferenceType::PhonologicalChange:
-        ApplyPhonologicalChange(dif.GetPhonologicalChange(), true, true);
+        ApplyPhonologicalChange(dif.GetPhonologicalChange(), true);
         break;
     case LanguageDifferenceType::AddCompound:
     {
@@ -371,7 +392,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
  *
  * @param form 語形
  */
-void Language::AddWord(const std::vector<Phoneme> &form)
+void Language::AddWord(const std::vector<int> &form)
 {
     int lastWordID;
     if (Empty())
@@ -510,7 +531,7 @@ const bool Language::Empty() const
  *
  * @return 成否
  */
-bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<std::string, Language> &languages, const PhonemeConverter &converter)
+bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<std::string, Language> &languages, const LanguageFamily *family)
 {
     // const auto places = getNonEmptyStrings(LanguageFamily_.GetGeography());
 
@@ -542,7 +563,7 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
         if (languages.count(*referenceGeometry) == 1)
         {
             const auto referenceLanguage = languages.at(*referenceGeometry);
-            languages[*targetGeometry].LoanWord(diff, referenceLanguage);
+            languages.at(*targetGeometry).LoanWord(diff, referenceLanguage);
         }
         break;
     }
@@ -553,8 +574,11 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
         {
             return false;
         }
-
-        languages[*geometry].ApplyDifference(diff);
+        if (languages.count(*geometry) == 0)
+        {
+            languages.emplace(*geometry, family);
+        }
+        languages.at(*geometry).ApplyDifference(diff);
         break;
     }
     }
@@ -568,11 +592,11 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
  *
  * @return 成否
  */
-bool LanguageUtility::ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<std::string, Language> &languages, const PhonemeConverter &converter)
+bool LanguageUtility::ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<std::string, Language> &languages, const LanguageFamily *family)
 {
     for (const auto &diff : diffs)
     {
-        if (!ApplyDifference(diff, languages, converter))
+        if (!ApplyDifference(diff, languages, family))
         {
             return false;
         }

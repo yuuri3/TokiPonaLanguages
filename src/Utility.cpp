@@ -1,5 +1,4 @@
 #include "Utility.h"
-#include "Phoneme.h"
 
 /**
  * CSVファイルを読み込んで2次元ベクトルで返す関数
@@ -300,20 +299,6 @@ void ClearWidget(QWidget *widget)
     }
 }
 
-const std::string FormatPhonemesToVector(const std::vector<Phoneme> &vec)
-{
-    if (vec.empty())
-        return ",";
-    std::stringstream ss;
-    ss << "";
-    for (size_t i = 0; i < vec.size(); ++i)
-    {
-        ss << vec[i].GetPlace() << ",";
-        ss << vec[i].GetManner() << ",";
-    }
-    return ss.str();
-}
-
 // YAMLの [a, b, c] 形式を vector<string> に変換する
 const std::vector<std::string> ParseVector(const std::string &line)
 {
@@ -360,32 +345,6 @@ const std::vector<double> ParseDoubleVector(const std::string &line)
         try
         {
             double param = std::stod(EraseSpace(item));
-            result.push_back(param);
-        }
-        catch (...)
-        {
-            return {};
-        }
-    }
-    return result;
-}
-
-const std::vector<Phoneme> ParsePhonemeVector(const std::string &line)
-{
-    std::vector<Phoneme> result;
-
-    std::stringstream ss(line);
-    std::string item1;
-    std::string item2;
-    while (true)
-    {
-        if (!std::getline(ss, item1, ','))
-            break;
-        if (!std::getline(ss, item2, ','))
-            break;
-        try
-        {
-            Phoneme param = Phoneme::Create(std::stoi(item1), std::stoi(item2));
             result.push_back(param);
         }
         catch (...)

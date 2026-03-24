@@ -15,6 +15,7 @@ public:
 
     void SetLanguages(const std::shared_ptr<LanguageFamily> languages);
     void SetLanguageNames(const std::vector<std::vector<std::string>> languageNames);
+    void SetLanguage(const std::shared_ptr<Language> language);
 
 private slots:
     void Unimplemented();
@@ -31,5 +32,5 @@ private:
 
     std::shared_ptr<LanguageFamily> Languages_;
     std::optional<std::vector<std::vector<std::string>>> LanguageNames_;
-    Language Language_;
+    std::shared_ptr<Language> Language_;
 };

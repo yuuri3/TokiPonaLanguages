@@ -1,11 +1,10 @@
 #pragma once
 
-#include "Phoneme.h"
 #include "stdafx.h"
 
 class Language;
 class PhonologicalChange;
-class PhonemeConverter;
+class PhonemeTable;
 
 /**
  * @brief 単語
@@ -18,7 +17,7 @@ private:
     //   ID
     int ID;
     //   form
-    std::vector<Phoneme> Form_;
+    std::vector<int> Form_;
     // translation <title,form>
     std::map<int, std::pair<std::string, std::map<int, std::string>>> Translations_;
     // tags
@@ -26,7 +25,7 @@ private:
     // contents <title,text>
     std::map<int, std::pair<std::string, std::string>> Contents_;
     // variations <title,form>
-    std::map<int, std::pair<std::string, std::vector<Phoneme>>> Variations_;
+    std::map<int, std::pair<std::string, std::vector<int>>> Variations_;
     // relations <title,entry>
     std::map<int, std::pair<std::string, int>> Relations_;
 
@@ -46,11 +45,11 @@ public:
         return Form_ < other.Form_;
     }
 
-    static Word Create(const std::vector<Phoneme> &form);
-    static Word CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &converter);
+    static Word Create(const std::vector<int> &form);
+    static Word CreateFromJsonObject(const QJsonObject &obj, const PhonemeTable &table);
     Word Add(const Word &word) const;
 
-    const std::vector<Phoneme> GetForm() const;
+    const std::vector<int> GetForm() const;
     const std::vector<int> GetPartIDs() const;
     const std::vector<int> GetTranslationIDs(const int partID) const;
     const std::string GetPart(const int partID) const;
@@ -70,8 +69,8 @@ public:
     void DeleteContent(const int contentID);
     const std::vector<int> GetVariationIDs() const;
     const std::string GetVariationTitle(const int contentID) const;
-    const std::vector<Phoneme> GetVariation(const int contentID) const;
-    void SetVariation(const int cariationID, const std::string &title, const std::vector<Phoneme> &content);
+    const std::vector<int> GetVariation(const int contentID) const;
+    void SetVariation(const int cariationID, const std::string &title, const std::vector<int> &content);
     void DeleteVariation(const int variationID);
     const std::vector<int> GetRelationIDs() const;
     const std::string GetRelationTitle(const int relationID) const;
@@ -80,5 +79,5 @@ public:
     void DeleteRelation(const int relationID);
 
     const std::vector<std::string> GetAllTranslations() const;
-    void ChangeSound(PhonologicalChange phon, const bool isProhibitSoundDuplication);
+    void ChangeSound(PhonologicalChange phon, const PhonemeTable &phonemeTable);
 };

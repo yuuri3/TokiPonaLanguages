@@ -1,6 +1,5 @@
 #include "LanguageFamilySimulator.h"
 #include "Random.h"
-#include "PhonemeConverter.h"
 #include "Utility.h"
 
 namespace
@@ -158,13 +157,12 @@ std::vector<std::string> LanguageFamilySimulator::GetWords(std::string place)
     }
     const auto language = Languages_[place];
     std::vector<std::string> words;
-    PhonemeConverter converter = PhonemeConverter::Create(LanguageFamily_.GetPhonemeTable());
 
     for (int i = 0; i < language.CountWord(); i++)
     {
         const auto &[_, word] = language.GetNthWord(i);
 
-        words.emplace_back(converter.ConvertToString(word.GetForm()));
+        words.emplace_back(languages->GetPhonemeTable().ConvertToString(word.GetForm()));
     }
     return words;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LanguageDifference.h"
+#include "PhonemeTable.h"
 
 class Language;
 
@@ -14,16 +15,16 @@ private:
     // 地理
     std::vector<std::vector<std::string>> Geography_;
     // 音韻
-    std::vector<std::vector<std::string>> PhonemeTable_;
+    PhonemeTable PhonemeTable_;
     // 差分
     std::vector<LanguageDifference> languageDifference_;
 
 public:
     static std::vector<std::vector<std::string>> RomanAlphabetTable;
 
-    static LanguageFamily Create(const std::vector<std::vector<std::string>> &geography, const std::vector<std::vector<std::string>> &phonemeTable);
+    static LanguageFamily Create(const std::vector<std::vector<std::string>> &geography, const PhonemeTable &phonemeTable);
     const std::vector<std::vector<std::string>> &GetGeography() const;
-    const std::vector<std::vector<std::string>> &GetPhonemeTable() const;
+    const PhonemeTable &GetPhonemeTable() const;
     void AddDifference(const LanguageDifference &languageDifference);
 
     void ChangePlaceName(const int row, const int column, const std::string &name);

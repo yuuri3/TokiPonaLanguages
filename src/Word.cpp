@@ -1,118 +1,112 @@
 #include "Language.h"
 #include "PhonologicalChange.h"
-#include "PhonemeConverter.h"
+#include "PhonemeTable.h"
 
 namespace
 {
     /**
-     * @brief 音韻の制限
+     * @brief 音韻変化を適用する
      *
-     * @param changedWordForm
-     * @return true
-     * @return false
+     * @param wordForm 変換前の語形（音素IDの配列）
+     * @param changedWordForm 変換後の語形（音素IDの配列）
+     * @param phonologicalChange 音韻変化の定義
+     * @param phonemeTable 音素マスタ情報
+     * @return bool 変化が発生したかどうか
      */
-    bool CheckSoundDuplication(const std::vector<Phoneme> &changedWordForm)
+    bool ChangeWordSound(const std::vector<int> &wordForm, std::vector<int> &changedWordForm, const PhonologicalChange &phonologicalChange, const PhonemeTable &phonemeTable)
     {
-        // 子音と母音の境界
-        constexpr int MAX_CONSONANT_MANNER = 3;
+        changedWordForm.clear();
+        // わずかに余裕を持ってリザーブ（挿入による拡張を考慮）
+        changedWordForm.reserve(wordForm.size() + 2);
+        bool isChanged = false;
 
-        bool isSoundDuplication = false;
+        const auto &beforeItems = phonologicalChange.BeforePhoneticItems_;
+        const auto &afterItems = phonologicalChange.AfterPhoneticItems_;
+        const auto &envConditions = phonologicalChange.PhoneticEnvironment_;
 
-        std::vector<std::vector<Phoneme>> wordForms;
-        std::vector<Phoneme> wordForm;
-        for (const auto &phoneme : changedWordForm)
+        const size_t wordSize = wordForm.size();
+        const size_t beforeSize = beforeItems.size();
+
+        for (size_t soundPosition = 0; soundPosition < wordSize;)
         {
-            if (phoneme.IsSpace())
+            bool isMatch = true;
+
+            // 1. 変化前パターン(Before)の照合（シーケンスチェック）
+            if (soundPosition + beforeSize > wordSize)
             {
-                wordForms.emplace_back(wordForm);
-                wordForm.clear();
+                isMatch = false;
             }
             else
             {
-                wordForm.emplace_back(phoneme);
-            }
-        }
-        wordForms.emplace_back(wordForm);
-
-        for (const auto &w : wordForms)
-        {
-            if (w.empty())
-                isSoundDuplication = true;
-            else if (w.size() == 1)
-            {
-                if (w[0].IsConsonant())
-                    isSoundDuplication = true;
-            }
-            else
-            {
-                // 境界条件のチェック
-                if ((w[0].IsConsonant() && w[1].IsConsonant()) ||
-                    (w.back().IsConsonant() && w[w.size() - 2].IsConsonant()))
+                for (size_t i = 0; i < beforeSize; ++i)
                 {
-                    isSoundDuplication = true;
-                }
-                else
-                {
-                    // 3連続のチェック
-                    for (size_t j = 0; j + 2 < w.size(); ++j)
+                    if (!phonemeTable.Matches(wordForm[soundPosition + i], beforeItems[i]))
                     {
-                        bool isConsonant = (w[j].IsConsonant() &&
-                                            w[j + 1].IsConsonant() &&
-                                            w[j + 2].IsConsonant());
-                        bool isVowel = (w[j].IsVowel() &&
-                                        w[j + 1].IsVowel() &&
-                                        w[j + 2].IsVowel());
-                        if (isConsonant || isVowel)
-                        {
-                            isSoundDuplication = true;
-                            break;
-                        }
+                        isMatch = false;
+                        break;
                     }
                 }
             }
-        }
-        return isSoundDuplication;
-    }
 
-    /**
-     * @brief 音韻変化を適用する
-     *
-     * @param wordForm 語形
-     * @param changedWordForm 変化語の語形
-     * @param phonologicalChange 音韻変化
-     */
-    bool ChangeWordSound(const std::vector<Phoneme> &wordForm, std::vector<Phoneme> &changedWordForm, const PhonologicalChange &phonologicalChange)
-    {
-        changedWordForm.reserve(wordForm.size());
-        bool isChanged = false;
-
-        for (size_t soundPosition = 0; soundPosition < wordForm.size(); ++soundPosition)
-        {
-            const auto &sound = wordForm[soundPosition];
-
-            // 変化条件の判定
-            bool isSoundEqualToBeforePhoneme = (sound == phonologicalChange.BeforePhoneme_);
-            if (isSoundEqualToBeforePhoneme)
+            // 2. 変化条件(Environment)の照合
+            if (isMatch)
             {
-                if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::Start && !(soundPosition == 0 || wordForm[soundPosition - 1].IsSpace()))
-                    isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::End && !(soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace()))
-                    isSoundEqualToBeforePhoneme = false;
-                else if (phonologicalChange.PhoneticEnvironment_ == PhoneticEnvironment::Middle && (soundPosition == 0 || wordForm[soundPosition - 1].IsSpace() || soundPosition == wordForm.size() - 1 || wordForm[soundPosition + 1].IsSpace()))
-                    isSoundEqualToBeforePhoneme = false;
+                for (const auto &env : envConditions)
+                {
+                    const int relativeOffset = env.first;
+                    const PhoneticItem &conditionItem = env.second;
+
+                    // 安全なインデックス計算（アンダーフロー/オーバーフロー防止）
+                    int baseIndex = (relativeOffset < 0)
+                                        ? static_cast<int>(soundPosition)
+                                        : static_cast<int>(soundPosition + beforeSize) - 1;
+
+                    int targetIndex = baseIndex + relativeOffset;
+
+                    // 境界チェック
+                    if (targetIndex < 0 || targetIndex >= static_cast<int>(wordSize))
+                    {
+                        isMatch = false;
+                        break;
+                    }
+
+                    if (!phonemeTable.Matches(wordForm[static_cast<size_t>(targetIndex)], conditionItem))
+                    {
+                        isMatch = false;
+                        break;
+                    }
+                }
             }
 
-            if (isSoundEqualToBeforePhoneme)
+            // 3. 置換処理の実行
+            if (isMatch)
             {
                 isChanged = true;
-                if (!phonologicalChange.IsRemove_)
+                // Beforeに該当する部分を飛ばし、Afterの内容を追加する
+                for (const auto &afterItem : afterItems)
                 {
-                    changedWordForm.push_back(phonologicalChange.AfterPhoneme_);
+                    // Afterが具体的な音素IDを持つ場合はそれを追加
+                    if (afterItem.Type_ == PhoneticItemType::Phoneme)
+                    {
+                        changedWordForm.push_back(afterItem.ID_);
+                    }
+                    // 素性変更などの場合は、元の音素に基づいてPhonemeTableから新音素を特定
+                    else
+                    {
+                        // 素性変更などの未実装箇所でも、元の音素を維持するか明示的な処理が必要
+                        // ここではロジック維持のため元の要素をコピーする例として記述
+                        changedWordForm.push_back(wordForm[soundPosition]);
+                    }
                 }
+
+                // 無限ループ防止: beforeSizeが0の場合でも必ず1つは進める
+                soundPosition += (beforeSize > 0) ? beforeSize : 1;
             }
             else
             {
-                changedWordForm.push_back(sound);
+                // マッチしなかった場合は現在の音素をそのままコピーして次へ
+                changedWordForm.push_back(wordForm[soundPosition]);
+                soundPosition++;
             }
         }
 
@@ -141,7 +135,7 @@ Word Word::Add(const Word &word) const
  *
  * @param form
  */
-Word Word::Create(const std::vector<Phoneme> &form)
+Word Word::Create(const std::vector<int> &form)
 {
     Word word;
     word.Form_ = form;
@@ -154,7 +148,7 @@ Word Word::Create(const std::vector<Phoneme> &form)
  * @param obj json オブジェクト
  * @return Word
  */
-Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &converter)
+Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeTable &table)
 {
     Word word;
 
@@ -165,7 +159,7 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
     // form 文字列を std::vector<Phoneme> に変換
     // ※プロジェクト内の既存の変換関数（PhonemeConverterなど）を利用
     QString formStr = entryObj["form"].toString();
-    word.Form_ = converter.ConvertToPhoneme(formStr.toStdString());
+    word.Form_ = table.ConvertToPhoneme(formStr.toStdString());
 
     // 2. tags
     QJsonArray tagsArray = obj["tags"].toArray();
@@ -220,7 +214,7 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
         QJsonObject varObj = varValue.toObject();
         std::string title = varObj["title"].toString().toStdString();
         std::string form = varObj["form"].toString().toStdString();
-        word.Variations_[variationID] = {title, converter.ConvertToPhoneme(form)};
+        word.Variations_[variationID] = {title, table.ConvertToPhoneme(form)};
         variationID++;
     }
 
@@ -245,7 +239,7 @@ Word Word::CreateFromJsonObject(const QJsonObject &obj, const PhonemeConverter &
  *
  * @return const std::vector<Phoneme>
  */
-const std::vector<Phoneme> Word::GetForm() const
+const std::vector<int> Word::GetForm() const
 {
     return Form_;
 }
@@ -524,7 +518,7 @@ const std::string Word::GetVariationTitle(const int variationID) const
  * @param contentID 変化形ID
  * @return const std::vector<Phoneme>
  */
-const std::vector<Phoneme> Word::GetVariation(const int variationID) const
+const std::vector<int> Word::GetVariation(const int variationID) const
 {
     if (Variations_.count(variationID) == 0)
     {
@@ -539,7 +533,7 @@ const std::vector<Phoneme> Word::GetVariation(const int variationID) const
  * @param title バリエーションのタイトル（例: "過去形", "複数形"）
  * @param content 変化後の音素列
  */
-void Word::SetVariation(const int variationID, const std::string &title, const std::vector<Phoneme> &content)
+void Word::SetVariation(const int variationID, const std::string &title, const std::vector<int> &content)
 {
     Variations_[variationID] = std::make_pair(title, content);
 }
@@ -635,18 +629,13 @@ const std::vector<std::string> Word::GetAllTranslations() const
  * @brief 音韻変化
  *
  * @param phon
+ * @param phonemeTable
  */
-void Word::ChangeSound(PhonologicalChange phon, const bool isProhibitSoundDuplication)
+void Word::ChangeSound(PhonologicalChange phon, const PhonemeTable &phonemeTable)
 {
-    std::vector<Phoneme> changedWordForm;
-    if (!ChangeWordSound(Form_, changedWordForm, phon))
+    std::vector<int> changedWordForm;
+    if (!ChangeWordSound(Form_, changedWordForm, phon, phonemeTable))
         return;
 
-    // 子音・母音の重複禁止チェック (isSoundDuplication)
-    if (isProhibitSoundDuplication)
-    {
-        if (CheckSoundDuplication(changedWordForm))
-            return; // 違反していればこの単語の変化は破棄
-    }
     Form_ = changedWordForm;
 }

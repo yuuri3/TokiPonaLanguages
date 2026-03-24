@@ -13,7 +13,7 @@ public:
     EditWordDialog(QWidget *parent = nullptr);
     ~EditWordDialog() = default;
     void Set(std::shared_ptr<LanguageFamily> languages,
-             const Language &language,
+             std::shared_ptr<Language> language,
              const std::string &place,
              const int period,
              const int wordID);
@@ -38,7 +38,7 @@ private:
     std::string Place_;
     int Period_;
     int WordID_;
-    Language Language_;
+    std::shared_ptr<Language> Language_;
 
     void UpdateDialog();
     void AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths);

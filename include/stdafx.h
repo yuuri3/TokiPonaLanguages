@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iostream>
 #include <type_traits>
+#include <functional>
 
 #include <QString>
 #include <QMainWindow>

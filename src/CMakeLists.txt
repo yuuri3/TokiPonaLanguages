@@ -15,18 +15,15 @@ add_library(src
     EditPeriodDialog.cpp
     EditPhonologicalChangeDialog.cpp
     EditWordDialog.cpp
-    Evolution.cpp
     HelpDialog.cpp
     Language.cpp
     LanguageDifference.cpp
     LanguageFamily.cpp
-    LanguageFamilySimulator.cpp
     MainWindow.cpp
-    Phoneme.cpp
-    PhonemeConverter.cpp
+    PhonemeTable.cpp
+    PhoneticItem.cpp
     Random.cpp
     SelectLanguageDialog.cpp
-    SimulationDialog.cpp
     UnimplementedDialog.cpp
     Utility.cpp
     Word.cpp
@@ -36,20 +33,18 @@ add_library(src
     ../include/EditPeriodDialog.h
     ../include/EditPhonologicalChangeDialog.h
     ../include/EditWordDialog.h
-    ../include/Evolution.h
+    ../include/FeatureState.h
     ../include/HelpDialog.h
     ../include/Language.h
     ../include/LanguageDifference.h
     ../include/LanguageDifferenceType.h
     ../include/LanguageFamily.h
-    ../include/LanguageFamilySimulator.h
     ../include/MainWindow.h
-    ../include/Phoneme.h
-    ../include/PhonemeConverter.h
-    ../include/PhoneticEnvironment.h
+    ../include/PhonemeTable.h
+    ../include/PhoneticItem.h
+    ../include/PhoneticItemType.h
     ../include/Random.h
     ../include/SelectLanguageDialog.h
-    ../include/SimulationDialog.h
     ../include/UnimplementedDialog.h
     ../include/Utility.h
     ../include/Word.h

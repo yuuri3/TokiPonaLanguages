@@ -1,7 +1,6 @@
 #include "EditLanguageWindow.h"
 #include "UnimplementedDialog.h"
 #include "EditWordDialog.h"
-#include "PhonemeConverter.h"
 #include "LanguageFamily.h"
 #include "Utility.h"
 
@@ -90,7 +89,6 @@ void EditLanguageWindow::UpdateTable()
 
         std::vector<std::vector<std::string>> wordData;
         std::vector<std::string> line;
-        PhonemeConverter converter = PhonemeConverter::Create(Languages_->GetPhonemeTable());
 
         line.emplace_back("単語");
         line.emplace_back("訳語");
@@ -101,7 +99,7 @@ void EditLanguageWindow::UpdateTable()
         {
             const auto &[_, word] = language->GetNthWord(i);
 
-            line.emplace_back(converter.ConvertToString(word.GetForm()));
+            line.emplace_back(Languages_->GetPhonemeTable().ConvertToString(word.GetForm()));
 
             const auto translations = word.GetAllTranslations();
             line.emplace_back(JoinStrs(translations, ","));
@@ -170,7 +168,7 @@ void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
             const auto &[wordID, _] = language->GetNthWord(row - 1);
 
             EditWordDialog subWindow(this);
-            subWindow.Set(Languages_, *Language_, *Place_, *Period_, wordID);
+            subWindow.Set(Languages_, std::make_shared<Language>(Language_.value()), *Place_, *Period_, wordID);
             subWindow.exec();
         }
     }

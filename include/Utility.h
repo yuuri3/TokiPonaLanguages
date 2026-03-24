@@ -36,12 +36,10 @@ const std::string FormatVector(const std::vector<T> &vec)
 }
 
 // ヘルパー関数：ベクトルをカンマ区切りのリスト形式にする
-const std::string FormatPhonemesToVector(const std::vector<Phoneme> &vec);
 
 const std::vector<std::string> ParseVector(const std::string &line);
 const std::vector<int> ParseIntVector(const std::string &line);
 const std::vector<double> ParseDoubleVector(const std::string &line);
-const std::vector<Phoneme> ParsePhonemeVector(const std::string &line);
 
 struct ImportData
 {
