@@ -2,18 +2,6 @@
 #include "Utility.h"
 
 /**
- * @brief std::pair<int, int> のハッシュ値を計算する
- * * @param p ハッシュ化する整数のペア
- * @return std::size_t 計算されたハッシュ値
- */
-std::size_t PairHash::operator()(const std::pair<int, int> &p) const
-{
-    auto hash1 = std::hash<int>{}(p.first);
-    auto hash2 = std::hash<int>{}(p.second);
-    return hash1 ^ (hash2 + 0x9e3779b9 + (hash1 << 6) + (hash1 >> 2));
-}
-
-/**
  * @brief 音素IDの配列を音素名称を連結した文字列に変換する
  * @param form 音素IDの配列
  * @return 連結された文字列
@@ -146,32 +134,28 @@ bool PhonemeTable::Matches(const int phonemeId, const PhoneticItem &condition) c
 void PhonemeTable::Export(std::ofstream &file) const
 {
     // 1. Features (ID, Name)
-    file << "Features:\n";
-    file << static_cast<int>(Features_.size()) << "\n";
+    file << JoinStringAndInt(SECTION_NAME_PHONEMETABLE_FEATURE, static_cast<int>(Features_.size())) << "\n";
     for (const auto &[id, name] : Features_)
     {
         file << id << "," << name << "\n";
     }
 
     // 2. Places (Order, ID, Name)
-    file << "Places:\n";
-    file << FormatVector<int>(PlaceOrder_) << "\n";
+    file << JoinStringAndInt(SECTION_NAME_PHONEMETABLE_PLACE, static_cast<int>(PlaceOrder_.size())) << "\n";
     for (int id : PlaceOrder_)
     {
         file << id << "," << Places_.at(id) << "\n";
     }
 
     // 3. Manners (Order, ID, Name)
-    file << "Manners:\n";
-    file << FormatVector<int>(MannerOrder_) << "\n";
+    file << JoinStringAndInt(SECTION_NAME_PHONEMETABLE_MANNER, static_cast<int>(MannerOrder_.size())) << "\n";
     for (int id : MannerOrder_)
     {
         file << id << "," << Manner_.at(id) << "\n";
     }
 
     // 4. Phonemes (ID, Name)
-    file << "Phonemes:\n";
-    file << static_cast<int>(Phonemes_.size()) << "\n";
+    file << JoinStringAndInt(SECTION_NAME_PHONEMETABLE_PHONEME, static_cast<int>(Phonemes_.size())) << "\n";
     for (const auto &[id, name] : Phonemes_)
     {
         file << id << "," << name << "\n";
@@ -181,50 +165,50 @@ void PhonemeTable::Export(std::ofstream &file) const
     // 構造: 対象ID, 素性ID, 状態(int) の組をシリアライズ
     auto ExportRelations = [&](const std::string &label, const auto &relMap)
     {
-        file << label << ":\n";
-        std::vector<int> flattened;
+        int elementCount = 0;
+        for (const auto &[targetId, featureMap] : relMap)
+        {
+            elementCount += static_cast<int>(featureMap.size());
+        }
+
+        file << JoinStringAndInt(label, elementCount) << "\n";
         for (const auto &[targetId, featureMap] : relMap)
         {
             for (const auto &[fId, state] : featureMap)
             {
-                flattened.push_back(targetId);
-                flattened.push_back(fId);
-                flattened.push_back(static_cast<int>(state));
+                std::vector<int> row = {targetId, fId, static_cast<int>(state)};
+                file << FormatVector<int>(row) << "\n";
             }
         }
-        file << static_cast<int>(flattened.size() / 3) << "\n";
-        file << FormatVector<int>(flattened) << "\n";
     };
 
-    ExportRelations("PlaceFeature", PlaceFeatureRelations_);
-    ExportRelations("MannerFeature", MannerFeatureRelations_);
+    ExportRelations(SECTION_NAME_PHONEMETABLE_PLACE_FEATURE, PlaceFeatureRelations_);
+    ExportRelations(SECTION_NAME_PHONEMETABLE_MANNER_FEATURE, MannerFeatureRelations_);
 
     // PhonemeFeature は std::map<int, FeatureState> なので個別に処理
-    file << "PhonemeFeature:\n";
-    std::vector<int> pFlattened;
+    int pElementCount = 0;
+    for (const auto &[pId, fMap] : PhonemeFeatureRelations_)
+    {
+        pElementCount += static_cast<int>(fMap.size());
+    }
+
+    file << JoinStringAndInt(SECTION_NAME_PHONEMETABLE_PHONEME_FEATURE, pElementCount) << "\n";
     for (const auto &[pId, fMap] : PhonemeFeatureRelations_)
     {
         for (const auto &[fId, state] : fMap)
         {
-            pFlattened.push_back(pId);
-            pFlattened.push_back(fId);
-            pFlattened.push_back(static_cast<int>(state));
+            std::vector<int> row = {pId, fId, static_cast<int>(state)};
+            file << FormatVector<int>(row) << "\n";
         }
     }
-    file << static_cast<int>(pFlattened.size() / 3) << "\n";
-    file << FormatVector<int>(pFlattened) << "\n";
 
     // 6. Grid Map (PlaceID, MannerID -> PhonemeID)
-    file << "GridMap:\n";
-    std::vector<int> gFlattened;
+    file << JoinStringAndInt(SECTION_NAME_PHONEMETABLE_GRIDMAP, static_cast<int>(MapPlaceMannerToPhoneme_.size())) << "\n";
     for (const auto &[pair, pId] : MapPlaceMannerToPhoneme_)
     {
-        gFlattened.push_back(pair.first);  // Place
-        gFlattened.push_back(pair.second); // Manner
-        gFlattened.push_back(pId);
+        std::vector<int> row = {pair.first, pair.second, pId};
+        file << FormatVector<int>(row) << "\n";
     }
-    file << static_cast<int>(gFlattened.size() / 3) << "\n";
-    file << FormatVector<int>(gFlattened) << "\n";
 }
 
 /**
@@ -244,84 +228,120 @@ bool PhonemeTable::Import(std::ifstream &file)
             return false;
     };
 
-    while (GetNextLine())
+    int count = 0;
+    if (GetNextLine() && ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE_FEATURE, count))
     {
-        if (line == "Features:")
+        for (int i = 0; i < count; ++i)
         {
             if (!GetNextLine())
                 return false;
-            int count = std::stoi(line);
-            for (int i = 0; i < count; ++i)
-            {
-                if (!GetNextLine())
-                    return false;
-                auto parts = ParseVector(line);
-                Features_[std::stoi(parts[0])] = parts[1];
-            }
+            auto parts = ParseVector(line);
+            Features_[std::stoi(parts[0])] = parts[1];
         }
-        else if (line == "Places:")
+    }
+    else
+    {
+        return false;
+    }
+    if (GetNextLine() && ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE_PLACE, count))
+    {
+        for (size_t i = 0; i < count; ++i)
         {
             if (!GetNextLine())
                 return false;
-            PlaceOrder_ = ParseIntVector(line);
-            for (size_t i = 0; i < PlaceOrder_.size(); ++i)
-            {
-                if (!GetNextLine())
-                    return false;
-                auto parts = ParseVector(line);
-                Places_[std::stoi(parts[0])] = parts[1];
-            }
+            auto parts = ParseVector(line);
+            PlaceOrder_.emplace_back(std::stoi(parts[0]));
+            Places_[std::stoi(parts[0])] = parts[1];
         }
-        else if (line == "Manners:")
+    }
+    else
+    {
+        return false;
+    }
+    if (GetNextLine() && ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE_MANNER, count))
+    {
+        for (size_t i = 0; i < count; ++i)
         {
             if (!GetNextLine())
                 return false;
-            MannerOrder_ = ParseIntVector(line);
-            for (size_t i = 0; i < MannerOrder_.size(); ++i)
-            {
-                if (!GetNextLine())
-                    return false;
-                auto parts = ParseVector(line);
-                Manner_[std::stoi(parts[0])] = parts[1];
-            }
+            auto parts = ParseVector(line);
+            MannerOrder_.emplace_back(std::stoi(parts[0]));
+            Manner_[std::stoi(parts[0])] = parts[1];
         }
-        else if (line == "Phonemes:")
+    }
+    else
+    {
+        return false;
+    }
+    if (GetNextLine() && ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE_PHONEME, count))
+    {
+        for (int i = 0; i < count; ++i)
         {
             if (!GetNextLine())
                 return false;
-            int count = std::stoi(line);
-            for (int i = 0; i < count; ++i)
-            {
-                if (!GetNextLine())
-                    return false;
-                auto parts = ParseVector(line);
-                Phonemes_[std::stoi(parts[0])] = parts[1];
-            }
+            auto parts = ParseVector(line);
+            Phonemes_[std::stoi(parts[0])] = parts[1];
         }
-        else if (line.find("Feature:") != std::string::npos || line.find("GridMap:") != std::string::npos)
+    }
+    else
+    {
+        return false;
+    }
+    if (GetNextLine() && ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE_PLACE_FEATURE, count))
+    {
+        for (int i = 0; i < count; ++i)
         {
-            std::string section = line;
             if (!GetNextLine())
                 return false;
-            int count = std::stoi(line);
-            if (!GetNextLine())
-                return false;
-            auto data = ParseIntVector(line);
-            for (int i = 0; i < count; ++i)
-            {
-                int baseIdx = i * 3;
-                if (section == "PlaceFeature:")
-                    PlaceFeatureRelations_[data[baseIdx]][data[baseIdx + 1]] = static_cast<FeatureState>(data[baseIdx + 2]);
-                else if (section == "MannerFeature:")
-                    MannerFeatureRelations_[data[baseIdx]][data[baseIdx + 1]] = static_cast<FeatureState>(data[baseIdx + 2]);
-                else if (section == "PhonemeFeature:")
-                    PhonemeFeatureRelations_[data[baseIdx]][data[baseIdx + 1]] = static_cast<FeatureState>(data[baseIdx + 2]);
-                else if (section == "GridMap:")
-                    MapPlaceMannerToPhoneme_[{data[baseIdx], data[baseIdx + 1]}] = data[baseIdx + 2];
-            }
-            if (section == "GridMap:")
-                break; // PhonemeTable セクションの終了
+            auto parts = ParseIntVector(line);
+            PlaceFeatureRelations_[parts[0]][parts[1]] = static_cast<FeatureState>(parts[2]);
         }
+    }
+    else
+    {
+        return false;
+    }
+    if (GetNextLine() && ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE_MANNER_FEATURE, count))
+    {
+        for (int i = 0; i < count; ++i)
+        {
+            if (!GetNextLine())
+                return false;
+            auto parts = ParseIntVector(line);
+            MannerFeatureRelations_[parts[0]][parts[1]] = static_cast<FeatureState>(parts[2]);
+        }
+    }
+    else
+    {
+        return false;
+    }
+    if (GetNextLine() && ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE_PHONEME_FEATURE, count))
+    {
+        for (int i = 0; i < count; ++i)
+        {
+            if (!GetNextLine())
+                return false;
+            auto parts = ParseIntVector(line);
+            PhonemeFeatureRelations_[parts[0]][parts[1]] = static_cast<FeatureState>(parts[2]);
+        }
+    }
+    else
+    {
+        return false;
+    }
+    if (GetNextLine() && ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE_GRIDMAP, count))
+    {
+        for (int i = 0; i < count; ++i)
+        {
+            if (!GetNextLine())
+                return false;
+            auto parts = ParseIntVector(line);
+            MapPlaceMannerToPhoneme_[{parts[0], parts[1]}] = parts[2];
+        }
+    }
+    else
+    {
+        return false;
     }
     return true;
 }

@@ -38,28 +38,26 @@ std::vector<std::vector<std::string>> LanguageFamily::RomanAlphabetTable =
 
 /**
  * @brief 空の語族を作成
- *
- * @param geography 地理
- * @param phonemeTable 音韻
+ * * @param geography 地理
+ * * @param phonemeTable 音韻
  * @return LanguageFamily
  */
 LanguageFamily LanguageFamily::Create(const std::vector<std::vector<std::string>> &geography, const PhonemeTable &phonemeTable)
 {
     LanguageFamily languages;
     languages.languageDifference_ = {};
-    languages.Geography_ = geography;
+    languages.Geography_.InitializeFromVector(geography);
     languages.PhonemeTable_ = phonemeTable;
     return languages;
 }
 
 /**
  * @brief 地理を取得
- *
- * @return const std::vector<std::vector<std::string>>
+ * * @return std::vector<std::vector<std::string>>
  */
-const std::vector<std::vector<std::string>> &LanguageFamily::GetGeography() const
+std::vector<std::vector<std::string>> LanguageFamily::GetGeography() const
 {
-    return Geography_;
+    return Geography_.ToVector();
 }
 
 /**
@@ -84,42 +82,22 @@ void LanguageFamily::AddDifference(const LanguageDifference &languageDifference)
 
 /**
  * @brief 地名を変更
- *
- * @param row 行
- * @param column 列
- * @param name 地名
+ * * @param row 行
+ * * @param column 列
+ * * @param name 地名
  */
 void LanguageFamily::ChangePlaceName(const int row, const int column, const std::string &name)
 {
-    if (row < 0 || row >= Geography_.size())
-    {
-        return;
-    }
-    if (column < 0 || column >= Geography_[row].size())
-    {
-        for (int i = 0; i < Geography_[row].size() - column; i++)
-        {
-            Geography_[row].emplace_back("");
-        }
-        Geography_[row].emplace_back(name);
-    }
-    else
-    {
-        Geography_[row][column] = name;
-    }
+    Geography_.SetPlaceName(row, column, name);
 }
 
 /**
  * @brief 上行に地理を追加
- *
+ * * @param row 行
  */
 void LanguageFamily::AddGeomgraphicRowAbove(const int row)
 {
-    if (row < 0 || row >= Geography_.size())
-    {
-        return;
-    }
-    Geography_.insert(Geography_.begin() + row, std::vector<std::string>());
+    Geography_.AddRowAbove(row);
 }
 
 /**
@@ -128,75 +106,43 @@ void LanguageFamily::AddGeomgraphicRowAbove(const int row)
  */
 void LanguageFamily::AddGeomgraphicRowBelow(const int row)
 {
-    if (row < 0 || row >= Geography_.size())
-    {
-        return;
-    }
-    Geography_.insert(Geography_.begin() + row + 1, std::vector<std::string>());
+    Geography_.AddRowBelow(row);
 }
 
 /**
  * @brief 地理行を削除
- *
+ * * @param row 行
  */
 void LanguageFamily::DeleteGeomgraphicRow(const int row)
 {
-    if (row < 0 || row >= Geography_.size())
-    {
-        return;
-    }
-    Geography_.erase(Geography_.begin() + row);
+    Geography_.DeleteRow(row);
 }
 
 /**
  * @brief 右列に地理を追加
- *
- * @param column
+ * * @param column 列
  */
 void LanguageFamily::AddGeomgraphicColumnRight(const int column)
 {
-    for (auto &line : Geography_)
-    {
-        if (column < 0 || column >= line.size())
-        {
-            continue;
-        }
-        line.insert(line.begin() + column + 1, "");
-    }
+    Geography_.AddColumnRight(column);
 }
 
 /**
  * @brief 左列に地理を追加
- *
- * @param column
+ * * @param column 列
  */
 void LanguageFamily::AddGeomgraphicColumnLeft(const int column)
 {
-    for (auto &line : Geography_)
-    {
-        if (column < 0 || column >= line.size())
-        {
-            continue;
-        }
-        line.insert(line.begin() + column, "");
-    }
+    Geography_.AddColumnLeft(column);
 }
 
 /**
  * @brief 地理の列を削除
- *
- * @param column
+ * * @param column 列
  */
 void LanguageFamily::DeleteGeomgraphicColumn(const int column)
 {
-    for (auto &line : Geography_)
-    {
-        if (column < 0 || column >= line.size())
-        {
-            continue;
-        }
-        line.erase(line.begin() + column);
-    }
+    Geography_.DeleteColumn(column);
 }
 
 /**
@@ -255,13 +201,11 @@ void LanguageFamily::RemovePeriod(const int period)
 
 /**
  * @brief 語族に情報が不足しているか
- *
- * @return true
- * @return false
+ * * @return bool 空の場合は true、そうでない場合は false
  */
 const bool LanguageFamily::Empty() const
 {
-    return Geography_.empty() || PhonemeTable_.Empty();
+    return Geography_.Empty() || PhonemeTable_.Empty();
 }
 
 /**
@@ -353,8 +297,7 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
 
 /**
  * @brief 差分をファイル出力
- *
- * @param filename 出力ファイル名
+ * * @param filename 出力ファイル名
  */
 void LanguageFamily::Export(const std::string &filename)
 {
@@ -365,21 +308,16 @@ void LanguageFamily::Export(const std::string &filename)
     }
 
     // 2. Map (地理情報)
-    file << "Map:\n";
-    file << Geography_.size() << "\n";
-    for (const auto &row : Geography_)
-    {
-        file << FormatVector<std::string>(row) << "\n";
-    }
+    file << JoinStringAndInt(SECTION_NAME_GEOGRAPHY, 0) << "\n";
+    Geography_.Export(file);
 
     // 3. PhonemeTable (音韻マスタデータ)
     // 旧 PhoneticsMap セクションは、詳細なマスタデータ構造へ置き換え
-    file << "PhonemeTable:\n";
+    file << JoinStringAndInt(SECTION_NAME_PHONEMETABLE, 0) << "\n";
     PhonemeTable_.Export(file);
 
     // 4. LanguageDifferences (言語変化の記録)
-    file << "LanguageDifferences:\n";
-    file << languageDifference_.size() << "\n";
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES, languageDifference_.size()) << "\n";
     for (const auto &diff : languageDifference_)
     {
         diff.Export(file);
@@ -390,8 +328,7 @@ void LanguageFamily::Export(const std::string &filename)
 
 /**
  * @brief 差分（および音韻マスタ・地図）をファイル読み込み
- *
- * @param filename 入力ファイル名
+ * * @param filename 入力ファイル名
  * @return bool 成功したか
  */
 bool LanguageFamily::Import(const std::string &filename)
@@ -407,45 +344,27 @@ bool LanguageFamily::Import(const std::string &filename)
     {
         while (std::getline(file, line))
         {
-            if (line == "Map:")
+            int count = 0;
+            if (ParseStringAndInt(line, SECTION_NAME_GEOGRAPHY, count))
             {
-                if (!std::getline(file, line))
-                    return false;
-
-                int rowCount = std::stoi(line);
-                if (rowCount < 0)
-                    return false; // 負の値チェック
-
-                Geography_.clear();
-                Geography_.reserve(rowCount); // 速度改善：メモリ予約
-
-                for (int i = 0; i < rowCount; ++i)
+                if (!Geography_.Import(file))
                 {
-                    if (!std::getline(file, line))
-                        return false;
-                    Geography_.push_back(ParseVector(line));
+                    return false;
                 }
             }
-            else if (line == "PhonemeTable:")
+            else if (ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE, count))
             {
                 if (!PhonemeTable_.Import(file))
                 {
                     return false;
                 }
             }
-            else if (line == "LanguageDifferences:")
+            else if (ParseStringAndInt(line, SECTION_NAME_DIFFERENCES, count))
             {
-                if (!std::getline(file, line))
-                    return false;
-
-                int diffCount = std::stoi(line);
-                if (diffCount < 0)
-                    return false;
-
                 languageDifference_.clear();
-                languageDifference_.reserve(diffCount); // 速度改善：メモリ予約
+                languageDifference_.reserve(count); // 速度改善：メモリ予約
 
-                for (int i = 0; i < diffCount; ++i)
+                for (int i = 0; i < count; ++i)
                 {
                     LanguageDifference diff;
                     if (!LanguageDifference::Import(file, diff))
@@ -469,14 +388,13 @@ bool LanguageFamily::Import(const std::string &filename)
 
 /**
  * @brief json ファイル読み込み
- *
- * @param filename ファイル名
+ * * @param filename ファイル名
  * @return bool 成功したか
  */
 bool LanguageFamily::ImportJson(const std::string &filename)
 {
     // 地理データ初期化
-    Geography_ = {{"0"}};
+    Geography_.InitializeFromVector({{"0"}});
 
     // 音韻データ初期化
     PhonemeTable_ = PhonemeTable::CreateDummyTable();

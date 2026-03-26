@@ -2,6 +2,7 @@
 
 #include "LanguageDifference.h"
 #include "PhonemeTable.h"
+#include "GeometryTable.h"
 
 class Language;
 
@@ -13,7 +14,7 @@ struct LanguageFamily
 {
 private:
     // 地理
-    std::vector<std::vector<std::string>> Geography_;
+    GeometryTable Geography_;
     // 音韻
     PhonemeTable PhonemeTable_;
     // 差分
@@ -23,7 +24,7 @@ public:
     static std::vector<std::vector<std::string>> RomanAlphabetTable;
 
     static LanguageFamily Create(const std::vector<std::vector<std::string>> &geography, const PhonemeTable &phonemeTable);
-    const std::vector<std::vector<std::string>> &GetGeography() const;
+    std::vector<std::vector<std::string>> GetGeography() const;
     const PhonemeTable &GetPhonemeTable() const;
     void AddDifference(const LanguageDifference &languageDifference);
 

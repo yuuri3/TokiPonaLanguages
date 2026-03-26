@@ -15,6 +15,7 @@ add_library(src
     EditPeriodDialog.cpp
     EditPhonologicalChangeDialog.cpp
     EditWordDialog.cpp
+    GeometryTable.cpp
     HelpDialog.cpp
     Language.cpp
     LanguageDifference.cpp
@@ -34,6 +35,7 @@ add_library(src
     ../include/EditPhonologicalChangeDialog.h
     ../include/EditWordDialog.h
     ../include/FeatureState.h
+    ../include/GeometryTable.h
     ../include/HelpDialog.h
     ../include/Language.h
     ../include/LanguageDifference.h

@@ -3,11 +3,7 @@
 #include <stdafx.h>
 #include <FeatureState.h>
 #include <PhoneticItem.h>
-
-struct PairHash
-{
-    std::size_t operator()(const std::pair<int, int> &p) const;
-};
+#include "Utility.h"
 
 class PhonemeTable
 {
