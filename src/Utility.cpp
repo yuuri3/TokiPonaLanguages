@@ -308,7 +308,7 @@ const std::vector<std::string> ParseVector(const std::string &line)
     std::string item;
     while (std::getline(ss, item, ','))
     {
-        result.push_back(EraseSpace(item));
+        result.push_back(item);
     }
     return result;
 }

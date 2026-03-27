@@ -14,4 +14,6 @@ struct PhonologicalChange
     std::vector<PhoneticItem> AfterPhoneticItems_;
     // 条件
     std::vector<std::pair<int, PhoneticItem>> PhoneticEnvironment_;
+
+    bool IsValid() const;
 };

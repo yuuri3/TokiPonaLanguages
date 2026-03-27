@@ -234,6 +234,236 @@ std::optional<Language> LanguageFamily::CalculateLanguage(const std::string plac
 }
 
 /**
+ * @brief 指定された場所と時代の音韻変化を取得
+ *
+ * @param place 場所
+ * @param period 時代
+ * @return const std::vector<PhonologicalChange> 音韻変化のリスト
+ */
+const std::vector<PhonologicalChange> LanguageFamily::GetPhonologicalChanges(const std::string place, const int period)
+{
+    std::vector<PhonologicalChange> phonologicalChanges;
+
+    for (const auto &languageDifference : languageDifference_)
+    {
+        if (languageDifference.GetPeriod() == period &&
+            languageDifference.GetType() == LanguageDifferenceType::PhonologicalChange)
+        {
+            const std::optional<std::string> targetPlace = languageDifference.StringParam(0);
+            if (targetPlace.has_value() && targetPlace.value() == place)
+            {
+                phonologicalChanges.emplace_back(languageDifference.GetPhonologicalChange());
+            }
+        }
+    }
+
+    return phonologicalChanges;
+}
+
+/**
+ * @brief 指定された場所と時代の音韻変化の文字列表現を取得
+ * * @param place 場所
+ * * @param period 時代
+ * * @return const std::vector<std::string>
+ */
+const std::vector<std::string> LanguageFamily::GetPhonologicalChangeStrings(const std::string place, const int period)
+{
+    std::vector<std::string> resultStrings;
+    const std::vector<PhonologicalChange> changes = GetPhonologicalChanges(place, period);
+
+    for (const auto &change : changes)
+    {
+        std::string beforeString = PhonemeTable_.ConvertPhoneticItemToString(change.BeforePhoneticItems_);
+        std::string afterString = PhonemeTable_.ConvertPhoneticItemToString(change.AfterPhoneticItems_);
+
+        std::string environmentString;
+        if (!change.PhoneticEnvironment_.empty())
+        {
+            std::map<int, std::vector<PhoneticItem>> environmentMap;
+
+            for (const auto &env : change.PhoneticEnvironment_)
+            {
+                environmentMap[env.first].push_back(env.second);
+            }
+
+            std::string leftEnvString;
+            std::string rightEnvString;
+
+            for (const auto &pair : environmentMap)
+            {
+                const int position = pair.first;
+                std::string itemString = PhonemeTable_.ConvertPhoneticItemToString(pair.second);
+
+                if (position < 0)
+                {
+                    if (!leftEnvString.empty())
+                    {
+                        leftEnvString += " ";
+                    }
+                    leftEnvString += itemString;
+                }
+                else if (position > 0)
+                {
+                    if (!rightEnvString.empty())
+                    {
+                        rightEnvString += " ";
+                    }
+                    rightEnvString += itemString;
+                }
+            }
+
+            environmentString = leftEnvString + DELIMINATOR_ENV_ENV + rightEnvString;
+        }
+
+        std::string changeString = beforeString + DELIMINATOR_BEFORE_AFTER + afterString;
+        if (!environmentString.empty())
+        {
+            changeString += DELIMINATOR_AFTER_ENV + environmentString;
+        }
+
+        resultStrings.push_back(changeString);
+    }
+
+    return resultStrings;
+}
+
+/**
+ * @brief 指定した場所と時代の音韻変化を設定
+ *
+ * @param place 場所
+ * @param period 時代
+ * @param phonologicalChange 音韻変化のリスト
+ */
+bool LanguageFamily::SetPhonologicalChanges(const std::string place, const int period, const std::vector<PhonologicalChange> &phonologicalChange)
+{
+    bool result = true;
+    languageDifference_.erase(
+        std::remove_if(languageDifference_.begin(), languageDifference_.end(),
+                       [&](const LanguageDifference &difference)
+                       {
+                           if (difference.GetPeriod() == period && difference.GetType() == LanguageDifferenceType::PhonologicalChange)
+                           {
+                               const std::optional<std::string> targetPlace = difference.StringParam(0);
+                               if (targetPlace.has_value() && targetPlace.value() == place)
+                               {
+                                   return true;
+                               }
+                           }
+                           return false;
+                       }),
+        languageDifference_.end());
+
+    auto insertIterator = std::find_if(languageDifference_.begin(), languageDifference_.end(),
+                                       [period](const LanguageDifference &difference)
+                                       {
+                                           return difference.GetPeriod() > period;
+                                       });
+
+    for (const auto &currentChange : phonologicalChange)
+    {
+        if (!currentChange.IsValid())
+        {
+            result = false;
+            continue;
+        }
+        LanguageDifference newDifference = LanguageDifference::CreatePhonologicalChange(place, period, currentChange);
+        insertIterator = languageDifference_.insert(insertIterator, newDifference);
+        ++insertIterator;
+    }
+    return result;
+}
+
+/**
+ * @brief 文字列のリストから音韻変化を設定
+ *
+ * @param place 場所
+ * @param period 時代
+ * @param phonologicalChange 音韻変化の文字列リスト
+ */
+bool LanguageFamily::SetPhonologicalChangesFromString(const std::string place, const int period, const std::vector<std::string> &phonologicalChange)
+{
+    std::vector<PhonologicalChange> parsedChanges;
+
+    auto trimString = [](std::string str)
+    {
+        size_t first = str.find_first_not_of(" \t");
+        if (std::string::npos == first)
+            return std::string();
+        size_t last = str.find_last_not_of(" \t");
+        return str.substr(first, (last - first + 1));
+    };
+
+    for (const auto &changeString : phonologicalChange)
+    {
+        PhonologicalChange newChange;
+
+        std::string ruleString = changeString;
+        std::string envString = "";
+
+        // " / " で分割して環境部分を抽出
+        size_t slashPos = changeString.find(DELIMINATOR_AFTER_ENV);
+        if (slashPos != std::string::npos)
+        {
+            ruleString = changeString.substr(0, slashPos);
+            envString = changeString.substr(slashPos + DELIMINATOR_AFTER_ENV.length());
+        }
+
+        std::string beforeString = "";
+        std::string afterString = "";
+        // " > " で分割して変化前後を抽出
+        size_t arrowPos = ruleString.find(DELIMINATOR_BEFORE_AFTER);
+        if (arrowPos != std::string::npos)
+        {
+            beforeString = trimString(ruleString.substr(0, arrowPos));
+            afterString = trimString(ruleString.substr(arrowPos + DELIMINATOR_BEFORE_AFTER.length()));
+        }
+        else
+        {
+            beforeString = trimString(ruleString);
+        }
+
+        // 変化前の解析
+        newChange.BeforePhoneticItems_ = PhonemeTable_.ConvertStringToPhoneticItem(beforeString);
+
+        // 変化後の解析
+        newChange.AfterPhoneticItems_ = PhonemeTable_.ConvertStringToPhoneticItem(afterString);
+
+        // 環境（u _ i など）の解析
+        if (!envString.empty())
+        {
+            // 定数 " _ " をそのまま使用して左右に分割
+            size_t envPos = envString.find(DELIMINATOR_ENV_ENV);
+            if (envPos != std::string::npos)
+            {
+                std::string leftEnv = envString.substr(0, envPos);
+                std::string rightEnv = envString.substr(envPos + DELIMINATOR_ENV_ENV.length());
+
+                // 左側のトークン群（位置：-n, ..., -1）
+                const std::vector<PhoneticItem> leftItems = PhonemeTable_.ConvertStringToPhoneticItem(leftEnv);
+                int index = -leftItems.size();
+                for (const auto leftItem : leftItems)
+                {
+                    newChange.PhoneticEnvironment_.push_back({index, leftItem});
+                    index++;
+                }
+                // 右側のトークン群（位置：1, 2, ...）
+                const std::vector<PhoneticItem> rightItems = PhonemeTable_.ConvertStringToPhoneticItem(rightEnv);
+                index = 1;
+                for (const auto rightItem : rightItems)
+                {
+                    newChange.PhoneticEnvironment_.push_back({index, rightItem});
+                    index++;
+                }
+            }
+        }
+
+        parsedChanges.push_back(newChange);
+    }
+
+    return SetPhonologicalChanges(place, period, parsedChanges);
+}
+
+/**
  * @brief 言語名の配列を出力
  *
  * @return const std::vector<std::vector<std::string>>

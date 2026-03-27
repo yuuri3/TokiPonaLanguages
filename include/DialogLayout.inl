@@ -120,3 +120,26 @@ void DialogLayout::AddLineAndConnectRightClicked(const int id, const std::vector
         widget->layout()->addWidget(rowContainer);
     }
 }
+
+/**
+ * @brief コンテキストメニュー要求シグナルをスロットに接続
+ *
+ * @param id 要素ID
+ * @param receiver レシーバーオブジェクトポインタ
+ * @param slot 実行されるスロット関数
+ */
+template <typename Receiver, typename Slot>
+void DialogLayout::ConnectContextMenu(const int id, Receiver *receiver, Slot slot) const
+{
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    {
+        return;
+    }
+
+    auto *widget = UI_.Inputs.at(id);
+
+    // シグナルを発火させるためにコンテキストメニューのポリシーを設定
+    widget->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    QObject::connect(widget, &QWidget::customContextMenuRequested, receiver, slot);
+}

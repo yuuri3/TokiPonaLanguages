@@ -17,6 +17,9 @@ public:
 
     static PhonemeTable CreateDummyTable();
 
+    std::string ConvertPhoneticItemToString(const std::vector<PhoneticItem> &phoneticItems) const;
+    std::vector<PhoneticItem> ConvertStringToPhoneticItem(const std::string &str) const;
+
 private:
     std::unordered_map<int, std::string> Features_;
     std::unordered_map<int, std::string> Places_;

@@ -94,6 +94,7 @@ public:
 
     void Clear(const int id);
     void AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths);
+    const std::vector<std::string> GetLine(const int id);
     void MoveUp(const int id, const int lineIndex);
     void MoveDown(const int id, const int lineIndex);
     void DeleteLine(const int id, const int lineIndex);
@@ -113,6 +114,8 @@ public:
     void ConnectRightClicked(const int id, Receiver *receiver, Slot slot) const;
     template <typename Receiver, typename Slot>
     void AddLineAndConnectRightClicked(const int id, const std::vector<std::string> &values, const std::vector<int> &widths, Receiver *receiver, Slot slot);
+    template <typename Receiver, typename Slot>
+    void ConnectContextMenu(const int id, Receiver *receiver, Slot slot) const;
 
 private:
     // ==========================================

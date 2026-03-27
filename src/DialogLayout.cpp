@@ -280,12 +280,57 @@ int DialogLayout::GetCurrentRow(const int id) const
  */
 void DialogLayout::Clear(const int id)
 {
-    auto widget = UI_.Inputs.at(id);
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    {
+        return;
+    }
+
+    auto *widget = UI_.Inputs.at(id);
     if (!widget)
     {
         return;
     }
-    ClearWidget(widget);
+
+    const auto type = Elements_.at(id).DataType;
+    switch (type)
+    {
+    case DialogDataType::String:
+        if (auto *lineEdit = qobject_cast<QLineEdit *>(widget))
+        {
+            lineEdit->clear();
+        }
+        break;
+
+    case DialogDataType::StringArray:
+        if (auto *listWidget = qobject_cast<QListWidget *>(widget))
+        {
+            listWidget->clear();
+        }
+        break;
+
+    case DialogDataType::StringPairArray:
+        // コンテナウィジェットのレイアウト内にある行ウィジェットをすべて削除
+        ClearLayout(widget->layout());
+        break;
+
+    case DialogDataType::Boolean:
+        if (auto *checkBox = qobject_cast<QCheckBox *>(widget))
+        {
+            checkBox->setChecked(false);
+        }
+        break;
+
+    case DialogDataType::Table:
+        if (auto *tableWidget = qobject_cast<QTableWidget *>(widget))
+        {
+            tableWidget->setRowCount(0);
+            tableWidget->clearContents();
+        }
+        break;
+
+    default:
+        break;
+    }
 }
 
 /**
@@ -353,6 +398,76 @@ void DialogLayout::AddLine(const int id, const std::vector<std::string> &values,
 
         widget->layout()->addWidget(rowContainer);
     }
+}
+
+/**
+ * @brief 指定されたIDの要素から行の文字列リストを取得
+ *
+ * @param id 要素のID
+ * @return const std::vector<std::string> 行の文字列リスト
+ */
+const std::vector<std::string> DialogLayout::GetLine(const int id)
+{
+    std::vector<std::string> resultList;
+
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    {
+        return resultList;
+    }
+
+    auto *widget = UI_.Inputs.at(id);
+    const auto dataType = Elements_.at(id).DataType;
+
+    if (dataType == DialogDataType::StringArray)
+    {
+        if (auto *listWidget = qobject_cast<QListWidget *>(widget))
+        {
+            for (int i = 0; i < listWidget->count(); ++i)
+            {
+                resultList.push_back(listWidget->item(i)->text().toStdString());
+            }
+        }
+    }
+    else if (dataType == DialogDataType::StringPairArray)
+    {
+        if (auto *mainLayout = widget->layout())
+        {
+            for (int i = 0; i < mainLayout->count(); ++i)
+            {
+                if (auto *rowWidget = mainLayout->itemAt(i)->widget())
+                {
+                    if (auto *rowLayout = rowWidget->layout())
+                    {
+                        std::string combinedString = "";
+                        for (int j = 0; j < rowLayout->count(); ++j)
+                        {
+                            if (auto *lineEdit = qobject_cast<QLineEdit *>(rowLayout->itemAt(j)->widget()))
+                            {
+                                if (!combinedString.empty())
+                                {
+                                    combinedString += "\t";
+                                }
+                                combinedString += lineEdit->text().toStdString();
+                            }
+                        }
+                        if (!combinedString.empty())
+                        {
+                            resultList.push_back(combinedString);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else if (dataType == DialogDataType::String)
+    {
+        if (auto *lineEdit = qobject_cast<QLineEdit *>(widget))
+        {
+            resultList.push_back(lineEdit->text().toStdString());
+        }
+    }
+
+    return resultList;
 }
 
 /**

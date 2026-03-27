@@ -209,6 +209,7 @@ void MainWindow::EditPhonologicalChange()
     subWindow.SetLanguages(Languages_);
     subWindow.SetLanguageNames(*LanguageNames_);
     subWindow.exec();
+    IsLanguagesSaved_ = false;
 }
 
 /**

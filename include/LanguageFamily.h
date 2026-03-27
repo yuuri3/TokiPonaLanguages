@@ -3,6 +3,7 @@
 #include "LanguageDifference.h"
 #include "PhonemeTable.h"
 #include "GeometryTable.h"
+#include "PhonologicalChange.h"
 
 class Language;
 
@@ -43,6 +44,11 @@ public:
     const bool Empty() const;
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
     const std::vector<std::vector<std::string>> ToString() const;
+
+    const std::vector<PhonologicalChange> GetPhonologicalChanges(const std::string place, const int period);
+    const std::vector<std::string> GetPhonologicalChangeStrings(const std::string place, const int period);
+    bool SetPhonologicalChanges(const std::string place, const int period, const std::vector<PhonologicalChange> &phonologicalChange);
+    bool SetPhonologicalChangesFromString(const std::string place, const int period, const std::vector<std::string> &phonologicalChange);
 
     void Export(const std::string &filename);
     bool Import(const std::string &filename);

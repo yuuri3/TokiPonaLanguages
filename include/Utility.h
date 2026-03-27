@@ -30,6 +30,10 @@ static const std::string SECTION_NAME_DIFFERENCES_BEFORE_PHONEME = "BPH";
 static const std::string SECTION_NAME_DIFFERENCES_AFTER_PHONEME = "APH";
 static const std::string SECTION_NAME_DIFFERENCES_ENVIRONMENT = "ENV";
 
+static const std::string DELIMINATOR_BEFORE_AFTER = " > ";
+static const std::string DELIMINATOR_AFTER_ENV = " / ";
+static const std::string DELIMINATOR_ENV_ENV = " _ ";
+
 std::vector<std::vector<std::string>> readCSV(const std::string &filename);
 bool writeCSV(const std::string &filename, const std::vector<std::vector<std::string>> &data);
 std::vector<std::pair<std::string, std::string>> getAdjacencies(const std::vector<std::vector<std::string>> &data);

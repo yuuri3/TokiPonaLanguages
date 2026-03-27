@@ -366,3 +366,179 @@ PhonemeTable PhonemeTable::CreateDummyTable()
 
     return dummyTable;
 }
+
+/**
+ * @brief PhoneticItemの配列を文字列に変換
+ * * @param phoneticItems 変換対象の音声項目の配列
+ * * @return 変換後の文字列
+ */
+std::string PhonemeTable::ConvertPhoneticItemToString(const std::vector<PhoneticItem> &phoneticItems) const
+{
+    std::string resultString = "";
+
+    for (const auto &phoneticItem : phoneticItems)
+    {
+        switch (phoneticItem.Type_)
+        {
+        case PhoneticItemType::Phoneme:
+        {
+            auto it = Phonemes_.find(phoneticItem.ID_);
+            if (it != Phonemes_.end())
+            {
+                resultString += it->second;
+            }
+            break;
+        }
+
+        case PhoneticItemType::Feature:
+        {
+            std::string statePrefix = "";
+            if (phoneticItem.State_ == FeatureState::Positive)
+            {
+                statePrefix = "+";
+            }
+            else if (phoneticItem.State_ == FeatureState::Negative)
+            {
+                statePrefix = "-";
+            }
+
+            auto it = Features_.find(phoneticItem.ID_);
+            if (it != Features_.end())
+            {
+                resultString += "[" + statePrefix + it->second + "]";
+            }
+            break;
+        }
+
+        case PhoneticItemType::Place:
+        {
+            auto it = Places_.find(phoneticItem.ID_);
+            if (it != Places_.end())
+            {
+                resultString += "[" + it->second + "]";
+            }
+            break;
+        }
+
+        case PhoneticItemType::Manner:
+        {
+            auto it = Manner_.find(phoneticItem.ID_);
+            if (it != Manner_.end())
+            {
+                resultString += "[" + it->second + "]";
+            }
+            break;
+        }
+
+        case PhoneticItemType::None:
+        default:
+            break;
+        }
+    }
+
+    return resultString;
+}
+
+/**
+ * @brief 文字列をPhoneticItemの配列に変換
+ * * @param str 変換元の文字列
+ * * @return 変換後の音声項目の配列
+ */
+std::vector<PhoneticItem> PhonemeTable::ConvertStringToPhoneticItem(const std::string &str) const
+{
+    std::vector<PhoneticItem> resultItems;
+    size_t offset = 0;
+
+    while (offset < str.length())
+    {
+        if (str[offset] == '[')
+        {
+            size_t endPos = str.find(']', offset);
+            if (endPos != std::string::npos)
+            {
+                std::string innerString = str.substr(offset + 1, endPos - offset - 1);
+                bool isMatched = false;
+
+                if (!innerString.empty())
+                {
+                    if (innerString.front() == '+' || innerString.front() == '-')
+                    {
+                        FeatureState featureState = (innerString.front() == '+') ? FeatureState::Positive : FeatureState::Negative;
+                        std::string featureName = innerString.substr(1);
+
+                        for (const auto &[id, name] : Features_)
+                        {
+                            if (name == featureName)
+                            {
+                                resultItems.push_back(PhoneticItem::Create(PhoneticItemType::Feature, id, featureState));
+                                isMatched = true;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (const auto &[id, name] : Places_)
+                        {
+                            if (name == innerString)
+                            {
+                                resultItems.push_back(PhoneticItem::Create(PhoneticItemType::Place, id, FeatureState::Unspecified));
+                                isMatched = true;
+                                break;
+                            }
+                        }
+
+                        if (!isMatched)
+                        {
+                            for (const auto &[id, name] : Manner_)
+                            {
+                                if (name == innerString)
+                                {
+                                    resultItems.push_back(PhoneticItem::Create(PhoneticItemType::Manner, id, FeatureState::Unspecified));
+                                    isMatched = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!isMatched)
+                {
+                    resultItems.push_back(PhoneticItem::Create(PhoneticItemType::None, 0, FeatureState::Unspecified));
+                }
+
+                offset = endPos + 1;
+                continue;
+            }
+        }
+
+        int bestMatchId = -1;
+        size_t maxLength = 0;
+
+        for (const auto &[id, name] : Phonemes_)
+        {
+            if (str.compare(offset, name.length(), name) == 0)
+            {
+                if (name.length() > maxLength)
+                {
+                    bestMatchId = id;
+                    maxLength = name.length();
+                }
+            }
+        }
+
+        if (bestMatchId != -1)
+        {
+            resultItems.push_back(PhoneticItem::Create(PhoneticItemType::Phoneme, bestMatchId, FeatureState::Unspecified));
+            offset += maxLength;
+        }
+        else
+        {
+            resultItems.push_back(PhoneticItem::Create(PhoneticItemType::None, 0, FeatureState::Unspecified));
+            offset++;
+        }
+    }
+
+    return resultItems;
+}

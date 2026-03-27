@@ -21,6 +21,7 @@ private slots:
     void Unimplemented();
     void ShowContextMenu(const QPoint &pos);
     void ShowHelp();
+    void OKButtonClicked();
     void SelectLanguageName();
     void AddPhonologicalChange();
     void MoveRuleUp();
@@ -32,5 +33,8 @@ private:
 
     std::shared_ptr<LanguageFamily> Languages_;
     std::optional<std::vector<std::vector<std::string>>> LanguageNames_;
-    std::shared_ptr<Language> Language_;
+    std::string Place_;
+    int Period_;
+
+    void DisplayPhonologicalChanges(const std::string place, const int period);
 };

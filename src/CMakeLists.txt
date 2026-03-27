@@ -23,6 +23,7 @@ add_library(src
     MainWindow.cpp
     PhonemeTable.cpp
     PhoneticItem.cpp
+    PhonologicalChange.cpp
     Random.cpp
     SelectLanguageDialog.cpp
     UnimplementedDialog.cpp
@@ -45,6 +46,7 @@ add_library(src
     ../include/PhonemeTable.h
     ../include/PhoneticItem.h
     ../include/PhoneticItemType.h
+    ../include/PhonologicalChange.h
     ../include/Random.h
     ../include/SelectLanguageDialog.h
     ../include/UnimplementedDialog.h
