@@ -7,8 +7,9 @@ namespace
 {
     constexpr int NAME_ID = 0;
     constexpr int PHONOLOGICAL_CHANGE_ID = 1;
-    constexpr int SYLLABLE_ID = 2;
-    constexpr int MINIMAL_PAIR_ID = 3;
+    /// @todo 以下は初版に入れない
+    // constexpr int SYLLABLE_ID = 2;
+    // constexpr int MINIMAL_PAIR_ID = 3;
 }
 
 EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
@@ -23,7 +24,7 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     LayoutData_.SetTitle(NAME_ID, "言語名");
     LayoutData_.SetDataType(NAME_ID, DialogDataType::String);
     LayoutData_.SetIsEditable(NAME_ID, false);
-    LayoutData_.SetButton(NAME_ID, "言語選択");
+    LayoutData_.SetButton(NAME_ID, "選択");
 
     // ID 1: 音韻変化
     LayoutData_.SetTitle(PHONOLOGICAL_CHANGE_ID, "音韻変化");
@@ -32,15 +33,16 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     LayoutData_.SetButton(PHONOLOGICAL_CHANGE_ID, "追加");
     LayoutData_.SetHasContextMenu(PHONOLOGICAL_CHANGE_ID, true);
 
+    /// @todo 以下は初版に入れない
     // ID 2: 音節構造
-    LayoutData_.SetTitle(SYLLABLE_ID, "音節構造");
-    LayoutData_.SetDataType(SYLLABLE_ID, DialogDataType::String);
-    LayoutData_.SetIsEditable(SYLLABLE_ID, true);
+    // LayoutData_.SetTitle(SYLLABLE_ID, "音節構造");
+    // LayoutData_.SetDataType(SYLLABLE_ID, DialogDataType::String);
+    // LayoutData_.SetIsEditable(SYLLABLE_ID, true);
 
     // ID 3: 同音語を許容する
-    LayoutData_.SetTitle(MINIMAL_PAIR_ID, "同音語を許容する");
-    LayoutData_.SetDataType(MINIMAL_PAIR_ID, DialogDataType::Boolean);
-    LayoutData_.SetIsEditable(MINIMAL_PAIR_ID, true);
+    // LayoutData_.SetTitle(MINIMAL_PAIR_ID, "同音語を許容する");
+    // LayoutData_.SetDataType(MINIMAL_PAIR_ID, DialogDataType::Boolean);
+    // LayoutData_.SetIsEditable(MINIMAL_PAIR_ID, true);
 
     // ==========================================
     // 2. UIの自動生成と適用
@@ -53,11 +55,11 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     // 3. シグナルとスロットの接続・初期設定
     // ==========================================
     LayoutData_.ConnectButtonClicked(HELP_BUTTON_ID, this, &EditPhonologicalChangeDialog::ShowHelp);
-    LayoutData_.ConnectButtonClicked(OK_BUTTON_ID, this, &EditPhonologicalChangeDialog::Unimplemented); // 実装時は accept などに変更
+    LayoutData_.ConnectButtonClicked(OK_BUTTON_ID, this, &EditPhonologicalChangeDialog::OKButtonClicked);
     LayoutData_.ConnectButtonClicked(CANCEL_BUTTON_ID, this, reject);
     LayoutData_.ConnectButtonClicked(NAME_ID, this, &EditPhonologicalChangeDialog::SelectLanguageName);
     LayoutData_.ConnectButtonClicked(PHONOLOGICAL_CHANGE_ID, this, &EditPhonologicalChangeDialog::AddPhonologicalChange);
-    LayoutData_.ConnectClicked(MINIMAL_PAIR_ID, this, &EditPhonologicalChangeDialog::Unimplemented);
+    LayoutData_.ConnectContextMenu(PHONOLOGICAL_CHANGE_ID, this, &EditPhonologicalChangeDialog::ShowContextMenu);
 }
 
 /**
@@ -125,13 +127,32 @@ void EditPhonologicalChangeDialog::ShowHelp()
     subWindow.exec();
 }
 
+void EditPhonologicalChangeDialog::OKButtonClicked()
+{
+    if (Languages_)
+    {
+        if (Languages_->SetPhonologicalChangesFromString(Place_, Period_, LayoutData_.GetLine(PHONOLOGICAL_CHANGE_ID)))
+        {
+            accept();
+        }
+        else
+        {
+            QMessageBox::warning(
+                this,
+                "音韻変化",
+                "不正な音韻変化は保存できません");
+            DisplayPhonologicalChanges(Place_, Period_);
+        }
+    }
+}
+
 /**
  * @brief 言語名選択
  *
  */
 void EditPhonologicalChangeDialog::SelectLanguageName()
 {
-    if (!LanguageNames_)
+    if (!LanguageNames_ || !Languages_)
     {
         return;
     }
@@ -144,6 +165,11 @@ void EditPhonologicalChangeDialog::SelectLanguageName()
     {
         return;
     }
+
+    Place_ = LanguageNames_->at(0).at(place);
+    Period_ = period - 1;
+
+    DisplayPhonologicalChanges(Place_, Period_);
 
     LayoutData_.SetText(NAME_ID, LanguageNames_->at(period).at(place));
     LayoutData_.ActivateButton(PHONOLOGICAL_CHANGE_ID, true);
@@ -198,4 +224,21 @@ void EditPhonologicalChangeDialog::DeleteRule()
     {
         LayoutData_.DeleteLine(PHONOLOGICAL_CHANGE_ID, currentRow);
     }
+}
+
+/**
+ * @brief 音韻変化をUIに表示する
+ *
+ * @param place 場所
+ * @param period 時代
+ */
+void EditPhonologicalChangeDialog::DisplayPhonologicalChanges(const std::string place, const int period)
+{
+
+    if (!Languages_)
+    {
+        return;
+    }
+    LayoutData_.Clear(PHONOLOGICAL_CHANGE_ID);
+    LayoutData_.AddLine(PHONOLOGICAL_CHANGE_ID, Languages_->GetPhonologicalChangeStrings(place, period), {});
 }

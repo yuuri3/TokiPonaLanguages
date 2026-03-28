@@ -1,7 +1,5 @@
 #include "EditWordDialog.h"
 #include "UnimplementedDialog.h"
-#include "LanguageFamilySimulator.h"
-#include "PhonemeConverter.h"
 #include "Utility.h"
 #include "DialogLayout.h"
 
@@ -88,7 +86,7 @@ void EditWordDialog::Unimplemented()
  * @param wordID 単語ID
  */
 void EditWordDialog::Set(std::shared_ptr<LanguageFamily> languages,
-                         const Language &language,
+                         std::shared_ptr<Language> language,
                          const std::string &place,
                          const int period,
                          const int wordID)
@@ -107,11 +105,9 @@ void EditWordDialog::Set(std::shared_ptr<LanguageFamily> languages,
  */
 void EditWordDialog::UpdateDialog()
 {
-    if (Languages_)
+    if (Languages_ && Language_)
     {
-        PhonemeConverter converter = PhonemeConverter::Create(Languages_->GetPhonemeTable());
-
-        const auto word = Language_.GetWord(WordID_);
+        const auto word = Language_->GetWord(WordID_);
         if (!word)
         {
             return;
@@ -119,7 +115,7 @@ void EditWordDialog::UpdateDialog()
 
         // 語形
         const auto form = word->GetForm();
-        LayoutData_.SetText(FORM_ID, converter.ConvertToString(form));
+        LayoutData_.SetText(FORM_ID, Languages_->GetPhonemeTable().ConvertToString(form));
 
         // 訳語
         std::vector<std::vector<std::string>> translations;
@@ -164,7 +160,7 @@ void EditWordDialog::UpdateDialog()
         {
             const auto title = word->GetVariationTitle(variationID);
             const auto variation = word->GetVariation(variationID);
-            variationsData.push_back({title, converter.ConvertToString(variation)});
+            variationsData.push_back({title, Languages_->GetPhonemeTable().ConvertToString(variation)});
         }
         variationsData.push_back({"", ""});
         DisplayLine(VARIATION_ID, variationsData, TWO_WIDTHS);
@@ -175,8 +171,8 @@ void EditWordDialog::UpdateDialog()
         {
             const auto title = word->GetRelationTitle(relationID);
             const int relatedWordID = word->GetRelationWordID(relationID);
-            const auto relatedWord = Language_.GetWord(relatedWordID);
-            relationsData.push_back({title, converter.ConvertToString(relatedWord->GetForm())});
+            const auto relatedWord = Language_->GetWord(relatedWordID);
+            relationsData.push_back({title, Languages_->GetPhonemeTable().ConvertToString(relatedWord->GetForm())});
         }
         relationsData.push_back({"", ""});
         DisplayLine(RELATION_ID, relationsData, TWO_WIDTHS);

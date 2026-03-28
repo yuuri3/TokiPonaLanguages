@@ -26,7 +26,7 @@ else()
 endif()
 
 # 生成されるファイル名（.exe）を日本語にする設定を追加
-set_target_properties(Unagi-Conlang-Editor PROPERTIES OUTPUT_NAME "うなぎエディタ_Ver${APP_VERSION}")
+set_target_properties(Unagi-Conlang-Editor PROPERTIES OUTPUT_NAME "Unagi_Editor_Ver${APP_VERSION}")
 
 # リンク設定も英字のターゲット名に合わせる
 target_link_libraries(Unagi-Conlang-Editor PRIVATE Qt6::Widgets)

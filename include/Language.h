@@ -5,6 +5,7 @@
 
 class PhonemeConverter;
 class LanguageDifference;
+class LanguageFamily;
 
 /**
  * @brief 言語
@@ -17,15 +18,19 @@ private:
     double Strength_;
     // 語彙
     std::map<int, Word> Words_;
+    // 親語族のポインタ
+    const LanguageFamily *Parent_;
 
-    void ApplyPhonologicalChange(const PhonologicalChange &phonologicalChange, const bool isProhibitSoundDuplication, const bool isProhibitMinimalPair);
+    void ApplyPhonologicalChange(const PhonologicalChange &phonologicalChange, const bool isProhibitMinimalPair);
 
 public:
+    Language(const LanguageFamily *parent);
+    ~Language();
     void Reset();
     void Copy(const Language &lang);
     void ApplyDifference(const LanguageDifference &dif);
-    void AddWord(const LanguageDifference &dif, const std::vector<Phoneme> &form);
-    void AddWord(const std::vector<Phoneme> &form);
+    void AddWord(const LanguageDifference &dif, const std::vector<int> &form);
+    void AddWord(const std::vector<int> &form);
     void LoanWord(const LanguageDifference &dif, const Language &referenceLanguage);
     const double GetStrength() const;
     const bool IsStronger(const Language &lang) const;
@@ -38,6 +43,6 @@ public:
 
 namespace LanguageUtility
 {
-    bool ApplyDifference(const LanguageDifference &diff, std::map<std::string, Language> &languages, const PhonemeConverter &converter);
-    bool ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<std::string, Language> &languages, const PhonemeConverter &converter);
+    bool ApplyDifference(const LanguageDifference &diff, std::map<std::string, Language> &languages, const LanguageFamily *family);
+    bool ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<std::string, Language> &languages, const LanguageFamily *family);
 }

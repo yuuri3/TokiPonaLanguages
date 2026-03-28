@@ -31,14 +31,14 @@ namespace
  * @param wordForm 語形
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateAddWord(const std::string &place, const int period, const int wordID, const std::vector<Phoneme> &wordForm)
+LanguageDifference LanguageDifference::CreateAddWord(const std::string &place, const int period, const int wordID, const std::vector<int> &wordForm)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::AddWord;
     diff.StringParam_.emplace_back(place);
     diff.IntParam_.emplace_back(wordID);
-    diff.PhonemeParam_ = wordForm;
+    diff.PhonemeIDs_ = wordForm;
     return diff;
 }
 
@@ -327,7 +327,7 @@ LanguageDifference LanguageDifference::CreateEditVariation(
     const int wordID,
     const int variationID,
     const std::string &title,
-    const std::vector<Phoneme> variation)
+    const std::vector<int> variation)
 {
     LanguageDifference diff;
     diff.Period_ = period;
@@ -342,7 +342,7 @@ LanguageDifference LanguageDifference::CreateEditVariation(
     diff.IntParam_.emplace_back(variationID);
 
     // 音素パラメータ
-    diff.PhonemeParam_ = variation;
+    diff.PhonemeIDs_ = variation;
 
     return diff;
 }
@@ -544,9 +544,9 @@ const int LanguageDifference::StringParamSize() const
  *
  * @return const std::vector<Phoneme>&
  */
-const std::vector<Phoneme> &LanguageDifference::GetPhonemeParam() const
+const std::vector<int> &LanguageDifference::GetPhonemeParam() const
 {
-    return PhonemeParam_;
+    return PhonemeIDs_;
 }
 
 /**
@@ -560,97 +560,225 @@ const PhonologicalChange &LanguageDifference::GetPhonologicalChange() const
 
 /**
  * @brief ファイル読み込み
- *
- * @param file
- * @return LanguageDifference
+ * * @param file 入力ストリーム
+ * @param dif 読み込み先の差分オブジェクト
+ * @return bool 成功したか
  */
 bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
 {
     dif = LanguageDifference();
     std::string line;
 
-    // Period
+    // 文字列データの末尾スペースを保護できるように修正
+    auto GetCleanLine = [&](std::string &l, bool shouldTrim)
     {
-        if (!std::getline(file, line))
+        if (!std::getline(file, l))
             return false;
-        const auto period = ParseVector(line);
-        if (period.size() < 1)
-            return false;
-        dif.Period_ = std::stoi(period[0]);
-    }
-    // Type
-    {
-        if (!std::getline(file, line))
-            return false;
-        const auto type = ParseIntVector(line);
-        if (type.size() < 1)
-            return false;
-        dif.Type_ = ConvertToLanguageDifferenceType(type[0]);
-    }
-    // IntParam
-    {
-        if (!std::getline(file, line))
-            return false;
-        const auto param = ParseIntVector(line);
-        dif.IntParam_ = param;
-    }
-    // DoubleParam
-    {
-        if (!std::getline(file, line))
-            return false;
-        const auto param = ParseDoubleVector(line);
-        dif.DoubleParam_ = param;
-    }
-    // StringParam
-    {
-        if (!std::getline(file, line))
-            return false;
-        const auto param = ParseVector(line);
-        dif.StringParam_ = param;
-    }
-    // PhonemeParam
-    {
-        if (!std::getline(file, line))
-            return false;
-        const auto param = ParsePhonemeVector(line);
-        dif.PhonemeParam_ = param;
-    }
-    // PhonologicalChange
-    {
-        if (!std::getline(file, line))
-            return false;
-        const auto params = ParseIntVector(line);
-        if (params.size() < 6)
+        // 改行コード \r を除去
+        l.erase(std::remove(l.begin(), l.end(), '\r'), l.end());
+
+        if (shouldTrim)
         {
-            return false;
+            // 数値解析用：末尾のカンマと空白を除去
+            size_t last = l.find_last_not_of(" ,");
+            if (last != std::string::npos)
+                l = l.substr(0, last + 1);
+            else
+                l.clear();
         }
-        dif.PhonologicalChanges_.BeforePhoneme_ = Phoneme::Create(params[0], params[1]);
-        dif.PhonologicalChanges_.AfterPhoneme_ = Phoneme::Create(params[2], params[3]);
-        dif.PhonologicalChanges_.PhoneticEnvironment_ = ConvertToPhoneticEnvironment(params[4]);
-        dif.PhonologicalChanges_.IsRemove_ = static_cast<bool>(params[5]);
+        return true;
+    };
+
+    int parsedValue = 0;
+    int count = 0;
+
+    // 1. Period
+    if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_PERIOD, parsedValue))
+        return false;
+    dif.Period_ = parsedValue;
+
+    // 2. Type
+    if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_TYPE, parsedValue))
+        return false;
+    dif.Type_ = ConvertToLanguageDifferenceType(parsedValue);
+
+    // 3. IntParam
+    if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_INT_PARAM, count))
+        return false;
+    for (int i = 0; i < count; ++i)
+    {
+        if (!GetCleanLine(line, true))
+            return false;
+        const auto val = ParseIntVector(line);
+        if (!val.empty())
+            dif.IntParam_.push_back(val[0]);
     }
+
+    // 4. DoubleParam
+    if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_DOUBLE_PARAM, count))
+        return false;
+    for (int i = 0; i < count; ++i)
+    {
+        if (!GetCleanLine(line, true))
+            return false;
+        const auto val = ParseDoubleVector(line);
+        if (!val.empty())
+            dif.DoubleParam_.push_back(val[0]);
+    }
+
+    // 5. StringParam
+    if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_STRING_PARAM, count))
+        return false;
+    for (int i = 0; i < count; ++i)
+    {
+        if (!GetCleanLine(line, false))
+            return false;
+        auto params = ParseVector(line);
+        if (!params.empty())
+        {
+            std::string s = params[0];
+            // エスケープされた "\\n" を実際の "\n" に戻す
+            size_t pos = 0;
+            while ((pos = s.find("\\n", pos)) != std::string::npos)
+            {
+                s.replace(pos, 2, "\n");
+                pos += 1;
+            }
+            dif.StringParam_.push_back(s);
+        }
+    }
+
+    // 6. Form
+    if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_FORM, count))
+        return false;
+    for (int i = 0; i < count; ++i)
+    {
+        if (!GetCleanLine(line, true))
+            return false;
+        const auto val = ParseIntVector(line);
+        if (!val.empty())
+            dif.PhonemeIDs_.push_back(val[0]);
+    }
+
+    auto &phonologicalChange = dif.PhonologicalChanges_;
+
+    // 7. BeforePhoneme
+    if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_BEFORE_PHONEME, count))
+        return false;
+    for (int i = 0; i < count; ++i)
+    {
+        if (!GetCleanLine(line, true))
+            return false;
+        const auto vals = ParseIntVector(line);
+        if (vals.size() >= 3)
+        {
+            PhoneticItemType type = static_cast<PhoneticItemType>(vals[0]);
+            int id = vals[1];
+            FeatureState state = static_cast<FeatureState>(vals[2]);
+            phonologicalChange.BeforePhoneticItems_.push_back(PhoneticItem::Create(type, id, state));
+        }
+    }
+
+    // 8. AfterPhoneme
+    if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_AFTER_PHONEME, count))
+        return false;
+    for (int i = 0; i < count; ++i)
+    {
+        if (!GetCleanLine(line, true))
+            return false;
+        const auto vals = ParseIntVector(line);
+        if (vals.size() >= 3)
+        {
+            PhoneticItemType type = static_cast<PhoneticItemType>(vals[0]);
+            int id = vals[1];
+            FeatureState state = static_cast<FeatureState>(vals[2]);
+            phonologicalChange.AfterPhoneticItems_.push_back(PhoneticItem::Create(type, id, state));
+        }
+    }
+
+    // 9. Environment
+    if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_ENVIRONMENT, count))
+        return false;
+    for (int i = 0; i < count; ++i)
+    {
+        if (!GetCleanLine(line, true))
+            return false;
+        const auto vals = ParseIntVector(line);
+        if (vals.size() >= 4)
+        {
+            int relativePos = vals[0];
+            PhoneticItemType type = static_cast<PhoneticItemType>(vals[1]);
+            int id = vals[2];
+            FeatureState state = static_cast<FeatureState>(vals[3]);
+            phonologicalChange.PhoneticEnvironment_.push_back({relativePos, PhoneticItem::Create(type, id, state)});
+        }
+    }
+
     return true;
 }
 
 /**
  * @brief ファイル出力
- *
- * @param file
+ * * @param file 出力ストリーム
  */
 void LanguageDifference::Export(std::ofstream &file) const
 {
-    file << FormatVector<int>({GetPeriod()}) << "\n";
-    file << FormatVector<int>({ConvertFromLanguageDifferenceType(GetType())}) << "\n";
-    file << FormatVector<int>(IntParam_) << "\n";
-    file << FormatVector<double>(DoubleParam_) << "\n";
-    file << FormatVector<std::string>(StringParam_) << "\n";
-    file << FormatPhonemesToVector(PhonemeParam_) << "\n";
-    std::vector<int> soundChange = {
-        GetPhonologicalChange().BeforePhoneme_.GetPlace(),
-        GetPhonologicalChange().BeforePhoneme_.GetManner(),
-        GetPhonologicalChange().AfterPhoneme_.GetPlace(),
-        GetPhonologicalChange().AfterPhoneme_.GetManner(),
-        ConvertFromPhoneticEnvironment(GetPhonologicalChange().PhoneticEnvironment_),
-        GetPhonologicalChange().IsRemove_};
-    file << FormatVector<int>(soundChange) << "\n";
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_PERIOD, GetPeriod()) << "\n";
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_TYPE, ConvertFromLanguageDifferenceType(GetType())) << "\n";
+
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_INT_PARAM, IntParam_.size()) << "\n";
+    for (const auto &val : IntParam_)
+    {
+        file << FormatVector<int>({val}) << "\n";
+    }
+
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_DOUBLE_PARAM, DoubleParam_.size()) << "\n";
+    for (const auto &val : DoubleParam_)
+    {
+        file << FormatVector<double>({val}) << "\n";
+    }
+
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_STRING_PARAM, StringParam_.size()) << "\n";
+    for (auto s : StringParam_)
+    {
+        size_t pos = 0;
+        while ((pos = s.find("\n", pos)) != std::string::npos)
+        {
+            s.replace(pos, 1, "\\n");
+            pos += 2;
+        }
+        file << FormatVector<std::string>({s}) << "\n";
+    }
+
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_FORM, PhonemeIDs_.size()) << "\n";
+    for (const auto &val : PhonemeIDs_)
+    {
+        file << FormatVector<int>({val}) << "\n";
+    }
+
+    const auto &phonologicalChange = GetPhonologicalChange();
+
+    // 1. BeforePhoneme
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_BEFORE_PHONEME, phonologicalChange.BeforePhoneticItems_.size()) << "\n";
+    for (const auto &item : phonologicalChange.BeforePhoneticItems_)
+    {
+        std::vector<int> row = {static_cast<int>(item.Type_), item.ID_, static_cast<int>(item.State_)};
+        file << FormatVector<int>(row) << "\n";
+    }
+
+    // 2. AfterPhoneme
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_AFTER_PHONEME, phonologicalChange.AfterPhoneticItems_.size()) << "\n";
+    for (const auto &item : phonologicalChange.AfterPhoneticItems_)
+    {
+        std::vector<int> row = {static_cast<int>(item.Type_), item.ID_, static_cast<int>(item.State_)};
+        file << FormatVector<int>(row) << "\n";
+    }
+
+    // 3. Environment
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_ENVIRONMENT, phonologicalChange.PhoneticEnvironment_.size()) << "\n";
+    for (const auto &pair : phonologicalChange.PhoneticEnvironment_)
+    {
+        std::vector<int> row = {pair.first, static_cast<int>(pair.second.Type_), pair.second.ID_, static_cast<int>(pair.second.State_)};
+        file << FormatVector<int>(row) << "\n";
+    }
 }

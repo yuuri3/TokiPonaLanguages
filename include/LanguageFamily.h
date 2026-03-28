@@ -1,6 +1,9 @@
 #pragma once
 
 #include "LanguageDifference.h"
+#include "PhonemeTable.h"
+#include "GeometryTable.h"
+#include "PhonologicalChange.h"
 
 class Language;
 
@@ -12,18 +15,18 @@ struct LanguageFamily
 {
 private:
     // 地理
-    std::vector<std::vector<std::string>> Geography_;
+    GeometryTable Geography_;
     // 音韻
-    std::vector<std::vector<std::string>> PhonemeTable_;
+    PhonemeTable PhonemeTable_;
     // 差分
     std::vector<LanguageDifference> languageDifference_;
 
 public:
     static std::vector<std::vector<std::string>> RomanAlphabetTable;
 
-    static LanguageFamily Create(const std::vector<std::vector<std::string>> &geography, const std::vector<std::vector<std::string>> &phonemeTable);
-    const std::vector<std::vector<std::string>> &GetGeography() const;
-    const std::vector<std::vector<std::string>> &GetPhonemeTable() const;
+    static LanguageFamily Create(const std::vector<std::vector<std::string>> &geography, const PhonemeTable &phonemeTable);
+    std::vector<std::vector<std::string>> GetGeography() const;
+    const PhonemeTable &GetPhonemeTable() const;
     void AddDifference(const LanguageDifference &languageDifference);
 
     void ChangePlaceName(const int row, const int column, const std::string &name);
@@ -41,6 +44,11 @@ public:
     const bool Empty() const;
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
     const std::vector<std::vector<std::string>> ToString() const;
+
+    const std::vector<PhonologicalChange> GetPhonologicalChanges(const std::string place, const int period);
+    const std::vector<std::string> GetPhonologicalChangeStrings(const std::string place, const int period);
+    bool SetPhonologicalChanges(const std::string place, const int period, const std::vector<PhonologicalChange> &phonologicalChange);
+    bool SetPhonologicalChangesFromString(const std::string place, const int period, const std::vector<std::string> &phonologicalChange);
 
     void Export(const std::string &filename);
     bool Import(const std::string &filename);

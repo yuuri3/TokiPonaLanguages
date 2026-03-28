@@ -1,5 +1,4 @@
 #include "Utility.h"
-#include "Phoneme.h"
 
 /**
  * CSVファイルを読み込んで2次元ベクトルで返す関数
@@ -300,20 +299,6 @@ void ClearWidget(QWidget *widget)
     }
 }
 
-const std::string FormatPhonemesToVector(const std::vector<Phoneme> &vec)
-{
-    if (vec.empty())
-        return ",";
-    std::stringstream ss;
-    ss << "";
-    for (size_t i = 0; i < vec.size(); ++i)
-    {
-        ss << vec[i].GetPlace() << ",";
-        ss << vec[i].GetManner() << ",";
-    }
-    return ss.str();
-}
-
 // YAMLの [a, b, c] 形式を vector<string> に変換する
 const std::vector<std::string> ParseVector(const std::string &line)
 {
@@ -323,7 +308,7 @@ const std::vector<std::string> ParseVector(const std::string &line)
     std::string item;
     while (std::getline(ss, item, ','))
     {
-        result.push_back(EraseSpace(item));
+        result.push_back(item);
     }
     return result;
 }
@@ -370,32 +355,6 @@ const std::vector<double> ParseDoubleVector(const std::string &line)
     return result;
 }
 
-const std::vector<Phoneme> ParsePhonemeVector(const std::string &line)
-{
-    std::vector<Phoneme> result;
-
-    std::stringstream ss(line);
-    std::string item1;
-    std::string item2;
-    while (true)
-    {
-        if (!std::getline(ss, item1, ','))
-            break;
-        if (!std::getline(ss, item2, ','))
-            break;
-        try
-        {
-            Phoneme param = Phoneme::Create(std::stoi(item1), std::stoi(item2));
-            result.push_back(param);
-        }
-        catch (...)
-        {
-            return {};
-        }
-    }
-    return result;
-}
-
 /**
  * @brief json ファイル読み込み
  *
@@ -429,4 +388,62 @@ ImportData ImportFromJson(const QString &fileName)
     result.success = true;
 
     return result;
+}
+
+/**
+ * @brief 文字列と数値を ": " で結合する
+ *
+ * @param text 結合する文字列
+ * @param value 結合する数値
+ * @return std::string 結合後の文字列
+ */
+std::string JoinStringAndInt(const std::string &text, int value)
+{
+    return text + ": " + std::to_string(value);
+}
+
+/**
+ * @brief 文字列を ": " で分割し、元の文字列と数値を取得する
+ *
+ * @param combinedString 結合された状態の文字列
+ * @param outText 分割後の文字列を格納する変数
+ * @param outValue 分割後の数値を格納する変数
+ * @return bool 分割および数値変換に成功したかどうか
+ */
+bool ParseStringAndInt(const std::string &combinedString, const std::string &text, int &value)
+{
+    const std::string delimiter = ": ";
+    size_t pos = combinedString.find(delimiter);
+    if (pos == std::string::npos)
+    {
+        return false;
+    }
+
+    if (text != combinedString.substr(0, pos))
+    {
+        return false;
+    }
+    std::string valueStr = combinedString.substr(pos + delimiter.length());
+
+    try
+    {
+        value = std::stoi(valueStr);
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+/**
+ * @brief std::pair<int, int> のハッシュ値を計算する
+ * * @param p ハッシュ化する整数のペア
+ * @return std::size_t 計算されたハッシュ値
+ */
+std::size_t PairHash::operator()(const std::pair<int, int> &p) const
+{
+    auto hash1 = std::hash<int>{}(p.first);
+    auto hash2 = std::hash<int>{}(p.second);
+    return hash1 ^ (hash2 + 0x9e3779b9 + (hash1 << 6) + (hash1 >> 2));
 }

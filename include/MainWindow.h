@@ -13,7 +13,6 @@ public:
 
 private slots:
     void Unimplemented();
-    void Simulate();
     void SaveFile();
     void EditPhonologicalChange();
     void OpenFile();
@@ -28,13 +27,11 @@ private:
 
     QMenu *FileMenu_;
     QMenu *EditMenu_;
-    QMenu *SimulationMenu_;
     QMenu *HelpMenu_;
 
     std::shared_ptr<LanguageFamily> Languages_;
     std::optional<std::vector<std::vector<std::string>>> LanguageNames_;
 
-    QAction *SimulateAction_;
     QAction *NewFileAction_;
     QAction *OpenFileAction_;
     QAction *SaveFileAction_;

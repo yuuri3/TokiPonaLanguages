@@ -1,5 +1,4 @@
 #include "LanguageFamily.h"
-#include "PhonemeConverter.h"
 #include "Language.h"
 #include "Utility.h"
 
@@ -39,28 +38,26 @@ std::vector<std::vector<std::string>> LanguageFamily::RomanAlphabetTable =
 
 /**
  * @brief 空の語族を作成
- *
- * @param geography 地理
- * @param phonemeTable 音韻
+ * * @param geography 地理
+ * * @param phonemeTable 音韻
  * @return LanguageFamily
  */
-LanguageFamily LanguageFamily::Create(const std::vector<std::vector<std::string>> &geography, const std::vector<std::vector<std::string>> &phonemeTable)
+LanguageFamily LanguageFamily::Create(const std::vector<std::vector<std::string>> &geography, const PhonemeTable &phonemeTable)
 {
     LanguageFamily languages;
     languages.languageDifference_ = {};
-    languages.Geography_ = geography;
+    languages.Geography_.InitializeFromVector(geography);
     languages.PhonemeTable_ = phonemeTable;
     return languages;
 }
 
 /**
  * @brief 地理を取得
- *
- * @return const std::vector<std::vector<std::string>>
+ * * @return std::vector<std::vector<std::string>>
  */
-const std::vector<std::vector<std::string>> &LanguageFamily::GetGeography() const
+std::vector<std::vector<std::string>> LanguageFamily::GetGeography() const
 {
-    return Geography_;
+    return Geography_.ToVector();
 }
 
 /**
@@ -68,7 +65,7 @@ const std::vector<std::vector<std::string>> &LanguageFamily::GetGeography() cons
  *
  * @return const std::vector<std::vector<std::string>>
  */
-const std::vector<std::vector<std::string>> &LanguageFamily::GetPhonemeTable() const
+const PhonemeTable &LanguageFamily::GetPhonemeTable() const
 {
     return PhonemeTable_;
 }
@@ -85,42 +82,22 @@ void LanguageFamily::AddDifference(const LanguageDifference &languageDifference)
 
 /**
  * @brief 地名を変更
- *
- * @param row 行
- * @param column 列
- * @param name 地名
+ * * @param row 行
+ * * @param column 列
+ * * @param name 地名
  */
 void LanguageFamily::ChangePlaceName(const int row, const int column, const std::string &name)
 {
-    if (row < 0 || row >= Geography_.size())
-    {
-        return;
-    }
-    if (column < 0 || column >= Geography_[row].size())
-    {
-        for (int i = 0; i < Geography_[row].size() - column; i++)
-        {
-            Geography_[row].emplace_back("");
-        }
-        Geography_[row].emplace_back(name);
-    }
-    else
-    {
-        Geography_[row][column] = name;
-    }
+    Geography_.SetPlaceName(row, column, name);
 }
 
 /**
  * @brief 上行に地理を追加
- *
+ * * @param row 行
  */
 void LanguageFamily::AddGeomgraphicRowAbove(const int row)
 {
-    if (row < 0 || row >= Geography_.size())
-    {
-        return;
-    }
-    Geography_.insert(Geography_.begin() + row, std::vector<std::string>());
+    Geography_.AddRowAbove(row);
 }
 
 /**
@@ -129,75 +106,43 @@ void LanguageFamily::AddGeomgraphicRowAbove(const int row)
  */
 void LanguageFamily::AddGeomgraphicRowBelow(const int row)
 {
-    if (row < 0 || row >= Geography_.size())
-    {
-        return;
-    }
-    Geography_.insert(Geography_.begin() + row + 1, std::vector<std::string>());
+    Geography_.AddRowBelow(row);
 }
 
 /**
  * @brief 地理行を削除
- *
+ * * @param row 行
  */
 void LanguageFamily::DeleteGeomgraphicRow(const int row)
 {
-    if (row < 0 || row >= Geography_.size())
-    {
-        return;
-    }
-    Geography_.erase(Geography_.begin() + row);
+    Geography_.DeleteRow(row);
 }
 
 /**
  * @brief 右列に地理を追加
- *
- * @param column
+ * * @param column 列
  */
 void LanguageFamily::AddGeomgraphicColumnRight(const int column)
 {
-    for (auto &line : Geography_)
-    {
-        if (column < 0 || column >= line.size())
-        {
-            continue;
-        }
-        line.insert(line.begin() + column + 1, "");
-    }
+    Geography_.AddColumnRight(column);
 }
 
 /**
  * @brief 左列に地理を追加
- *
- * @param column
+ * * @param column 列
  */
 void LanguageFamily::AddGeomgraphicColumnLeft(const int column)
 {
-    for (auto &line : Geography_)
-    {
-        if (column < 0 || column >= line.size())
-        {
-            continue;
-        }
-        line.insert(line.begin() + column, "");
-    }
+    Geography_.AddColumnLeft(column);
 }
 
 /**
  * @brief 地理の列を削除
- *
- * @param column
+ * * @param column 列
  */
 void LanguageFamily::DeleteGeomgraphicColumn(const int column)
 {
-    for (auto &line : Geography_)
-    {
-        if (column < 0 || column >= line.size())
-        {
-            continue;
-        }
-        line.erase(line.begin() + column);
-    }
+    Geography_.DeleteColumn(column);
 }
 
 /**
@@ -256,13 +201,11 @@ void LanguageFamily::RemovePeriod(const int period)
 
 /**
  * @brief 語族に情報が不足しているか
- *
- * @return true
- * @return false
+ * * @return bool 空の場合は true、そうでない場合は false
  */
 const bool LanguageFamily::Empty() const
 {
-    return Geography_.empty() || PhonemeTable_.empty();
+    return Geography_.Empty() || PhonemeTable_.Empty();
 }
 
 /**
@@ -275,7 +218,6 @@ const bool LanguageFamily::Empty() const
 std::optional<Language> LanguageFamily::CalculateLanguage(const std::string place, const int period)
 {
     std::map<std::string, Language> languages;
-    const auto converter = PhonemeConverter::Create(PhonemeTable_);
 
     for (const auto &diff : languageDifference_)
     {
@@ -283,12 +225,242 @@ std::optional<Language> LanguageFamily::CalculateLanguage(const std::string plac
         {
             return languages.at(place);
         }
-        if (!LanguageUtility::ApplyDifference(diff, languages, converter))
+        if (!LanguageUtility::ApplyDifference(diff, languages, this))
         {
             return std::nullopt;
         }
     }
     return languages.at(place);
+}
+
+/**
+ * @brief 指定された場所と時代の音韻変化を取得
+ *
+ * @param place 場所
+ * @param period 時代
+ * @return const std::vector<PhonologicalChange> 音韻変化のリスト
+ */
+const std::vector<PhonologicalChange> LanguageFamily::GetPhonologicalChanges(const std::string place, const int period)
+{
+    std::vector<PhonologicalChange> phonologicalChanges;
+
+    for (const auto &languageDifference : languageDifference_)
+    {
+        if (languageDifference.GetPeriod() == period &&
+            languageDifference.GetType() == LanguageDifferenceType::PhonologicalChange)
+        {
+            const std::optional<std::string> targetPlace = languageDifference.StringParam(0);
+            if (targetPlace.has_value() && targetPlace.value() == place)
+            {
+                phonologicalChanges.emplace_back(languageDifference.GetPhonologicalChange());
+            }
+        }
+    }
+
+    return phonologicalChanges;
+}
+
+/**
+ * @brief 指定された場所と時代の音韻変化の文字列表現を取得
+ * * @param place 場所
+ * * @param period 時代
+ * * @return const std::vector<std::string>
+ */
+const std::vector<std::string> LanguageFamily::GetPhonologicalChangeStrings(const std::string place, const int period)
+{
+    std::vector<std::string> resultStrings;
+    const std::vector<PhonologicalChange> changes = GetPhonologicalChanges(place, period);
+
+    for (const auto &change : changes)
+    {
+        std::string beforeString = PhonemeTable_.ConvertPhoneticItemToString(change.BeforePhoneticItems_);
+        std::string afterString = PhonemeTable_.ConvertPhoneticItemToString(change.AfterPhoneticItems_);
+
+        std::string environmentString;
+        if (!change.PhoneticEnvironment_.empty())
+        {
+            std::map<int, std::vector<PhoneticItem>> environmentMap;
+
+            for (const auto &env : change.PhoneticEnvironment_)
+            {
+                environmentMap[env.first].push_back(env.second);
+            }
+
+            std::string leftEnvString;
+            std::string rightEnvString;
+
+            for (const auto &pair : environmentMap)
+            {
+                const int position = pair.first;
+                std::string itemString = PhonemeTable_.ConvertPhoneticItemToString(pair.second);
+
+                if (position < 0)
+                {
+                    if (!leftEnvString.empty())
+                    {
+                        leftEnvString += " ";
+                    }
+                    leftEnvString += itemString;
+                }
+                else if (position > 0)
+                {
+                    if (!rightEnvString.empty())
+                    {
+                        rightEnvString += " ";
+                    }
+                    rightEnvString += itemString;
+                }
+            }
+
+            environmentString = leftEnvString + DELIMINATOR_ENV_ENV + rightEnvString;
+        }
+
+        std::string changeString = beforeString + DELIMINATOR_BEFORE_AFTER + afterString;
+        if (!environmentString.empty())
+        {
+            changeString += DELIMINATOR_AFTER_ENV + environmentString;
+        }
+
+        resultStrings.push_back(changeString);
+    }
+
+    return resultStrings;
+}
+
+/**
+ * @brief 指定した場所と時代の音韻変化を設定
+ *
+ * @param place 場所
+ * @param period 時代
+ * @param phonologicalChange 音韻変化のリスト
+ */
+bool LanguageFamily::SetPhonologicalChanges(const std::string place, const int period, const std::vector<PhonologicalChange> &phonologicalChange)
+{
+    bool result = true;
+    languageDifference_.erase(
+        std::remove_if(languageDifference_.begin(), languageDifference_.end(),
+                       [&](const LanguageDifference &difference)
+                       {
+                           if (difference.GetPeriod() == period && difference.GetType() == LanguageDifferenceType::PhonologicalChange)
+                           {
+                               const std::optional<std::string> targetPlace = difference.StringParam(0);
+                               if (targetPlace.has_value() && targetPlace.value() == place)
+                               {
+                                   return true;
+                               }
+                           }
+                           return false;
+                       }),
+        languageDifference_.end());
+
+    auto insertIterator = std::find_if(languageDifference_.begin(), languageDifference_.end(),
+                                       [period](const LanguageDifference &difference)
+                                       {
+                                           return difference.GetPeriod() > period;
+                                       });
+
+    for (const auto &currentChange : phonologicalChange)
+    {
+        if (!currentChange.IsValid())
+        {
+            result = false;
+            continue;
+        }
+        LanguageDifference newDifference = LanguageDifference::CreatePhonologicalChange(place, period, currentChange);
+        insertIterator = languageDifference_.insert(insertIterator, newDifference);
+        ++insertIterator;
+    }
+    return result;
+}
+
+/**
+ * @brief 文字列のリストから音韻変化を設定
+ *
+ * @param place 場所
+ * @param period 時代
+ * @param phonologicalChange 音韻変化の文字列リスト
+ */
+bool LanguageFamily::SetPhonologicalChangesFromString(const std::string place, const int period, const std::vector<std::string> &phonologicalChange)
+{
+    std::vector<PhonologicalChange> parsedChanges;
+
+    auto trimString = [](std::string str)
+    {
+        size_t first = str.find_first_not_of(" \t");
+        if (std::string::npos == first)
+            return std::string();
+        size_t last = str.find_last_not_of(" \t");
+        return str.substr(first, (last - first + 1));
+    };
+
+    for (const auto &changeString : phonologicalChange)
+    {
+        PhonologicalChange newChange;
+
+        std::string ruleString = changeString;
+        std::string envString = "";
+
+        // " / " で分割して環境部分を抽出
+        size_t slashPos = changeString.find(DELIMINATOR_AFTER_ENV);
+        if (slashPos != std::string::npos)
+        {
+            ruleString = changeString.substr(0, slashPos);
+            envString = changeString.substr(slashPos + DELIMINATOR_AFTER_ENV.length());
+        }
+
+        std::string beforeString = "";
+        std::string afterString = "";
+        // " > " で分割して変化前後を抽出
+        size_t arrowPos = ruleString.find(DELIMINATOR_BEFORE_AFTER);
+        if (arrowPos != std::string::npos)
+        {
+            beforeString = trimString(ruleString.substr(0, arrowPos));
+            afterString = trimString(ruleString.substr(arrowPos + DELIMINATOR_BEFORE_AFTER.length()));
+        }
+        else
+        {
+            beforeString = trimString(ruleString);
+        }
+
+        // 変化前の解析
+        newChange.BeforePhoneticItems_ = PhonemeTable_.ConvertStringToPhoneticItem(beforeString);
+
+        // 変化後の解析
+        newChange.AfterPhoneticItems_ = PhonemeTable_.ConvertStringToPhoneticItem(afterString);
+
+        // 環境（u _ i など）の解析
+        if (!envString.empty())
+        {
+            // 定数 " _ " をそのまま使用して左右に分割
+            size_t envPos = envString.find(DELIMINATOR_ENV_ENV);
+            if (envPos != std::string::npos)
+            {
+                std::string leftEnv = envString.substr(0, envPos);
+                std::string rightEnv = envString.substr(envPos + DELIMINATOR_ENV_ENV.length());
+
+                // 左側のトークン群（位置：-n, ..., -1）
+                const std::vector<PhoneticItem> leftItems = PhonemeTable_.ConvertStringToPhoneticItem(leftEnv);
+                int index = -leftItems.size();
+                for (const auto leftItem : leftItems)
+                {
+                    newChange.PhoneticEnvironment_.push_back({index, leftItem});
+                    index++;
+                }
+                // 右側のトークン群（位置：1, 2, ...）
+                const std::vector<PhoneticItem> rightItems = PhonemeTable_.ConvertStringToPhoneticItem(rightEnv);
+                index = 1;
+                for (const auto rightItem : rightItems)
+                {
+                    newChange.PhoneticEnvironment_.push_back({index, rightItem});
+                    index++;
+                }
+            }
+        }
+
+        parsedChanges.push_back(newChange);
+    }
+
+    return SetPhonologicalChanges(place, period, parsedChanges);
 }
 
 /**
@@ -304,8 +476,6 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
     int period = 0;
     std::map<std::string, Language> languages;
 
-    auto converter = PhonemeConverter::Create(GetPhonemeTable());
-
     for (const auto &place : getNonEmptyStrings(GetGeography()))
     {
         line.emplace_back(place);
@@ -320,19 +490,19 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
             currentPeriod++;
             for (const auto &place : getNonEmptyStrings(GetGeography()))
             {
-                if (languages.count(place) == 0 || languages[place].Empty())
+                if (languages.count(place) == 0 || languages.find(place) == languages.end() || languages.at(place).Empty())
                 {
                     line.emplace_back("");
                 }
                 else
                 {
-                    line.emplace_back(converter.ConvertToString(languages[place].GetWord(0)->GetForm()));
+                    line.emplace_back(PhonemeTable_.ConvertToString(languages.at(place).GetWord(0)->GetForm()));
                 }
             }
             result.emplace_back(line);
             line.clear();
         }
-        if (!LanguageUtility::ApplyDifference(diff, languages, converter))
+        if (!LanguageUtility::ApplyDifference(diff, languages, this))
         {
             return {};
         }
@@ -340,13 +510,13 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
 
     for (const auto &place : getNonEmptyStrings(GetGeography()))
     {
-        if (languages.count(place) == 0 || languages[place].Empty())
+        if (languages.count(place) == 0 || languages.find(place) == languages.end() || languages.at(place).Empty())
         {
             line.emplace_back("");
         }
         else
         {
-            line.emplace_back(converter.ConvertToString(languages[place].GetWord(0)->GetForm()));
+            line.emplace_back(PhonemeTable_.ConvertToString(languages.at(place).GetWord(0)->GetForm()));
         }
     }
     result.emplace_back(line);
@@ -357,30 +527,27 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
 
 /**
  * @brief 差分をファイル出力
- *
+ * * @param filename 出力ファイル名
  */
 void LanguageFamily::Export(const std::string &filename)
 {
     std::ofstream file(filename);
     if (!file.is_open())
+    {
         return;
-
-    // 2. Map
-    file << "Map:\n";
-    for (const auto &row : Geography_)
-    {
-        file << FormatVector(row) << "\n";
     }
 
-    // 3. PhoneticsMap
-    file << "PhoneticsMap:\n";
-    for (const auto &row : PhonemeTable_)
-    {
-        file << FormatVector(row) << "\n";
-    }
+    // 2. Map (地理情報)
+    file << JoinStringAndInt(SECTION_NAME_GEOGRAPHY, 0) << "\n";
+    Geography_.Export(file);
 
-    // 4. LanguageDifferences
-    file << "LanguageDifferences:\n";
+    // 3. PhonemeTable (音韻マスタデータ)
+    // 旧 PhoneticsMap セクションは、詳細なマスタデータ構造へ置き換え
+    file << JoinStringAndInt(SECTION_NAME_PHONEMETABLE, 0) << "\n";
+    PhonemeTable_.Export(file);
+
+    // 4. LanguageDifferences (言語変化の記録)
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES, languageDifference_.size()) << "\n";
     for (const auto &diff : languageDifference_)
     {
         diff.Export(file);
@@ -390,121 +557,136 @@ void LanguageFamily::Export(const std::string &filename)
 }
 
 /**
- * @brief ファイル読み込み
- *
- * @param filename ファイルパス
- *
- * @return 読み込みの成否
+ * @brief 差分（および音韻マスタ・地図）をファイル読み込み
+ * * @param filename 入力ファイル名
+ * @return bool 成功したか
  */
 bool LanguageFamily::Import(const std::string &filename)
 {
     std::ifstream file(filename);
     if (!file.is_open())
+    {
         return false;
+    }
 
     std::string line;
+    try
+    {
+        while (std::getline(file, line))
+        {
+            int count = 0;
+            if (ParseStringAndInt(line, SECTION_NAME_GEOGRAPHY, count))
+            {
+                if (!Geography_.Import(file))
+                {
+                    return false;
+                }
+            }
+            else if (ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE, count))
+            {
+                if (!PhonemeTable_.Import(file))
+                {
+                    return false;
+                }
+            }
+            else if (ParseStringAndInt(line, SECTION_NAME_DIFFERENCES, count))
+            {
+                languageDifference_.clear();
+                languageDifference_.reserve(count); // 速度改善：メモリ予約
 
-    // Map
-    if (!std::getline(file, line) || line != "Map:")
-        return false;
-    Geography_.clear();
-    while (std::getline(file, line) && line != "PhoneticsMap:")
-    {
-        Geography_.emplace_back(ParseVector(line));
+                for (int i = 0; i < count; ++i)
+                {
+                    LanguageDifference diff;
+                    if (!LanguageDifference::Import(file, diff))
+                    {
+                        return false;
+                    }
+                    languageDifference_.push_back(std::move(diff));
+                }
+            }
+        }
     }
-    // PhoneticsMap
-    PhonemeTable_.clear();
-    while (std::getline(file, line) && line != "LanguageDifferences:")
+    catch (const std::exception &)
     {
-        PhonemeTable_.emplace_back(ParseVector(line));
-    }
-    // LanguageDifferences
-    languageDifference_.clear();
-    LanguageDifference dif;
-    while (LanguageDifference::Import(file, dif))
-    {
-        languageDifference_.emplace_back(dif);
-    }
-    // 途中で終了した場合、読み込み失敗とする
-    if (std::getline(file, line))
-    {
-        file.close();
+        // std::stoi 等の例外をキャッチして安全に中断
         return false;
     }
+
     file.close();
     return true;
 }
 
 /**
  * @brief json ファイル読み込み
- *
- * @param filename ファイル名
- * @return true
- * @return false
+ * * @param filename ファイル名
+ * @return bool 成功したか
  */
 bool LanguageFamily::ImportJson(const std::string &filename)
 {
-    // 地理データ
-    Geography_ = {{"0"}};
+    // 地理データ初期化
+    Geography_.InitializeFromVector({{"0"}});
 
-    // 音韻データ
-    PhonemeTable_ = RomanAlphabetTable;
+    // 音韻データ初期化
+    PhonemeTable_ = PhonemeTable::CreateDummyTable();
 
-    // 言語
+    languageDifference_.clear();
+
+    // 言語データロード
     const auto data = ImportFromJson(QString::fromStdString(filename));
     if (!data.success)
     {
         return false;
     }
 
-    // 単語追加
+    // 速度改善：単語数に応じてあらかじめメモリを予約（ネスト分も考慮して多めに確保）
+    languageDifference_.reserve(data.words.size() * 5);
+
     int wordID = 0;
-    const auto converter = PhonemeConverter::Create(RomanAlphabetTable);
     for (const auto &qWord : data.words)
     {
-        const auto word = Word::CreateFromJsonObject(qWord.toObject(), converter);
-        auto dif = LanguageDifference::CreateAddWord("0", 0, wordID, word.GetForm());
-        languageDifference_.emplace_back(dif);
+        const auto word = Word::CreateFromJsonObject(qWord.toObject(), PhonemeTable_);
 
+        // 単語追加
+        languageDifference_.emplace_back(
+            LanguageDifference::CreateAddWord("0", 0, wordID, word.GetForm()));
+
+        // 各要素の編集差分を追加
         for (const auto partID : word.GetPartIDs())
         {
-            const auto part = word.GetPart(partID);
-            dif = LanguageDifference::CreateEditPart("0", 0, wordID, partID, part);
-            languageDifference_.emplace_back(dif);
+            languageDifference_.emplace_back(
+                LanguageDifference::CreateEditPart("0", 0, wordID, partID, word.GetPart(partID)));
+
             for (const auto translationID : word.GetTranslationIDs(partID))
             {
-                const auto translation = word.GetTranslation(partID, translationID);
-                dif = LanguageDifference::CreateEditTranslation("0", 0, wordID, partID, translationID, translation);
-                languageDifference_.emplace_back(dif);
+                languageDifference_.emplace_back(
+                    LanguageDifference::CreateEditTranslation("0", 0, wordID, partID, translationID, word.GetTranslation(partID, translationID)));
             }
         }
+
         for (const int tagID : word.GetTagIDs())
         {
-            const auto tag = word.GetTag(tagID);
-            dif = LanguageDifference::CreateEditTag("0", 0, wordID, tagID, tag);
-            languageDifference_.emplace_back(dif);
+            languageDifference_.emplace_back(
+                LanguageDifference::CreateEditTag("0", 0, wordID, tagID, word.GetTag(tagID)));
         }
+
         for (const int contentID : word.GetContentIDs())
         {
-            const auto title = word.GetContentTitle(contentID);
-            const auto content = word.GetContent(contentID);
-            dif = LanguageDifference::CreateEditContent("0", 0, wordID, contentID, title, content);
-            languageDifference_.emplace_back(dif);
+            languageDifference_.emplace_back(
+                LanguageDifference::CreateEditContent("0", 0, wordID, contentID, word.GetContentTitle(contentID), word.GetContent(contentID)));
         }
+
         for (const int variationID : word.GetVariationIDs())
         {
-            const auto title = word.GetVariationTitle(variationID);
-            const auto variation = word.GetVariation(variationID);
-            dif = LanguageDifference::CreateEditVariation("0", 0, wordID, variationID, title, variation);
-            languageDifference_.emplace_back(dif);
+            languageDifference_.emplace_back(
+                LanguageDifference::CreateEditVariation("0", 0, wordID, variationID, word.GetVariationTitle(variationID), word.GetVariation(variationID)));
         }
+
         for (const int relationID : word.GetRelationIDs())
         {
-            const auto title = word.GetRelationTitle(relationID);
-            const int targetWordID = word.GetRelationWordID(relationID);
-            dif = LanguageDifference::CreateSetRelation("0", 0, wordID, relationID, title, targetWordID);
-            languageDifference_.emplace_back(dif);
+            languageDifference_.emplace_back(
+                LanguageDifference::CreateSetRelation("0", 0, wordID, relationID, word.GetRelationTitle(relationID), word.GetRelationWordID(relationID)));
         }
+
         wordID++;
     }
 
