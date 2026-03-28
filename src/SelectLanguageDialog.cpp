@@ -27,6 +27,8 @@ SelectLanguageDialog::SelectLanguageDialog(QWidget *parent)
     LayoutData_.ConnectButtonClicked(OK_BUTTON_ID, this, &SelectLanguageDialog::OKButtonPushed);
     LayoutData_.ConnectButtonClicked(CANCEL_BUTTON_ID, this, reject);
     LayoutData_.ConnectClicked(TABLE_ID, this, &SelectLanguageDialog::SelectLanguage);
+
+    LayoutData_.ActivateButton(OK_BUTTON_ID, false);
 }
 
 /**
@@ -57,13 +59,21 @@ void SelectLanguageDialog::Unimplemented()
 /**
  * @brief 言語選択時の処理
  *
- * @param pos
+ * @param row 行インデックス
+ * @param column 列インデックス
  */
 void SelectLanguageDialog::SelectLanguage(int row, int column)
 {
+    // 1行目（インデックス0）と2行目（インデックス1）は選択対象外とする
+    if (row < 2)
+    {
+        return;
+    }
+
     SelectedPlace_ = column;
     SelectedPeriod_ = row;
     LayoutData_.SetText(SELECTED_LANGUAGE_ID, (*LanguageNames_)[row][column]);
+    LayoutData_.ActivateButton(OK_BUTTON_ID, true);
 }
 
 /**
