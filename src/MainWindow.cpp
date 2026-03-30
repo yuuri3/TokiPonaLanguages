@@ -7,6 +7,7 @@
 #include "EditGeometryDialog.h"
 #include "HelpDialog.h"
 #include "EditPhonologicalChangeDialog.h"
+#include "EditLoanwordDialog.h"
 
 /**
  * @brief Construct a new Main Window:: Main Window object
@@ -56,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
     //     * 借用
     LoanwordAction_ = new QAction("借用", this);
     EditMenu_->addAction(LoanwordAction_);
-    connect(LoanwordAction_, &QAction::triggered, this, &MainWindow::Unimplemented);
+    connect(LoanwordAction_, &QAction::triggered, this, &MainWindow::EditLoanword);
 
     //     * 地理編集
     EditGeometry_ = new QAction("地理編集", this);
@@ -209,6 +210,29 @@ void MainWindow::EditPhonologicalChange()
     subWindow.SetLanguages(Languages_);
     subWindow.SetLanguageNames(*LanguageNames_);
     subWindow.exec();
+    IsLanguagesSaved_ = false;
+}
+
+/**
+ * @brief 借用編集
+ *
+ */
+void MainWindow::EditLoanword()
+{
+    if (!LanguageNames_)
+    {
+        QMessageBox::critical(
+            this,
+            "実行エラー",
+            "編集するファイルがありません。");
+        return;
+    }
+
+    EditLoanwordDialog subWindow(this);
+    subWindow.SetLanguages(Languages_);
+    subWindow.SetLanguageNames(*LanguageNames_);
+    subWindow.exec();
+
     IsLanguagesSaved_ = false;
 }
 
