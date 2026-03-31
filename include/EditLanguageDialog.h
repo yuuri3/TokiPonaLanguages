@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 #include "Language.h"
+#include "DialogLayout.h"
 
 class LanguageFamily;
 
@@ -26,10 +27,7 @@ private:
     std::optional<int> Period_;
     std::optional<Language> Language_;
 
-    QTableWidget *MainTable_;
-    QLineEdit *SearchLineEdit_;
-    QPushButton *SearchButton_;
-    QPushButton *AddWordButton_;
+    DialogLayout Layout_;
 
     void UpdateTable();
 };

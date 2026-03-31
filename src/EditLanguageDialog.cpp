@@ -4,40 +4,34 @@
 #include "LanguageFamily.h"
 #include "Utility.h"
 
+constexpr int tableId = 0;
+constexpr int searchId = 1;
+constexpr int addWordId = 2;
+
 EditLanguageDialog::EditLanguageDialog(QWidget *parent)
 {
-    setWindowTitle("個別言語編集");
+    Layout_ = DialogLayout::Create("個別言語編集", false, false, false);
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    // 単語表示
+    Layout_.SetTitle(tableId, "");
+    Layout_.SetDataType(tableId, DialogDataType::Table);
+    Layout_.SetHasContextMenu(tableId, true);
 
-    //   * 単語表示
-    MainTable_ = new QTableWidget(this);
-    layout->addWidget(MainTable_);
+    // 検索バー
+    Layout_.SetTitle(searchId, "検索");
+    Layout_.SetDataType(searchId, DialogDataType::String);
+    Layout_.SetButton(searchId, "検索");
 
-    MainTable_->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(MainTable_, &QTableWidget::customContextMenuRequested,
-            this, &EditLanguageDialog::ShowContextMenu);
+    // 単語追加ボタン
+    Layout_.SetTitle(addWordId, "");
+    Layout_.SetDataType(addWordId, DialogDataType::NoData);
+    Layout_.SetButton(addWordId, "単語追加");
 
-    //   * 検索バー
-    QHBoxLayout *searchLayout = new QHBoxLayout();
+    Layout_.GenerateLayout(this);
 
-    SearchLineEdit_ = new QLineEdit(this);
-    SearchLineEdit_->setPlaceholderText("検索ワードを入力...");
-
-    SearchButton_ = new QPushButton("検索", this);
-
-    connect(SearchButton_, &QPushButton::clicked, this, &EditLanguageDialog::Unimplemented);
-
-    searchLayout->addWidget(SearchLineEdit_);
-    searchLayout->addWidget(SearchButton_);
-
-    layout->addLayout(searchLayout);
-
-    //   * 単語追加ボタン
-    AddWordButton_ = new QPushButton("単語追加", this);
-
-    connect(AddWordButton_, &QPushButton::clicked, this, &EditLanguageDialog::Unimplemented);
-    layout->addWidget(AddWordButton_);
+    Layout_.ConnectContextMenu(tableId, this, &EditLanguageDialog::ShowContextMenu);
+    Layout_.ConnectButtonClicked(searchId, this, &EditLanguageDialog::Unimplemented);
+    Layout_.ConnectButtonClicked(addWordId, this, &EditLanguageDialog::Unimplemented);
 }
 
 /**
@@ -108,7 +102,7 @@ void EditLanguageDialog::UpdateTable()
             line.clear();
         }
 
-        DisplayTable(MainTable_, wordData);
+        Layout_.SetDataToTable(tableId, wordData);
     }
 }
 
@@ -130,16 +124,23 @@ void EditLanguageDialog::ShowContextMenu(const QPoint &pos)
 {
     if (Languages_ && Place_ && Period_)
     {
-        // クリックされた位置のアイテムを取得
-        QTableWidgetItem *item = MainTable_->itemAt(pos);
-        if (!item)
-            return; // セルのない場所なら何もしない
+        const int row = Layout_.GetCurrentRow(tableId);
+        if (row <= 0) // 未選択(-1)やヘッダ行(0)なら何もしない
+        {
+            return;
+        }
+
+        auto *widget = qobject_cast<QWidget *>(sender());
+        if (!widget)
+        {
+            return;
+        }
 
         QMenu menu(this);
         QAction *editAction = menu.addAction("編集");
 
         // メニューを表示し、選ばれたアクションを取得
-        QAction *selectedAction = menu.exec(MainTable_->viewport()->mapToGlobal(pos));
+        QAction *selectedAction = menu.exec(widget->mapToGlobal(pos));
 
         if (selectedAction == editAction)
         {
@@ -157,9 +158,6 @@ void EditLanguageDialog::ShowContextMenu(const QPoint &pos)
                     return;
                 }
             }
-
-            const int row = MainTable_->currentRow();
-            const int column = MainTable_->currentColumn();
 
             if (row - 1 >= language->CountWord())
             {
