@@ -37,6 +37,13 @@ void DialogLayout::SetTitle(int id, const std::string &title)
 void DialogLayout::SetDataType(int id, DialogDataType dataType)
 {
     Elements_[id].DataType = dataType;
+
+    // データなしの場合は編集やメニューを無効化する
+    if (dataType == DialogDataType::NoData)
+    {
+        Elements_[id].IsEditable = false;
+        Elements_[id].HasContextMenu = false;
+    }
 }
 
 /**
@@ -46,6 +53,10 @@ void DialogLayout::SetDataType(int id, DialogDataType dataType)
  */
 void DialogLayout::SetIsEditable(int id, bool isEditable)
 {
+    if (Elements_[id].DataType == DialogDataType::NoData)
+    {
+        return;
+    }
     Elements_[id].IsEditable = isEditable;
 }
 
@@ -64,10 +75,14 @@ void DialogLayout::SetButton(int id, std::string buttonName)
 /**
  * @brief 指定したIDの要素の右クリックメニュー設定
  * @param id 要素のID
- * @param hasContextDelete メニューに「削除」を含める場合は true
+ * @param hasContextMenu メニューを含める場合は true
  */
 void DialogLayout::SetHasContextMenu(int id, bool hasContextMenu)
 {
+    if (Elements_[id].DataType == DialogDataType::NoData)
+    {
+        return;
+    }
     Elements_[id].HasContextMenu = hasContextMenu;
 }
 
@@ -121,7 +136,7 @@ void DialogLayout::GenerateLayout(QWidget *parent)
             continue;                  // 次の要素へ
         }
 
-        // --- それ以外のデータ型（文字列・配列）---
+        // --- それ以外のデータ型（文字列・配列・データなし）---
 
         // タイトルと付随ボタンのレイアウト
         auto *titleLayout = new QHBoxLayout();
@@ -138,7 +153,11 @@ void DialogLayout::GenerateLayout(QWidget *parent)
         contentLayout->addLayout(titleLayout);
 
         // 入力ウィジェットの生成
-        if (element.DataType == DialogDataType::String)
+        if (element.DataType == DialogDataType::NoData)
+        {
+            // データなし（ボタンのみ等）の場合は入力ウィジェットを生成しない
+        }
+        else if (element.DataType == DialogDataType::String)
         {
             auto *lineEdit = new QLineEdit(scrollContent);
             lineEdit->setReadOnly(!element.IsEditable);
@@ -280,7 +299,7 @@ int DialogLayout::GetCurrentRow(const int id) const
  */
 void DialogLayout::Clear(const int id)
 {
-    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
     {
         return;
     }
@@ -336,12 +355,17 @@ void DialogLayout::Clear(const int id)
 /**
  * @brief 行追加
  *
- * @param widget 親ウィジェット
+ * @param id ID
  * @param values 入力値（[0]: タイトル, [1]: 内容）
  * @param widths 幅のリスト
  */
 void DialogLayout::AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths)
 {
+    if (Elements_.count(id) == 0 || Elements_[id].DataType == DialogDataType::NoData)
+    {
+        return;
+    }
+
     if (Elements_[id].DataType == DialogDataType::StringArray)
     {
         if (Elements_[id].DataType == DialogDataType::StringArray)
@@ -410,7 +434,7 @@ const std::vector<std::string> DialogLayout::GetLine(const int id)
 {
     std::vector<std::string> resultList;
 
-    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
     {
         return resultList;
     }
@@ -478,6 +502,9 @@ const std::vector<std::string> DialogLayout::GetLine(const int id)
  */
 void DialogLayout::MoveUp(const int id, const int lineIndex)
 {
+    if (Elements_.count(id) == 0 || Elements_[id].DataType == DialogDataType::NoData)
+        return;
+
     if (Elements_[id].DataType == DialogDataType::StringArray)
     {
         auto widget = qobject_cast<QListWidget *>(UI_.Inputs.at(id));
@@ -506,6 +533,9 @@ void DialogLayout::MoveUp(const int id, const int lineIndex)
  */
 void DialogLayout::MoveDown(const int id, const int lineIndex)
 {
+    if (Elements_.count(id) == 0 || Elements_[id].DataType == DialogDataType::NoData)
+        return;
+
     if (Elements_[id].DataType == DialogDataType::StringArray)
     {
         auto widget = qobject_cast<QListWidget *>(UI_.Inputs.at(id));
@@ -535,6 +565,9 @@ void DialogLayout::MoveDown(const int id, const int lineIndex)
  */
 void DialogLayout::DeleteLine(const int id, const int lineIndex)
 {
+    if (Elements_.count(id) == 0 || Elements_[id].DataType == DialogDataType::NoData)
+        return;
+
     if (Elements_[id].DataType == DialogDataType::StringArray)
     {
         auto widget = qobject_cast<QListWidget *>(UI_.Inputs.at(id));
@@ -561,7 +594,7 @@ void DialogLayout::DeleteLine(const int id, const int lineIndex)
  */
 void DialogLayout::SetText(const int id, const std::string text)
 {
-    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
     {
         return;
     }
@@ -575,12 +608,12 @@ void DialogLayout::SetText(const int id, const std::string text)
 /**
  * @brief 表にデータをセット
  *
- * @param id
- * @param data
+ * @param id ID
+ * @param data データ
  */
 void DialogLayout::SetDataToTable(const int id, const std::vector<std::vector<std::string>> &data)
 {
-    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
     {
         return;
     }

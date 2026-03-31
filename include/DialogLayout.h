@@ -17,7 +17,8 @@ enum class DialogDataType
     StringArray,     // 文字列の配列
     StringPairArray, // タイトルと文字列の配列
     Boolean,         // 真偽値
-    Table            // 表
+    Table,           // 表
+    NoData,          // データなし（ボタンのみなど）
 };
 
 /**
