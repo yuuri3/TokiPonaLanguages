@@ -96,14 +96,68 @@ void EditLoanwordDialog::SaveButtonClicked()
     accept();
 }
 
+/**
+ * @brief 言語選択
+ *
+ */
 void EditLoanwordDialog::SelectLanguage()
 {
-    // TODO: 言語選択の実装
+    if (!languageNames_ || !languages_)
+    {
+        return;
+    }
+
+    SelectLanguageDialog subWindow(this);
+    int place = -1;
+    int period = -1;
+
+    // 言語選択ダイアログを表示
+    subWindow.Set(*languageNames_, &place, &period);
+    subWindow.exec();
+
+    if (place < 0 || period < 0)
+    {
+        return;
+    }
+
+    // 選択された言語名をUIに反映
+    layoutData_.SetText(LANGUAGE_ID, languageNames_->at(period).at(place));
+
+    // 内部状態の更新（EditPhonologicalChangeDialog の実装を参考）
+    TargetPlace_ = languageNames_->at(0).at(place);
+    TargetPeriod_ = period - 1;
 }
 
+/**
+ * @brief 参照言語選択
+ *
+ */
 void EditLoanwordDialog::SelectReferenceLanguage()
 {
-    // TODO: 参照言語選択の実装
+    if (!languageNames_ || !languages_)
+    {
+        return;
+    }
+
+    SelectLanguageDialog subWindow(this);
+    int place = -1;
+    int period = -1;
+
+    // 言語選択ダイアログを表示
+    subWindow.Set(*languageNames_, &place, &period);
+    subWindow.exec();
+
+    if (place < 0 || period < 0)
+    {
+        return;
+    }
+
+    // 選択された言語名をUIの参照言語テキストボックスに反映
+    layoutData_.SetText(REFERENCE_LANGUAGE_ID, languageNames_->at(period).at(place));
+
+    // 後続の借用処理のため、内部状態の更新を推奨
+    ReferencePlace_ = place;
+    ReferencePeriod_ = period;
 }
 
 void EditLoanwordDialog::SelectWord()

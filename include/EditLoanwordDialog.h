@@ -29,4 +29,8 @@ private:
 
     std::shared_ptr<LanguageFamily> languages_;
     std::optional<std::vector<std::vector<std::string>>> languageNames_;
+    std::string TargetPlace_;
+    int TargetPeriod_;
+    std::string ReferencePlace_;
+    int ReferencePeriod_;
 };
