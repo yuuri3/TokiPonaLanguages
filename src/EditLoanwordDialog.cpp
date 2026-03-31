@@ -71,9 +71,23 @@ void EditLoanwordDialog::SetLanguageNames(const std::vector<std::vector<std::str
     languageNames_ = languageNames;
 }
 
+/**
+ * @brief ヘルプ表示
+ *
+ */
 void EditLoanwordDialog::ShowHelp()
 {
-    // TODO: ヘルプ表示の実装
+    HelpDialogContent contents;
+
+    contents.AddHeader("借用編集");
+    contents.AddContent("言語", "借用先の言語（単語を受け入れる側の言語）です。「選択」ボタンから選択できます。");
+    contents.AddContent("参照言語", "借用元の言語（単語を提供する側の言語）です。「選択」ボタンから選択できます。");
+    contents.AddContent("単語", "借用する単語です。参照言語を選択後、「選択」ボタンから選ぶことができます。");
+    contents.AddContent("借用履歴", "これまでに借用した単語の履歴が表示されます。「借用」ボタンを押すことで、指定した単語が借用されてここに追加されます。");
+
+    HelpDialog subWindow(this);
+    subWindow.SetContents(contents);
+    subWindow.exec();
 }
 
 void EditLoanwordDialog::SaveButtonClicked()
