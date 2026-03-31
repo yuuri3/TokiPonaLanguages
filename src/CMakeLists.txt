@@ -11,7 +11,7 @@ add_library(src
   SHARED
     DialogLayout.cpp
     EditGeometryDialog.cpp
-    EditLanguageWindow.cpp
+    EditLanguageDialog.cpp
     EditLoanwordDialog.cpp
     EditPeriodDialog.cpp
     EditPhonologicalChangeDialog.cpp
@@ -32,7 +32,7 @@ add_library(src
     Word.cpp
     ../include/DialogLayout.h
     ../include/EditGeometryDialog.h
-    ../include/EditLanguageWindow.h
+    ../include/EditLanguageDialog.h
     ../include/EditLoanwordDialog.h
     ../include/EditPeriodDialog.h
     ../include/EditPhonologicalChangeDialog.h

@@ -2,7 +2,7 @@
 #include "UnimplementedDialog.h"
 #include "Utility.h"
 #include "stdafx.h"
-#include "EditLanguageWindow.h"
+#include "EditLanguageDialog.h"
 #include "EditPeriodDialog.h"
 #include "EditGeometryDialog.h"
 #include "HelpDialog.h"
@@ -471,7 +471,7 @@ void MainWindow::EditLanguage(const std::string place, const int period)
 {
     if (!Languages_->Empty())
     {
-        EditLanguageWindow subWindow(this);
+        EditLanguageDialog subWindow(this);
         subWindow.SetLanguages(Languages_);
         subWindow.SetPlace(place);
         subWindow.SetPeriod(period);

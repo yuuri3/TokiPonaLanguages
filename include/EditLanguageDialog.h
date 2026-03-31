@@ -5,13 +5,13 @@
 
 class LanguageFamily;
 
-class EditLanguageWindow : public QDialog
+class EditLanguageDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    EditLanguageWindow(QWidget *parent = nullptr);
-    ~EditLanguageWindow() = default;
+    EditLanguageDialog(QWidget *parent = nullptr);
+    ~EditLanguageDialog() = default;
     void SetLanguages(std::shared_ptr<LanguageFamily> languages);
     void SetPlace(const std::string &place);
     void SetPeriod(const int period);

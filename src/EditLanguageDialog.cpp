@@ -1,10 +1,10 @@
-#include "EditLanguageWindow.h"
+#include "EditLanguageDialog.h"
 #include "UnimplementedDialog.h"
 #include "EditWordDialog.h"
 #include "LanguageFamily.h"
 #include "Utility.h"
 
-EditLanguageWindow::EditLanguageWindow(QWidget *parent)
+EditLanguageDialog::EditLanguageDialog(QWidget *parent)
 {
     setWindowTitle("個別言語編集");
 
@@ -16,7 +16,7 @@ EditLanguageWindow::EditLanguageWindow(QWidget *parent)
 
     MainTable_->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(MainTable_, &QTableWidget::customContextMenuRequested,
-            this, &EditLanguageWindow::ShowContextMenu);
+            this, &EditLanguageDialog::ShowContextMenu);
 
     //   * 検索バー
     QHBoxLayout *searchLayout = new QHBoxLayout();
@@ -26,7 +26,7 @@ EditLanguageWindow::EditLanguageWindow(QWidget *parent)
 
     SearchButton_ = new QPushButton("検索", this);
 
-    connect(SearchButton_, &QPushButton::clicked, this, &EditLanguageWindow::Unimplemented);
+    connect(SearchButton_, &QPushButton::clicked, this, &EditLanguageDialog::Unimplemented);
 
     searchLayout->addWidget(SearchLineEdit_);
     searchLayout->addWidget(SearchButton_);
@@ -36,7 +36,7 @@ EditLanguageWindow::EditLanguageWindow(QWidget *parent)
     //   * 単語追加ボタン
     AddWordButton_ = new QPushButton("単語追加", this);
 
-    connect(AddWordButton_, &QPushButton::clicked, this, &EditLanguageWindow::Unimplemented);
+    connect(AddWordButton_, &QPushButton::clicked, this, &EditLanguageDialog::Unimplemented);
     layout->addWidget(AddWordButton_);
 }
 
@@ -45,7 +45,7 @@ EditLanguageWindow::EditLanguageWindow(QWidget *parent)
  *
  * @param languages
  */
-void EditLanguageWindow::SetLanguages(std::shared_ptr<LanguageFamily> languages)
+void EditLanguageDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
 {
     Languages_ = languages;
     UpdateTable();
@@ -56,7 +56,7 @@ void EditLanguageWindow::SetLanguages(std::shared_ptr<LanguageFamily> languages)
  *
  * @param place
  */
-void EditLanguageWindow::SetPlace(const std::string &place)
+void EditLanguageDialog::SetPlace(const std::string &place)
 {
     Place_ = place;
     UpdateTable();
@@ -67,7 +67,7 @@ void EditLanguageWindow::SetPlace(const std::string &place)
  *
  * @param period
  */
-void EditLanguageWindow::SetPeriod(const int period)
+void EditLanguageDialog::SetPeriod(const int period)
 {
     Period_ = period;
     UpdateTable();
@@ -77,7 +77,7 @@ void EditLanguageWindow::SetPeriod(const int period)
  * @brief 表更新
  *
  */
-void EditLanguageWindow::UpdateTable()
+void EditLanguageDialog::UpdateTable()
 {
     if (Languages_ && Place_ && Period_)
     {
@@ -116,7 +116,7 @@ void EditLanguageWindow::UpdateTable()
  * @brief 未実装な機能へアクセスしたときの処理
  *
  */
-void EditLanguageWindow::Unimplemented()
+void EditLanguageDialog::Unimplemented()
 {
     UnimplementedDialog sub(this);
     sub.exec();
@@ -126,7 +126,7 @@ void EditLanguageWindow::Unimplemented()
  * @brief 単語編集メニュー表示
  *
  */
-void EditLanguageWindow::ShowContextMenu(const QPoint &pos)
+void EditLanguageDialog::ShowContextMenu(const QPoint &pos)
 {
     if (Languages_ && Place_ && Period_)
     {
