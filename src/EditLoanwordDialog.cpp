@@ -179,39 +179,19 @@ void EditLoanwordDialog::SelectWord()
     }
 
     // 参照言語の計算
-    auto refLanguage = Languages_->CalculateLanguage(ReferencePlace_, ReferencePeriod_);
-    if (!refLanguage)
-    {
-        return;
-    }
 
     // 単語選択ダイアログの生成と設定
     SelectWordDialog subWindow(this);
     subWindow.SetLanguageFamily(Languages_);
 
-    int selectedWordId = -1;
-    subWindow.SetLanguage(std::make_shared<Language>(refLanguage.value()), &selectedWordId);
+    SelectedWordID_ = -1;
+    subWindow.SetLanguage(std::make_shared<Language>(ReferenceLanguage_.value()), &SelectedWordID_);
     subWindow.exec();
 
     // 単語が選択された場合の処理
-    if (selectedWordId >= 0)
+    if (SelectedWordID_ >= 0)
     {
-        // ※必要に応じて、後続の BorrowWord() のためにメンバ変数に保存する
-        // ReferenceWordId_ = selectedWordId;
-
-        std::string wordString;
-
-        // 選択された単語IDから文字列表現を取得する
-        for (int i = 0; i < refLanguage->CountWord(); i++)
-        {
-            const auto &[id, word] = refLanguage->GetNthWord(i);
-            if (id == selectedWordId)
-            {
-                // 音素ID列を文字列に変換
-                wordString = Languages_->GetPhonemeTable().ConvertToString(word.GetForm());
-                break;
-            }
-        }
+        std::string wordString = Languages_->GetPhonemeTable().ConvertToString(ReferenceLanguage_->GetWord(SelectedWordID_)->GetForm());
 
         // UI に選択した単語の文字列を反映
         layoutData_.SetText(WORD_ID, wordString);

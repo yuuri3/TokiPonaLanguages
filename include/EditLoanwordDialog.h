@@ -35,4 +35,5 @@ private:
     std::optional<Language> ReferenceLanguage_;
     std::string ReferencePlace_;
     int ReferencePeriod_;
+    int SelectedWordID_;
 };
