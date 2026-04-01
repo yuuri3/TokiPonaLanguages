@@ -1,6 +1,7 @@
 #include "EditLoanwordDialog.h"
 #include "HelpDialog.h"
 #include "SelectLanguageDialog.h"
+#include "SelectWordDialog.h"
 
 namespace
 {
@@ -157,8 +158,8 @@ void EditLoanwordDialog::SelectReferenceLanguage()
     layoutData_.SetText(REFERENCE_LANGUAGE_ID, LanguageNames_->at(period).at(place));
 
     // 後続の借用処理のため、内部状態の更新を推奨
-    ReferencePlace_ = place;
-    ReferencePeriod_ = period;
+    ReferencePlace_ = LanguageNames_->at(0).at(place);
+    ReferencePeriod_ = period - 1;
     ReferenceLanguage_ = Languages_->CalculateLanguage(ReferencePlace_, ReferencePeriod_);
 }
 
@@ -170,6 +171,50 @@ void EditLoanwordDialog::SelectWord()
             this,
             "実行エラー",
             "「参照言語」を選択してください");
+    }
+    // 参照言語が未選択の場合や、データが存在しない場合は何もしない
+    if (!Languages_ || !LanguageNames_ || ReferencePeriod_ < 0)
+    {
+        return;
+    }
+
+    // 参照言語の計算
+    auto refLanguage = Languages_->CalculateLanguage(ReferencePlace_, ReferencePeriod_);
+    if (!refLanguage)
+    {
+        return;
+    }
+
+    // 単語選択ダイアログの生成と設定
+    SelectWordDialog subWindow(this);
+    subWindow.SetLanguageFamily(Languages_);
+
+    int selectedWordId = -1;
+    subWindow.SetLanguage(std::make_shared<Language>(refLanguage.value()), &selectedWordId);
+    subWindow.exec();
+
+    // 単語が選択された場合の処理
+    if (selectedWordId >= 0)
+    {
+        // ※必要に応じて、後続の BorrowWord() のためにメンバ変数に保存する
+        // ReferenceWordId_ = selectedWordId;
+
+        std::string wordString;
+
+        // 選択された単語IDから文字列表現を取得する
+        for (int i = 0; i < refLanguage->CountWord(); i++)
+        {
+            const auto &[id, word] = refLanguage->GetNthWord(i);
+            if (id == selectedWordId)
+            {
+                // 音素ID列を文字列に変換
+                wordString = Languages_->GetPhonemeTable().ConvertToString(word.GetForm());
+                break;
+            }
+        }
+
+        // UI に選択した単語の文字列を反映
+        layoutData_.SetText(WORD_ID, wordString);
     }
 }
 

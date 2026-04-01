@@ -27,6 +27,7 @@ add_library(src
     PhonologicalChange.cpp
     Random.cpp
     SelectLanguageDialog.cpp
+    SelectWordDialog.cpp
     UnimplementedDialog.cpp
     Utility.cpp
     Word.cpp
@@ -51,6 +52,7 @@ add_library(src
     ../include/PhonologicalChange.h
     ../include/Random.h
     ../include/SelectLanguageDialog.h
+    ../include/SelectWordDialog.h
     ../include/UnimplementedDialog.h
     ../include/Utility.h
     ../include/Word.h
