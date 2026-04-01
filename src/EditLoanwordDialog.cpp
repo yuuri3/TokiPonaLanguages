@@ -21,13 +21,13 @@ EditLoanwordDialog::EditLoanwordDialog(QWidget *parent)
     layoutData_ = DialogLayout::Create("借用編集", true, true, true);
 
     // ID 0: 言語
-    layoutData_.SetTitle(LANGUAGE_ID, "言語");
+    layoutData_.SetTitle(LANGUAGE_ID, "借用先言語");
     layoutData_.SetDataType(LANGUAGE_ID, DialogDataType::String);
     layoutData_.SetIsEditable(LANGUAGE_ID, false);
     layoutData_.SetButton(LANGUAGE_ID, "選択");
 
     // ID 1: 参照言語
-    layoutData_.SetTitle(REFERENCE_LANGUAGE_ID, "参照言語");
+    layoutData_.SetTitle(REFERENCE_LANGUAGE_ID, "借用元言語");
     layoutData_.SetDataType(REFERENCE_LANGUAGE_ID, DialogDataType::String);
     layoutData_.SetIsEditable(REFERENCE_LANGUAGE_ID, false);
     layoutData_.SetButton(REFERENCE_LANGUAGE_ID, "選択");
@@ -60,6 +60,8 @@ EditLoanwordDialog::EditLoanwordDialog(QWidget *parent)
     layoutData_.ConnectButtonClicked(REFERENCE_LANGUAGE_ID, this, &EditLoanwordDialog::SelectReferenceLanguage);
     layoutData_.ConnectButtonClicked(WORD_ID, this, &EditLoanwordDialog::SelectWord);
     layoutData_.ConnectButtonClicked(LOANWORD_ID, this, &EditLoanwordDialog::BorrowWord);
+
+    SelectedWordID_ = -1;
 }
 
 void EditLoanwordDialog::SetLanguages(const std::shared_ptr<LanguageFamily> languages)
@@ -170,7 +172,7 @@ void EditLoanwordDialog::SelectWord()
         QMessageBox::critical(
             this,
             "実行エラー",
-            "「参照言語」を選択してください");
+            "「参照元言語」を選択してください");
     }
     // 参照言語が未選択の場合や、データが存在しない場合は何もしない
     if (!Languages_ || !LanguageNames_ || ReferencePeriod_ < 0)
@@ -200,5 +202,25 @@ void EditLoanwordDialog::SelectWord()
 
 void EditLoanwordDialog::BorrowWord()
 {
-    // TODO: 借用処理の実装
+    if (!TargetLanguage_)
+    {
+        QMessageBox::critical(
+            this,
+            "実行エラー",
+            "「借用先言語」を選択してください");
+    }
+    else if (!ReferenceLanguage_)
+    {
+        QMessageBox::critical(
+            this,
+            "実行エラー",
+            "「借用元言語」を選択してください");
+    }
+    else if (SelectedWordID_ < 0)
+    {
+        QMessageBox::critical(
+            this,
+            "実行エラー",
+            "「単語」を選択してください");
+    }
 }
