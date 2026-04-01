@@ -27,10 +27,12 @@ private slots:
 private:
     DialogLayout layoutData_;
 
-    std::shared_ptr<LanguageFamily> languages_;
-    std::optional<std::vector<std::vector<std::string>>> languageNames_;
+    std::shared_ptr<LanguageFamily> Languages_;
+    std::optional<std::vector<std::vector<std::string>>> LanguageNames_;
+    std::optional<Language> TargetLanguage_;
     std::string TargetPlace_;
     int TargetPeriod_;
+    std::optional<Language> ReferenceLanguage_;
     std::string ReferencePlace_;
     int ReferencePeriod_;
 };

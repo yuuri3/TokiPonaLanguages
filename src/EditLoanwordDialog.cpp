@@ -63,12 +63,12 @@ EditLoanwordDialog::EditLoanwordDialog(QWidget *parent)
 
 void EditLoanwordDialog::SetLanguages(const std::shared_ptr<LanguageFamily> languages)
 {
-    languages_ = languages;
+    Languages_ = languages;
 }
 
 void EditLoanwordDialog::SetLanguageNames(const std::vector<std::vector<std::string>> languageNames)
 {
-    languageNames_ = languageNames;
+    LanguageNames_ = languageNames;
 }
 
 /**
@@ -102,7 +102,7 @@ void EditLoanwordDialog::SaveButtonClicked()
  */
 void EditLoanwordDialog::SelectLanguage()
 {
-    if (!languageNames_ || !languages_)
+    if (!LanguageNames_ || !Languages_)
     {
         return;
     }
@@ -112,7 +112,7 @@ void EditLoanwordDialog::SelectLanguage()
     int period = -1;
 
     // 言語選択ダイアログを表示
-    subWindow.Set(*languageNames_, &place, &period);
+    subWindow.Set(*LanguageNames_, &place, &period);
     subWindow.exec();
 
     if (place < 0 || period < 0)
@@ -121,11 +121,12 @@ void EditLoanwordDialog::SelectLanguage()
     }
 
     // 選択された言語名をUIに反映
-    layoutData_.SetText(LANGUAGE_ID, languageNames_->at(period).at(place));
+    layoutData_.SetText(LANGUAGE_ID, LanguageNames_->at(period).at(place));
 
     // 内部状態の更新（EditPhonologicalChangeDialog の実装を参考）
-    TargetPlace_ = languageNames_->at(0).at(place);
+    TargetPlace_ = LanguageNames_->at(0).at(place);
     TargetPeriod_ = period - 1;
+    TargetLanguage_ = Languages_->CalculateLanguage(TargetPlace_, TargetPeriod_);
 }
 
 /**
@@ -134,7 +135,7 @@ void EditLoanwordDialog::SelectLanguage()
  */
 void EditLoanwordDialog::SelectReferenceLanguage()
 {
-    if (!languageNames_ || !languages_)
+    if (!LanguageNames_ || !Languages_)
     {
         return;
     }
@@ -144,7 +145,7 @@ void EditLoanwordDialog::SelectReferenceLanguage()
     int period = -1;
 
     // 言語選択ダイアログを表示
-    subWindow.Set(*languageNames_, &place, &period);
+    subWindow.Set(*LanguageNames_, &place, &period);
     subWindow.exec();
 
     if (place < 0 || period < 0)
@@ -153,16 +154,23 @@ void EditLoanwordDialog::SelectReferenceLanguage()
     }
 
     // 選択された言語名をUIの参照言語テキストボックスに反映
-    layoutData_.SetText(REFERENCE_LANGUAGE_ID, languageNames_->at(period).at(place));
+    layoutData_.SetText(REFERENCE_LANGUAGE_ID, LanguageNames_->at(period).at(place));
 
     // 後続の借用処理のため、内部状態の更新を推奨
     ReferencePlace_ = place;
     ReferencePeriod_ = period;
+    ReferenceLanguage_ = Languages_->CalculateLanguage(ReferencePlace_, ReferencePeriod_);
 }
 
 void EditLoanwordDialog::SelectWord()
 {
-    // TODO: 単語選択の実装
+    if (!ReferenceLanguage_)
+    {
+        QMessageBox::critical(
+            this,
+            "実行エラー",
+            "「参照言語」を選択してください");
+    }
 }
 
 void EditLoanwordDialog::BorrowWord()
