@@ -219,13 +219,30 @@ std::optional<Language> LanguageFamily::CalculateLanguage(const std::string plac
 {
     std::map<std::string, Language> languages;
 
+    std::vector<const LanguageDifference *> sortedDifferences;
+    sortedDifferences.reserve(languageDifference_.size());
     for (const auto &diff : languageDifference_)
     {
-        if (diff.GetPeriod() > period)
+        sortedDifferences.push_back(&diff);
+    }
+
+    std::sort(sortedDifferences.begin(), sortedDifferences.end(),
+              [](const LanguageDifference *a, const LanguageDifference *b)
+              {
+                  if (a->GetPeriod() != b->GetPeriod())
+                  {
+                      return a->GetPeriod() < b->GetPeriod();
+                  }
+                  return a->GetType() < b->GetType();
+              });
+
+    for (const auto *diff : sortedDifferences)
+    {
+        if (diff->GetPeriod() > period)
         {
             return languages.at(place);
         }
-        if (!LanguageUtility::ApplyDifference(diff, languages, this))
+        if (!LanguageUtility::ApplyDifference(*diff, languages, this))
         {
             return std::nullopt;
         }
@@ -461,6 +478,86 @@ bool LanguageFamily::SetPhonologicalChangesFromString(const std::string place, c
     }
 
     return SetPhonologicalChanges(place, period, parsedChanges);
+}
+
+/**
+ * @brief 借用語のリストを取得
+ *
+ * @param targetPlace 対象の場所
+ * @param referencePlace 参照する場所
+ * @param period 時代
+ * @return 借用元単語ID, 借用先単語ID
+ */
+std::vector<std::pair<int, int>> LanguageFamily::GetLoanwordIDs(const std::string &targetPlace, const std::string &referencePlace, const int period)
+{
+    std::vector<std::pair<int, int>> loanwords;
+
+    // 指定された時代までの targetPlace の言語状態を計算
+    std::optional<Language> targetLanguageOpt = CalculateLanguage(targetPlace, period);
+
+    if (!targetLanguageOpt.has_value())
+    {
+        return loanwords;
+    }
+
+    const Language &targetLanguage = targetLanguageOpt.value();
+
+    for (const auto &diff : languageDifference_)
+    {
+        if (diff.GetPeriod() == period && diff.GetType() == LanguageDifferenceType::Loanword)
+        {
+            loanwords.emplace_back(diff.IntParam(0).value(), diff.IntParam(1).value());
+        }
+    }
+
+    return loanwords;
+}
+
+/**
+ * @brief 借用語を設定
+ *
+ * @param targetPlace 対象の場所
+ * @param referencePlace 参照する場所
+ * @param period 時代
+ * @param targetWordIDs 対象の単語IDのリスト
+ * @param referenceWordIDs 参照の単語IDのリスト
+ * @return bool
+ */
+bool LanguageFamily::SetLoanwords(const std::string &targetPlace, const std::string &referencePlace, const int period, const std::vector<std::pair<int, int>> &wordIDs)
+{
+    bool result = true;
+    languageDifference_.erase(
+        std::remove_if(languageDifference_.begin(), languageDifference_.end(),
+                       [&](const LanguageDifference &difference)
+                       {
+                           if (difference.GetPeriod() == period && difference.GetType() == LanguageDifferenceType::Loanword)
+                           {
+                               const std::optional<std::string> currentTargetPlace = difference.StringParam(0);
+                               const std::optional<std::string> currentReferencePlace = difference.StringParam(1);
+                               if (currentTargetPlace.has_value() && currentTargetPlace.value() == targetPlace &&
+                                   currentReferencePlace.has_value() && currentReferencePlace.value() == referencePlace)
+                               {
+                                   return true;
+                               }
+                           }
+                           return false;
+                       }),
+        languageDifference_.end());
+
+    auto insertIterator = std::find_if(languageDifference_.begin(), languageDifference_.end(),
+                                       [period](const LanguageDifference &difference)
+                                       {
+                                           return difference.GetPeriod() > period;
+                                       });
+
+    for (size_t i = 0; i < wordIDs.size(); ++i)
+    {
+        LanguageDifference newDifference = LanguageDifference::CreateLoanword(referencePlace, targetPlace, period, wordIDs[i].first, wordIDs[i].second);
+        insertIterator = languageDifference_.insert(insertIterator, newDifference);
+        ++insertIterator;
+    }
+
+    return result;
 }
 
 /**

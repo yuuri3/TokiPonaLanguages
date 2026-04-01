@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16) # Qt6は3.16以上を推奨
-project(TokiLanguages CXX)
+project(TokiLanguages)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Qtの自動処理を有効化（重要）
 set(CMAKE_AUTOMOC ON)

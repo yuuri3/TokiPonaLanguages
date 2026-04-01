@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "EditLoanwordDialog.h"
 #include "HelpDialog.h"
 #include "SelectLanguageDialog.h"
@@ -95,7 +96,11 @@ void EditLoanwordDialog::ShowHelp()
 
 void EditLoanwordDialog::SaveButtonClicked()
 {
-    // TODO: 保存処理の実装
+    if (Languages_ && TargetLanguage_ && ReferenceLanguage_)
+    {
+        auto currentTargetWordIDs = Languages_->GetLoanwordIDs(TargetPlace_, ReferencePlace_, TargetPeriod_) | std::ranges::views::keys | std::ranges::to<std::vector>();
+        Languages_->SetLoanwords(TargetPlace_, ReferencePlace_, TargetPeriod_, LoanwordIDs_);
+    }
     accept();
 }
 
@@ -130,6 +135,16 @@ void EditLoanwordDialog::SelectLanguage()
     TargetPlace_ = LanguageNames_->at(0).at(place);
     TargetPeriod_ = period - 1;
     TargetLanguage_ = Languages_->CalculateLanguage(TargetPlace_, TargetPeriod_);
+
+    if (TargetLanguage_)
+    {
+        TargetWordID_ = TargetLanguage_->GetNewWordID();
+    }
+    if (TargetLanguage_ && ReferenceLanguage_)
+    {
+        LoanwordIDs_ = Languages_->GetLoanwordIDs(TargetPlace_, ReferencePlace_, TargetPeriod_);
+    }
+    DisplayLoanword();
 }
 
 /**
@@ -163,6 +178,12 @@ void EditLoanwordDialog::SelectReferenceLanguage()
     ReferencePlace_ = LanguageNames_->at(0).at(place);
     ReferencePeriod_ = period - 1;
     ReferenceLanguage_ = Languages_->CalculateLanguage(ReferencePlace_, ReferencePeriod_);
+
+    if (TargetLanguage_ && ReferenceLanguage_)
+    {
+        LoanwordIDs_ = Languages_->GetLoanwordIDs(TargetPlace_, ReferencePlace_, TargetPeriod_);
+    }
+    DisplayLoanword();
 }
 
 void EditLoanwordDialog::SelectWord()
@@ -197,7 +218,11 @@ void EditLoanwordDialog::SelectWord()
 
         // UI に選択した単語の文字列を反映
         layoutData_.SetText(WORD_ID, wordString);
+
+        LoanwordIDs_.emplace_back(SelectedWordID_, TargetWordID_);
     }
+
+    DisplayLoanword();
 }
 
 void EditLoanwordDialog::BorrowWord()
@@ -223,4 +248,30 @@ void EditLoanwordDialog::BorrowWord()
             "実行エラー",
             "「単語」を選択してください");
     }
+
+    const auto targetWordID = TargetLanguage_->GetNewWordID();
+    const auto referenceWordID = SelectedWordID_;
+    LanguageDifference dif = LanguageDifference::CreateLoanword(ReferencePlace_, TargetPlace_, TargetPeriod_, referenceWordID, targetWordID);
+    Languages_->AddDifference(dif);
+    DisplayLoanword();
+}
+
+/**
+ * @brief 借用語の一覧を表示
+ *
+ */
+void EditLoanwordDialog::DisplayLoanword()
+{
+    if (!Languages_ || !TargetLanguage_ || !ReferenceLanguage_)
+    {
+        return;
+    }
+
+    std::vector<std::string> loanwords;
+    for (const auto [referenceWordID, _] : LoanwordIDs_)
+    {
+        loanwords.emplace_back(Languages_->GetPhonemeTable().ConvertToString(ReferenceLanguage_->GetWord(referenceWordID)->GetForm()));
+    }
+    layoutData_.Clear(LOANWORD_ID);
+    layoutData_.AddLine(LOANWORD_ID, loanwords, {});
 }

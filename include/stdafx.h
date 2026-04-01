@@ -9,6 +9,7 @@
 #include <iostream>
 #include <type_traits>
 #include <functional>
+#include <ranges>
 
 #include <QString>
 #include <QMainWindow>

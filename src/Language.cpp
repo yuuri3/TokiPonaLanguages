@@ -489,6 +489,20 @@ const int Language::CountWord() const
 }
 
 /**
+ * @brief 新しい単語IDを取得
+ *
+ * @return const int
+ */
+const int Language::GetNewWordID() const
+{
+    if (Empty())
+    {
+        return 0;
+    }
+    return Words_.rbegin()->first + 1;
+}
+
+/**
  * @brief Get the Nth Word object
  *
  * @return std::pair<int, Word>

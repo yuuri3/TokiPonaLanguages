@@ -50,6 +50,9 @@ public:
     bool SetPhonologicalChanges(const std::string place, const int period, const std::vector<PhonologicalChange> &phonologicalChange);
     bool SetPhonologicalChangesFromString(const std::string place, const int period, const std::vector<std::string> &phonologicalChange);
 
+    std::vector<std::pair<int, int>> GetLoanwordIDs(const std::string &targetPlace, const std::string &referencePlace, const int period);
+    bool SetLoanwords(const std::string &targetPlace, const std::string &referencePlace, const int period, const std::vector<std::pair<int, int>> &wordIDs);
+
     void Export(const std::string &filename);
     bool Import(const std::string &filename);
 

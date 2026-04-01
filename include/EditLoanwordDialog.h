@@ -36,4 +36,9 @@ private:
     std::string ReferencePlace_;
     int ReferencePeriod_;
     int SelectedWordID_;
+    int TargetWordID_;
+    // 借用元単語ID, 借用先単語ID
+    std::vector<std::pair<int, int>> LoanwordIDs_;
+
+    void DisplayLoanword();
 };
