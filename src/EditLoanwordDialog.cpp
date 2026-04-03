@@ -44,6 +44,7 @@ EditLoanwordDialog::EditLoanwordDialog(QWidget *parent)
     layoutData_.SetDataType(LOANWORD_ID, DialogDataType::StringArray);
     layoutData_.SetIsEditable(LOANWORD_ID, false);
     layoutData_.SetButton(LOANWORD_ID, "借用");
+    layoutData_.SetHasContextMenu(LOANWORD_ID, true);
 
     // ==========================================
     // 2. UIの自動生成と適用
@@ -61,6 +62,7 @@ EditLoanwordDialog::EditLoanwordDialog(QWidget *parent)
     layoutData_.ConnectButtonClicked(REFERENCE_LANGUAGE_ID, this, &EditLoanwordDialog::SelectReferenceLanguage);
     layoutData_.ConnectButtonClicked(WORD_ID, this, &EditLoanwordDialog::SelectWord);
     layoutData_.ConnectButtonClicked(LOANWORD_ID, this, &EditLoanwordDialog::BorrowWord);
+    layoutData_.ConnectContextMenu(LOANWORD_ID, this, &EditLoanwordDialog::ShowContextMenu);
 
     SelectedWordID_ = -1;
 }
@@ -254,6 +256,43 @@ void EditLoanwordDialog::BorrowWord()
     LanguageDifference dif = LanguageDifference::CreateLoanword(ReferencePlace_, TargetPlace_, TargetPeriod_, referenceWordID, targetWordID);
     Languages_->AddDifference(dif);
     DisplayLoanword();
+}
+
+/**
+ * @brief 右クリックメニューを表示
+ *
+ * @param pos クリック位置
+ */
+void EditLoanwordDialog::ShowContextMenu(const QPoint &pos)
+{
+    auto *senderWidget = qobject_cast<QWidget *>(sender());
+    if (!senderWidget)
+    {
+        return;
+    }
+
+    QMenu menu(this);
+
+    QAction *deleteAction = menu.addAction(tr("削除"));
+
+    connect(deleteAction, &QAction::triggered, this, &EditLoanwordDialog::DeleteLoanword);
+
+    menu.exec(senderWidget->mapToGlobal(pos));
+}
+
+/**
+ * @brief 借用結果を消去
+ *
+ */
+void EditLoanwordDialog::DeleteLoanword()
+{
+    int currentRow = layoutData_.GetCurrentRow(LOANWORD_ID);
+
+    if (currentRow >= 0 && currentRow < LoanwordIDs_.size())
+    {
+        LoanwordIDs_.erase(LoanwordIDs_.begin() + currentRow);
+        DisplayLoanword();
+    }
 }
 
 /**

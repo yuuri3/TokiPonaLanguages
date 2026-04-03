@@ -23,6 +23,8 @@ private slots:
     void SelectReferenceLanguage();
     void SelectWord();
     void BorrowWord();
+    void ShowContextMenu(const QPoint &pos);
+    void DeleteLoanword();
 
 private:
     DialogLayout layoutData_;
