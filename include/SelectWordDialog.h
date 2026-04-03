@@ -4,6 +4,7 @@
 #include "Language.h"
 #include "DialogLayout.h"
 #include "LanguageFamily.h"
+#include <vector>
 
 class SelectWordDialog : public QDialog
 {
@@ -29,4 +30,5 @@ private:
     std::shared_ptr<Language> Language_;
     int *SelectedWordId_;
     int CurrentSelectedWordId_;
+    std::vector<int> DisplayedWordIds_;
 };

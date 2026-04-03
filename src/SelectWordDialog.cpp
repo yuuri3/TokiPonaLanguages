@@ -67,28 +67,8 @@ void SelectWordDialog::SetLanguage(std::shared_ptr<Language> targetLanguage, int
         return;
     }
 
-    std::vector<std::vector<std::string>> wordData;
-    std::vector<std::string> header;
-
-    header.emplace_back("単語");
-    header.emplace_back("訳語");
-    wordData.emplace_back(header);
-
-    for (int i = 0; i < Language_->CountWord(); i++)
-    {
-        std::vector<std::string> rowData;
-        const auto &[wordId, word] = Language_->GetNthWord(i);
-
-        std::string formString;
-        rowData.emplace_back(LanguageFamily_->GetPhonemeTable().ConvertToString(word.GetForm()));
-
-        const auto translations = word.GetAllTranslations();
-        rowData.emplace_back(JoinStrs(translations, ","));
-
-        wordData.emplace_back(rowData);
-    }
-
-    LayoutData_.SetDataToTable(tableId, wordData);
+    // テーブルの初期表示を兼ねて検索処理を呼び出す
+    SearchWord();
 }
 
 /**
@@ -100,8 +80,8 @@ void SelectWordDialog::ShowHelp()
     HelpDialogContent contents;
 
     contents.AddHeader("単語選択");
-    contents.AddContent("単語検索", "検索したい単語を入力する欄です。（※現在この機能は未実装です）");
-    contents.AddContent("検索ボタン", "入力した条件で単語を検索します。（※現在この機能は未実装です）");
+    contents.AddContent("単語検索", "検索したい単語を入力する欄です。");
+    contents.AddContent("検索ボタン", "入力した条件で単語（見出し語・訳語）を部分一致検索します。");
     contents.AddContent("単語", "選択可能な単語とその訳語の一覧が表示されます。リストから行をクリックして選択し、OKボタンを押すことで対象の単語を決定できます。");
 
     HelpDialog subWindow(this);
@@ -119,12 +99,54 @@ void SelectWordDialog::Unimplemented()
 }
 
 /**
- * @brief 検索ボタン押下時
+ * @brief 検索ボタン押下時の処理（見出し語・訳語の部分一致検索）
  *
  */
 void SelectWordDialog::SearchWord()
 {
-    Unimplemented();
+    if (!Language_ || !LanguageFamily_)
+    {
+        return;
+    }
+
+    std::string query = "";
+    auto lines = LayoutData_.GetLine(searchWordId);
+    if (!lines.empty())
+    {
+        query = lines[0];
+    }
+
+    std::vector<std::vector<std::string>> wordData;
+    std::vector<std::string> header;
+
+    header.emplace_back("単語");
+    header.emplace_back("訳語");
+    wordData.emplace_back(header);
+
+    DisplayedWordIds_.clear();
+
+    for (int i = 0; i < Language_->CountWord(); i++)
+    {
+        const auto &[wordId, word] = Language_->GetNthWord(i);
+
+        std::string formString = LanguageFamily_->GetPhonemeTable().ConvertToString(word.GetForm());
+        std::string translationString = JoinStrs(word.GetAllTranslations(), ",");
+
+        // 検索クエリが空、または見出し語・訳語のいずれかに部分一致する場合に追加
+        if (query.empty() ||
+            formString.find(query) != std::string::npos ||
+            translationString.find(query) != std::string::npos)
+        {
+            std::vector<std::string> rowData;
+            rowData.emplace_back(formString);
+            rowData.emplace_back(translationString);
+            wordData.emplace_back(rowData);
+
+            DisplayedWordIds_.push_back(wordId);
+        }
+    }
+
+    LayoutData_.SetDataToTable(tableId, wordData);
 }
 
 /**
@@ -141,10 +163,10 @@ void SelectWordDialog::SelectWord(int row, int column)
         return;
     }
 
-    if (row - 1 < Language_->CountWord())
+    // 表示されているIDリストから選択された単語のIDを取得
+    if (row - 1 < DisplayedWordIds_.size())
     {
-        const auto &[wordId, _] = Language_->GetNthWord(row - 1);
-        CurrentSelectedWordId_ = wordId;
+        CurrentSelectedWordId_ = DisplayedWordIds_[row - 1];
         LayoutData_.ActivateButton(OK_BUTTON_ID, true);
     }
 }
