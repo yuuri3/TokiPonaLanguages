@@ -17,8 +17,8 @@ include_directories(include)
 add_subdirectory(src)
 
 # 1. バージョン定義
-set(APP_VERSION "0.5.1")
-set(EXE_VERSION "0.5.1.4")
+set(APP_VERSION "0.5.2")
+set(EXE_VERSION "0.5.2.0")
 string(REPLACE "." "," APP_VERSION_COMMA "${APP_VERSION},0") 
 string(REPLACE "." "," EXE_VERSION_COMMA "${EXE_VERSION}") 
 
