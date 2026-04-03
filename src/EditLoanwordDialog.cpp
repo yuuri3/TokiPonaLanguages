@@ -42,7 +42,7 @@ EditLoanwordDialog::EditLoanwordDialog(QWidget *parent)
     // ID 3: 借用結果（表示領域として StringArray を仮定）
     layoutData_.SetTitle(LOANWORD_ID, "借用履歴");
     layoutData_.SetDataType(LOANWORD_ID, DialogDataType::StringArray);
-    layoutData_.SetIsEditable(LOANWORD_ID, true);
+    layoutData_.SetIsEditable(LOANWORD_ID, false);
     layoutData_.SetButton(LOANWORD_ID, "借用");
 
     // ==========================================
