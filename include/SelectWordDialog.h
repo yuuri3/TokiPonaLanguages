@@ -17,6 +17,7 @@ public:
     void SetLanguage(std::shared_ptr<Language> targetLanguage, int *outSelectedWordId);
 
 public slots:
+    void ShowHelp();
     void Unimplemented();
     void SearchWord();
     void SelectWord(int row, int column);

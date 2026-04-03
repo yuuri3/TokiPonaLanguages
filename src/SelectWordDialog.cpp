@@ -1,5 +1,6 @@
 #include "SelectWordDialog.h"
 #include "Utility.h"
+#include "HelpDialog.h"
 
 namespace
 {
@@ -31,7 +32,7 @@ SelectWordDialog::SelectWordDialog(QWidget *parent)
     LayoutData_.GenerateLayout(this);
 
     // イベントの関連付け
-    LayoutData_.ConnectButtonClicked(HELP_BUTTON_ID, this, &SelectWordDialog::Unimplemented);
+    LayoutData_.ConnectButtonClicked(HELP_BUTTON_ID, this, &SelectWordDialog::ShowHelp);
     LayoutData_.ConnectButtonClicked(OK_BUTTON_ID, this, &SelectWordDialog::OKButtonPushed);
     LayoutData_.ConnectButtonClicked(CANCEL_BUTTON_ID, this, &SelectWordDialog::reject);
     LayoutData_.ConnectButtonClicked(searchButtonId, this, &SelectWordDialog::SearchWord);
@@ -88,6 +89,24 @@ void SelectWordDialog::SetLanguage(std::shared_ptr<Language> targetLanguage, int
     }
 
     LayoutData_.SetDataToTable(tableId, wordData);
+}
+
+/**
+ * @brief ヘルプ表示
+ *
+ */
+void SelectWordDialog::ShowHelp()
+{
+    HelpDialogContent contents;
+
+    contents.AddHeader("単語選択");
+    contents.AddContent("単語検索", "検索したい単語を入力する欄です。（※現在この機能は未実装です）");
+    contents.AddContent("検索ボタン", "入力した条件で単語を検索します。（※現在この機能は未実装です）");
+    contents.AddContent("単語", "選択可能な単語とその訳語の一覧が表示されます。リストから行をクリックして選択し、OKボタンを押すことで対象の単語を決定できます。");
+
+    HelpDialog subWindow(this);
+    subWindow.SetContents(contents);
+    subWindow.exec();
 }
 
 /**

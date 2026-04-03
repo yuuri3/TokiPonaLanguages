@@ -11,7 +11,10 @@ void HelpDialogContent::AddContent(const QString &title, const QString &content)
         std::vector<std::pair<QString, QString>> cont = {{title, content}};
         Contents.emplace_back(cont);
     }
-    Contents.back().emplace_back(title, content);
+    else
+    {
+        Contents.back().emplace_back(title, content);
+    }
 }
 
 /**
