@@ -57,6 +57,7 @@ struct GeneratedDialogUI
 struct CellInfo
 {
     int row;
+    int column;
     std::string place;
     QPoint globalPos;
 };
@@ -97,6 +98,8 @@ public:
     bool HasButton(const int id) const;
     int GetCurrentRow(const int id) const;
     std::optional<CellInfo> GetCellInfo(const int id, const QPoint &pos) const;
+    bool HasDataInRow(const int id, const int row) const;
+    bool HasDataInColumn(const int id, const int column) const;
 
     // ==========================================
     // 各ウィジェット操作（レイアウト生成後）
@@ -109,7 +112,7 @@ public:
     void MoveDown(const int id, const int lineIndex);
     void DeleteLine(const int id, const int lineIndex);
     void SetText(const int id, const std::string text);
-    void SetDataToTable(const int id, const std::vector<std::vector<std::string>> &data);
+    void SetDataToTable(const int id, const std::vector<std::vector<std::string>> &data, bool isEdit = false);
     void ActivateButton(const int id, const int isActivete);
 
     // ==========================================
@@ -126,6 +129,8 @@ public:
     void AddLineAndConnectRightClicked(const int id, const std::vector<std::string> &values, const std::vector<int> &widths, Receiver *receiver, Slot slot);
     template <typename Receiver, typename Slot>
     void ConnectContextMenu(const int id, Receiver *receiver, Slot slot) const;
+    template <typename Receiver, typename Slot>
+    void ConnectItemChanged(const int id, Receiver *receiver, Slot slot) const;
 
 private:
     // ==========================================

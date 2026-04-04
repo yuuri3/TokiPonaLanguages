@@ -2,39 +2,24 @@
 #include "UnimplementedDialog.h"
 #include "LanguageFamily.h"
 #include "Utility.h"
-#include <QDialogButtonBox>
+
+constexpr int TABLE_ID = 1;
 
 EditGeometryDialog::EditGeometryDialog(QWidget *parent)
     : QDialog(parent)
 {
-    setWindowTitle("地理編集");
+    Layout_ = DialogLayout::Create("地理編集", true, true, true);
+    Layout_.SetDataType(TABLE_ID, DialogDataType::Table);
+    Layout_.SetHasContextMenu(TABLE_ID, true);
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    Layout_.GenerateLayout(this);
 
-    // ヘルプボタンの追加
-    QHBoxLayout *topLayout = new QHBoxLayout();
-    QPushButton *helpButton = new QPushButton("ヘルプ", this);
-    topLayout->addStretch();
-    topLayout->addWidget(helpButton);
-    layout->addLayout(topLayout);
+    Layout_.ConnectButtonClicked(HELP_BUTTON_ID, this, &EditGeometryDialog::ShowHelp);
+    Layout_.ConnectButtonClicked(OK_BUTTON_ID, this, &EditGeometryDialog::accept);
+    Layout_.ConnectButtonClicked(CANCEL_BUTTON_ID, this, &EditGeometryDialog::reject);
 
-    connect(helpButton, &QPushButton::clicked, this, &EditGeometryDialog::ShowHelp);
-
-    MainTable_ = new QTableWidget(this);
-    layout->addWidget(MainTable_);
-
-    // OK / キャンセルボタンの追加
-    QDialogButtonBox *dialogButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    layout->addWidget(dialogButtonBox);
-
-    connect(dialogButtonBox, &QDialogButtonBox::accepted, this, &EditGeometryDialog::accept);
-    connect(dialogButtonBox, &QDialogButtonBox::rejected, this, &EditGeometryDialog::reject);
-
-    MainTable_->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(MainTable_, &QTableWidget::customContextMenuRequested,
-            this, &EditGeometryDialog::ShowContextMenu);
-    connect(MainTable_, &QTableWidget::itemChanged,
-            this, &EditGeometryDialog::OnItemChanged);
+    Layout_.ConnectContextMenu(TABLE_ID, this, &EditGeometryDialog::ShowContextMenu);
+    Layout_.ConnectItemChanged(TABLE_ID, this, &EditGeometryDialog::OnItemChanged);
 }
 
 /**
@@ -92,10 +77,7 @@ void EditGeometryDialog::UpdateTable()
 {
     if (Languages_)
     {
-        MainTable_->blockSignals(true);
-        // Languages_->GetGeography() ではなく、編集中の CurrentGeometryTable_ を表示する
-        DisplayTable(MainTable_, CurrentGeometryTable_, true);
-        MainTable_->blockSignals(false);
+        Layout_.SetDataToTable(TABLE_ID, CurrentGeometryTable_, true);
     }
 }
 
@@ -109,10 +91,12 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
     {
         return;
     }
-    // クリックされた位置のアイテムを取得
-    QModelIndex index = MainTable_->indexAt(pos);
-    if (!index.isValid())
+
+    auto cellInformation = Layout_.GetCellInfo(TABLE_ID, pos);
+    if (!cellInformation.has_value())
+    {
         return; // セルのない場所なら何もしない
+    }
 
     QMenu menu(this);
     QAction *addUpRow = menu.addAction("上に行追加");
@@ -122,11 +106,12 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
     QAction *addLeftColumn = menu.addAction("左に列追加");
     QAction *deleteColumn = menu.addAction("列削除");
 
-    // メニューを表示し、選ばれたアクションを取得
-    QAction *selectedAction = menu.exec(MainTable_->viewport()->mapToGlobal(pos));
+    const int row = cellInformation->row;
+    const int column = cellInformation->column;
+    const QPoint globalPos = cellInformation->globalPos;
 
-    const int row = index.row();
-    const int column = index.column();
+    // メニューを表示し、選ばれたアクションを取得
+    QAction *selectedAction = menu.exec(globalPos);
 
     if (selectedAction == addUpRow)
     {
@@ -144,18 +129,7 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
     }
     else if (selectedAction == deleteRow)
     {
-        bool hasData = false;
-        for (int c = 0; c < MainTable_->columnCount(); ++c)
-        {
-            QTableWidgetItem *cellItem = MainTable_->item(row, c);
-            if (cellItem && !cellItem->text().isEmpty())
-            {
-                hasData = true;
-                break;
-            }
-        }
-
-        if (hasData)
+        if (Layout_.HasDataInRow(TABLE_ID, row))
         {
             auto ret = QMessageBox::warning(
                 this,
@@ -190,18 +164,7 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
     }
     else if (selectedAction == deleteColumn)
     {
-        bool hasData = false;
-        for (int r = 0; r < MainTable_->rowCount(); ++r)
-        {
-            QTableWidgetItem *cellItem = MainTable_->item(r, column);
-            if (cellItem && !cellItem->text().isEmpty())
-            {
-                hasData = true;
-                break;
-            }
-        }
-
-        if (hasData)
+        if (Layout_.HasDataInColumn(TABLE_ID, column))
         {
             auto ret = QMessageBox::warning(
                 this,

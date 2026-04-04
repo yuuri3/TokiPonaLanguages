@@ -143,3 +143,17 @@ void DialogLayout::ConnectContextMenu(const int id, Receiver *receiver, Slot slo
 
     QObject::connect(widget, &QWidget::customContextMenuRequested, receiver, slot);
 }
+
+template <typename Receiver, typename Slot>
+void DialogLayout::ConnectItemChanged(const int id, Receiver *receiver, Slot slot) const
+{
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    {
+        return;
+    }
+
+    if (auto *tableWidget = qobject_cast<QTableWidget *>(UI_.Inputs.at(id)))
+    {
+        QObject::connect(tableWidget, &QTableWidget::itemChanged, receiver, slot);
+    }
+}

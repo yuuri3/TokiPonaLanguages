@@ -334,9 +334,63 @@ std::optional<CellInfo> DialogLayout::GetCellInfo(const int id, const QPoint &po
 
         QPoint globalPos = tableWidget->viewport()->mapToGlobal(pos);
 
-        return CellInfo{row, place, globalPos};
+        return CellInfo{row, column, place, globalPos};
     }
     return std::nullopt;
+}
+
+/**
+ * @brief 指定した行にデータが存在するかを確認する
+ *
+ * @param id ID
+ * @param row 行番号
+ * @return bool データが存在する場合は true
+ */
+bool DialogLayout::HasDataInRow(const int id, const int row) const
+{
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+        return false;
+
+    if (Elements_.at(id).DataType == DialogDataType::Table)
+    {
+        auto *tableWidget = qobject_cast<QTableWidget *>(UI_.Inputs.at(id));
+        for (int c = 0; c < tableWidget->columnCount(); ++c)
+        {
+            QTableWidgetItem *cellItem = tableWidget->item(row, c);
+            if (cellItem && !cellItem->text().isEmpty())
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
+ * @brief 指定した列にデータが存在するかを確認する
+ *
+ * @param id ID
+ * @param column 列番号
+ * @return bool データが存在する場合は true
+ */
+bool DialogLayout::HasDataInColumn(const int id, const int column) const
+{
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+        return false;
+
+    if (Elements_.at(id).DataType == DialogDataType::Table)
+    {
+        auto *tableWidget = qobject_cast<QTableWidget *>(UI_.Inputs.at(id));
+        for (int r = 0; r < tableWidget->rowCount(); ++r)
+        {
+            QTableWidgetItem *cellItem = tableWidget->item(r, column);
+            if (cellItem && !cellItem->text().isEmpty())
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 /**
@@ -657,8 +711,9 @@ void DialogLayout::SetText(const int id, const std::string text)
  *
  * @param id ID
  * @param data データ
+ * @param isEdit 編集フラグ
  */
-void DialogLayout::SetDataToTable(const int id, const std::vector<std::vector<std::string>> &data)
+void DialogLayout::SetDataToTable(const int id, const std::vector<std::vector<std::string>> &data, bool isEdit)
 {
     if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
     {
@@ -667,7 +722,12 @@ void DialogLayout::SetDataToTable(const int id, const std::vector<std::vector<st
     const auto type = Elements_.at(id).DataType;
     if (type == DialogDataType::Table)
     {
-        DisplayTable(qobject_cast<QTableWidget *>(UI_.Inputs.at(id)), data);
+        if (auto *tableWidget = qobject_cast<QTableWidget *>(UI_.Inputs.at(id)))
+        {
+            tableWidget->blockSignals(true);
+            DisplayTable(tableWidget, data, isEdit);
+            tableWidget->blockSignals(false);
+        }
     }
 }
 

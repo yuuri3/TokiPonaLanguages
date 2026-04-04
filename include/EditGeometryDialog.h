@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 #include "GeometryDifference.h"
+#include "DialogLayout.h"
 
 class LanguageFamily;
 
@@ -28,7 +29,7 @@ private:
     std::string Place_;
     int Period_;
 
-    QTableWidget *MainTable_;
+    DialogLayout Layout_;
     std::vector<GeometryDifference> GeometryDifferences_;
 
     // 現在の地理データの状態を保持するメンバ
