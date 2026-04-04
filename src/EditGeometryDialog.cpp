@@ -2,8 +2,10 @@
 #include "UnimplementedDialog.h"
 #include "LanguageFamily.h"
 #include "Utility.h"
+#include <QDialogButtonBox>
 
 EditGeometryDialog::EditGeometryDialog(QWidget *parent)
+    : QDialog(parent)
 {
     setWindowTitle("地理編集");
 
@@ -20,6 +22,13 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
 
     MainTable_ = new QTableWidget(this);
     layout->addWidget(MainTable_);
+
+    // OK / キャンセルボタンの追加
+    QDialogButtonBox *dialogButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    layout->addWidget(dialogButtonBox);
+
+    connect(dialogButtonBox, &QDialogButtonBox::accepted, this, &EditGeometryDialog::accept);
+    connect(dialogButtonBox, &QDialogButtonBox::rejected, this, &EditGeometryDialog::reject);
 
     MainTable_->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(MainTable_, &QTableWidget::customContextMenuRequested,
@@ -239,4 +248,17 @@ void EditGeometryDialog::ShowHelp()
                              "表の任意のセルを右クリックするとメニューが表示され、以下の操作が可能です。\n"
                              "・行の追加（上/下）と削除\n"
                              "・列の追加（左/右）と削除\n");
+}
+
+/**
+ * @brief OKボタン押下時の処理
+ *
+ */
+void EditGeometryDialog::accept()
+{
+    if (Languages_)
+    {
+        Languages_->EditGeometry(GeometryDifferences_);
+    }
+    QDialog::accept();
 }

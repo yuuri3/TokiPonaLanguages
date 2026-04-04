@@ -15,6 +15,7 @@ public:
     void SetLanguages(std::shared_ptr<LanguageFamily> languages);
     void SetPlace(const std::string &place);
     void SetPeriod(const int period);
+    void accept() override;
 
 private slots:
     void Unimplemented();
