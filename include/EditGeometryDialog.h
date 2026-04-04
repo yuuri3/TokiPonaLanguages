@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "GeometryDifference.h"
 
 class LanguageFamily;
 
@@ -27,6 +28,7 @@ private:
     int Period_;
 
     QTableWidget *MainTable_;
+    std::vector<GeometryDifference> GeometryDifferences_;
 
     void UpdateTable();
 };

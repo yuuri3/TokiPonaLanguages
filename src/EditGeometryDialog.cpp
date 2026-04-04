@@ -116,12 +116,12 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
 
     if (selectedAction == addUpRow)
     {
-        Languages_->AddGeomgraphicRowAbove(row);
+        GeometryDifferences_.push_back(GeometryDifference::CreateRowOperation(GeometryOperationType::AddRowAbove, row));
         UpdateTable();
     }
     else if (selectedAction == addDownRow)
     {
-        Languages_->AddGeomgraphicRowBelow(row);
+        GeometryDifferences_.push_back(GeometryDifference::CreateRowOperation(GeometryOperationType::AddRowBelow, row));
         UpdateTable();
     }
     else if (selectedAction == deleteRow)
@@ -151,17 +151,17 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
             }
         }
 
-        Languages_->DeleteGeomgraphicRow(row);
+        GeometryDifferences_.push_back(GeometryDifference::CreateRowOperation(GeometryOperationType::DeleteRow, row));
         UpdateTable();
     }
     else if (selectedAction == addRightColumn)
     {
-        Languages_->AddGeomgraphicColumnRight(column);
+        GeometryDifferences_.push_back(GeometryDifference::CreateColumnOperation(GeometryOperationType::AddColumnRight, column));
         UpdateTable();
     }
     else if (selectedAction == addLeftColumn)
     {
-        Languages_->AddGeomgraphicColumnLeft(column);
+        GeometryDifferences_.push_back(GeometryDifference::CreateColumnOperation(GeometryOperationType::AddColumnLeft, column));
         UpdateTable();
     }
     else if (selectedAction == deleteColumn)
@@ -191,7 +191,7 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
             }
         }
 
-        Languages_->DeleteGeomgraphicColumn(column);
+        GeometryDifferences_.push_back(GeometryDifference::CreateColumnOperation(GeometryOperationType::DeleteColumn, column));
         UpdateTable();
     }
 }
@@ -222,7 +222,7 @@ void EditGeometryDialog::OnItemChanged(QTableWidgetItem *item)
         }
     }
 
-    Languages_->ChangePlaceName(row, column, name);
+    GeometryDifferences_.push_back(GeometryDifference::CreateChangePlaceNameOperation(row, column, name));
 }
 
 /**
