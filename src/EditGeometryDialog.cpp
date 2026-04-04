@@ -45,6 +45,10 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
 void EditGeometryDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
 {
     Languages_ = languages;
+    if (Languages_)
+    {
+        CurrentGeometryTable_ = Languages_->GetGeography();
+    }
     UpdateTable();
 }
 
@@ -89,7 +93,8 @@ void EditGeometryDialog::UpdateTable()
     if (Languages_)
     {
         MainTable_->blockSignals(true);
-        DisplayTable(MainTable_, Languages_->GetGeography(), true);
+        // Languages_->GetGeography() ではなく、編集中の CurrentGeometryTable_ を表示する
+        DisplayTable(MainTable_, CurrentGeometryTable_, true);
         MainTable_->blockSignals(false);
     }
 }
@@ -125,12 +130,16 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
 
     if (selectedAction == addUpRow)
     {
-        GeometryDifferences_.push_back(GeometryDifference::CreateRowOperation(GeometryOperationType::AddRowAbove, row));
+        GeometryDifference difference = GeometryDifference::CreateRowOperation(GeometryOperationType::AddRowAbove, row);
+        GeometryDifferences_.push_back(difference);
+        ApplyDifference(difference);
         UpdateTable();
     }
     else if (selectedAction == addDownRow)
     {
-        GeometryDifferences_.push_back(GeometryDifference::CreateRowOperation(GeometryOperationType::AddRowBelow, row));
+        GeometryDifference difference = GeometryDifference::CreateRowOperation(GeometryOperationType::AddRowBelow, row);
+        GeometryDifferences_.push_back(difference);
+        ApplyDifference(difference);
         UpdateTable();
     }
     else if (selectedAction == deleteRow)
@@ -160,17 +169,23 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
             }
         }
 
-        GeometryDifferences_.push_back(GeometryDifference::CreateRowOperation(GeometryOperationType::DeleteRow, row));
+        GeometryDifference difference = GeometryDifference::CreateRowOperation(GeometryOperationType::DeleteRow, row);
+        GeometryDifferences_.push_back(difference);
+        ApplyDifference(difference);
         UpdateTable();
     }
     else if (selectedAction == addRightColumn)
     {
-        GeometryDifferences_.push_back(GeometryDifference::CreateColumnOperation(GeometryOperationType::AddColumnRight, column));
+        GeometryDifference difference = GeometryDifference::CreateColumnOperation(GeometryOperationType::AddColumnRight, column);
+        GeometryDifferences_.push_back(difference);
+        ApplyDifference(difference);
         UpdateTable();
     }
     else if (selectedAction == addLeftColumn)
     {
-        GeometryDifferences_.push_back(GeometryDifference::CreateColumnOperation(GeometryOperationType::AddColumnLeft, column));
+        GeometryDifference difference = GeometryDifference::CreateColumnOperation(GeometryOperationType::AddColumnLeft, column);
+        GeometryDifferences_.push_back(difference);
+        ApplyDifference(difference);
         UpdateTable();
     }
     else if (selectedAction == deleteColumn)
@@ -200,7 +215,9 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
             }
         }
 
-        GeometryDifferences_.push_back(GeometryDifference::CreateColumnOperation(GeometryOperationType::DeleteColumn, column));
+        GeometryDifference difference = GeometryDifference::CreateColumnOperation(GeometryOperationType::DeleteColumn, column);
+        GeometryDifferences_.push_back(difference);
+        ApplyDifference(difference);
         UpdateTable();
     }
 }
@@ -226,12 +243,14 @@ void EditGeometryDialog::OnItemChanged(QTableWidgetItem *item)
 
         if (ret != QMessageBox::Yes)
         {
-            UpdateTable(); // Yes以外の場合はモデルからデータを再取得して変更を破棄する
+            UpdateTable(); // Yes以外の場合は変更前のデータで再描画する
             return;
         }
     }
 
-    GeometryDifferences_.push_back(GeometryDifference::CreateChangePlaceNameOperation(row, column, name));
+    GeometryDifference difference = GeometryDifference::CreateChangePlaceNameOperation(row, column, name);
+    GeometryDifferences_.push_back(difference);
+    ApplyDifference(difference);
 }
 
 /**
@@ -261,4 +280,68 @@ void EditGeometryDialog::accept()
         Languages_->EditGeometry(GeometryDifferences_);
     }
     QDialog::accept();
+}
+
+/**
+ * @brief 差分を内部保持しているテーブルデータに適用する
+ *
+ * @param difference 適用する操作
+ */
+void EditGeometryDialog::ApplyDifference(const GeometryDifference &difference)
+{
+    switch (difference.GetOperationType())
+    {
+    case GeometryOperationType::ChangePlaceName:
+        if (difference.GetTargetRow() < static_cast<int>(CurrentGeometryTable_.size()) &&
+            difference.GetTargetColumn() < static_cast<int>(CurrentGeometryTable_[difference.GetTargetRow()].size()))
+        {
+            CurrentGeometryTable_[difference.GetTargetRow()][difference.GetTargetColumn()] = difference.GetPlaceName();
+        }
+        break;
+
+    case GeometryOperationType::AddRowAbove:
+    {
+        int columnCount = CurrentGeometryTable_.empty() ? 0 : static_cast<int>(CurrentGeometryTable_[0].size());
+        CurrentGeometryTable_.insert(CurrentGeometryTable_.begin() + difference.GetTargetRow(), std::vector<std::string>(columnCount, ""));
+        break;
+    }
+
+    case GeometryOperationType::AddRowBelow:
+    {
+        int columnCount = CurrentGeometryTable_.empty() ? 0 : static_cast<int>(CurrentGeometryTable_[0].size());
+        CurrentGeometryTable_.insert(CurrentGeometryTable_.begin() + difference.GetTargetRow() + 1, std::vector<std::string>(columnCount, ""));
+        break;
+    }
+
+    case GeometryOperationType::DeleteRow:
+        if (difference.GetTargetRow() < static_cast<int>(CurrentGeometryTable_.size()))
+        {
+            CurrentGeometryTable_.erase(CurrentGeometryTable_.begin() + difference.GetTargetRow());
+        }
+        break;
+
+    case GeometryOperationType::AddColumnLeft:
+        for (auto &rowVector : CurrentGeometryTable_)
+        {
+            rowVector.insert(rowVector.begin() + difference.GetTargetColumn(), "");
+        }
+        break;
+
+    case GeometryOperationType::AddColumnRight:
+        for (auto &rowVector : CurrentGeometryTable_)
+        {
+            rowVector.insert(rowVector.begin() + difference.GetTargetColumn() + 1, "");
+        }
+        break;
+
+    case GeometryOperationType::DeleteColumn:
+        for (auto &rowVector : CurrentGeometryTable_)
+        {
+            if (difference.GetTargetColumn() < static_cast<int>(rowVector.size()))
+            {
+                rowVector.erase(rowVector.begin() + difference.GetTargetColumn());
+            }
+        }
+        break;
+    }
 }

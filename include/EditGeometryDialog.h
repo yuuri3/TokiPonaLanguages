@@ -31,5 +31,9 @@ private:
     QTableWidget *MainTable_;
     std::vector<GeometryDifference> GeometryDifferences_;
 
+    // 現在の地理データの状態を保持するメンバ
+    std::vector<std::vector<std::string>> CurrentGeometryTable_;
+
     void UpdateTable();
+    void ApplyDifference(const GeometryDifference &difference);
 };
