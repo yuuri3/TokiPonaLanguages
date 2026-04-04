@@ -23,6 +23,7 @@ add_library(src
     LanguageDifference.cpp
     LanguageFamily.cpp
     MainWindow.cpp
+    PeriodDifference.cpp
     PhonemeTable.cpp
     PhoneticItem.cpp
     PhonologicalChange.cpp
@@ -48,6 +49,7 @@ add_library(src
     ../include/LanguageDifferenceType.h
     ../include/LanguageFamily.h
     ../include/MainWindow.h
+    ../include/PeriodDifference.h
     ../include/PhonemeTable.h
     ../include/PhoneticItem.h
     ../include/PhoneticItemType.h
