@@ -74,6 +74,17 @@ bool GeometryTable::Import(std::ifstream &file)
     {
         return false;
     }
+
+    RowCount_ = 0;
+    ColumnCount_ = 0;
+    for (const auto &[coord, id] : GridMap_)
+    {
+        if (coord.second >= RowCount_)
+            RowCount_ = coord.second + 1;
+        if (coord.first >= ColumnCount_)
+            ColumnCount_ = coord.first + 1;
+    }
+
     return true;
 }
 
@@ -85,6 +96,9 @@ void GeometryTable::InitializeFromVector(const std::vector<std::vector<std::stri
 {
     PlaceName_.clear();
     GridMap_.clear();
+
+    RowCount_ = geography.size();
+    ColumnCount_ = RowCount_ > 0 ? geography[0].size() : 0;
 
     int placeId = 0;
     std::unordered_map<std::string, int> nameToIdMap;
@@ -118,34 +132,22 @@ void GeometryTable::InitializeFromVector(const std::vector<std::vector<std::stri
  */
 std::vector<std::vector<std::string>> GeometryTable::ToVector() const
 {
-    int maxX = -1;
-    int maxY = -1;
-
-    for (const auto &[coord, id] : GridMap_)
-    {
-        if (coord.first > maxX)
-        {
-            maxX = coord.first;
-        }
-        if (coord.second > maxY)
-        {
-            maxY = coord.second;
-        }
-    }
-
-    if (maxX == -1 || maxY == -1)
+    if (RowCount_ == 0 || ColumnCount_ == 0)
     {
         return {};
     }
 
-    std::vector<std::vector<std::string>> result(maxY + 1, std::vector<std::string>(maxX + 1, ""));
+    std::vector<std::vector<std::string>> result(RowCount_, std::vector<std::string>(ColumnCount_, ""));
 
     for (const auto &[coord, id] : GridMap_)
     {
         auto it = PlaceName_.find(id);
         if (it != PlaceName_.end())
         {
-            result[coord.second][coord.first] = it->second;
+            if (coord.second < RowCount_ && coord.first < ColumnCount_)
+            {
+                result[coord.second][coord.first] = it->second;
+            }
         }
     }
 
@@ -160,6 +162,11 @@ std::vector<std::vector<std::string>> GeometryTable::ToVector() const
  */
 void GeometryTable::SetPlaceName(const int row, const int column, const std::string &name)
 {
+    if (row >= RowCount_)
+        RowCount_ = row + 1;
+    if (column >= ColumnCount_)
+        ColumnCount_ = column + 1;
+
     if (name.empty())
     {
         GridMap_.erase({column, row});
@@ -204,6 +211,8 @@ void GeometryTable::AddRowAbove(const int row)
         return;
     }
 
+    RowCount_++;
+
     std::unordered_map<std::pair<int, int>, int, PairHash> newGridMap;
 
     for (const auto &[coord, id] : GridMap_)
@@ -235,6 +244,8 @@ void GeometryTable::AddRowBelow(const int row)
         return;
     }
 
+    RowCount_++;
+
     std::unordered_map<std::pair<int, int>, int, PairHash> newGridMap;
 
     for (const auto &[coord, id] : GridMap_)
@@ -264,6 +275,11 @@ void GeometryTable::DeleteRow(const int row)
     if (row < 0)
     {
         return;
+    }
+
+    if (RowCount_ > 0)
+    {
+        RowCount_--;
     }
 
     std::unordered_map<std::pair<int, int>, int, PairHash> newGridMap;
@@ -304,6 +320,8 @@ void GeometryTable::AddColumnRight(const int column)
         return;
     }
 
+    ColumnCount_++;
+
     std::unordered_map<std::pair<int, int>, int, PairHash> newGridMap;
 
     for (const auto &[coord, id] : GridMap_)
@@ -335,6 +353,8 @@ void GeometryTable::AddColumnLeft(const int column)
         return;
     }
 
+    ColumnCount_++;
+
     std::unordered_map<std::pair<int, int>, int, PairHash> newGridMap;
 
     for (const auto &[coord, id] : GridMap_)
@@ -364,6 +384,11 @@ void GeometryTable::DeleteColumn(const int column)
     if (column < 0)
     {
         return;
+    }
+
+    if (ColumnCount_ > 0)
+    {
+        ColumnCount_--;
     }
 
     std::unordered_map<std::pair<int, int>, int, PairHash> newGridMap;

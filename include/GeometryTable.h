@@ -25,4 +25,6 @@ public:
 private:
     std::unordered_map<int, std::string> PlaceName_;
     std::unordered_map<std::pair<int, int>, int, PairHash> GridMap_;
+    int RowCount_ = 0;
+    int ColumnCount_ = 0;
 };
