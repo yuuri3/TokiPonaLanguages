@@ -19,6 +19,7 @@ private slots:
     void Unimplemented();
     void ShowContextMenu(const QPoint &pos);
     void OnItemChanged(QTableWidgetItem *item);
+    void ShowHelp();
 
 private:
     std::shared_ptr<LanguageFamily> Languages_;

@@ -9,6 +9,15 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
+    // ヘルプボタンの追加
+    QHBoxLayout *topLayout = new QHBoxLayout();
+    QPushButton *helpButton = new QPushButton("ヘルプ", this);
+    topLayout->addStretch();
+    topLayout->addWidget(helpButton);
+    layout->addLayout(topLayout);
+
+    connect(helpButton, &QPushButton::clicked, this, &EditGeometryDialog::ShowHelp);
+
     MainTable_ = new QTableWidget(this);
     layout->addWidget(MainTable_);
 
@@ -148,4 +157,20 @@ void EditGeometryDialog::OnItemChanged(QTableWidgetItem *item)
     const int column = item->column();
     const std::string name = item->text().toStdString();
     Languages_->ChangePlaceName(row, column, name);
+}
+
+/**
+ * @brief ヘルプ表示
+ *
+ */
+void EditGeometryDialog::ShowHelp()
+{
+    QMessageBox::information(this, "ヘルプ - 地理編集",
+                             "【地理編集ダイアログの機能】\n\n"
+                             "■ 場所名の編集\n"
+                             "表の各セルをダブルクリックしてテキストを編集することで、場所の名前を変更できます。\n\n"
+                             "■ 行・列の操作\n"
+                             "表の任意のセルを右クリックするとメニューが表示され、以下の操作が可能です。\n"
+                             "・行の追加（上/下）と削除\n"
+                             "・列の追加（左/右）と削除\n");
 }
