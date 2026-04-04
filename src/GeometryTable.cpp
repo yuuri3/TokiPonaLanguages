@@ -60,14 +60,13 @@ bool GeometryTable::Import(std::ifstream &file)
         // 要素がある場合のみベクトルを読み込む
         if (count > 0)
         {
-            if (!getNextLine())
-                return false;
-
-            auto data = ParseIntVector(line);
             for (int i = 0; i < count; ++i)
             {
-                int baseIndex = i * 3;
-                GridMap_[{data[baseIndex], data[baseIndex + 1]}] = data[baseIndex + 2];
+                if (!getNextLine())
+                    return false;
+
+                auto parts = ParseVector(line);
+                GridMap_[{std::stoi(parts[0]), std::stoi(parts[1])}] = std::stoi(parts[2]);
             }
         }
     }
