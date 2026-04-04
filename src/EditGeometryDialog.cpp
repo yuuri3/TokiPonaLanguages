@@ -126,6 +126,31 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
     }
     else if (selectedAction == deleteRow)
     {
+        bool hasData = false;
+        for (int c = 0; c < MainTable_->columnCount(); ++c)
+        {
+            QTableWidgetItem *cellItem = MainTable_->item(row, c);
+            if (cellItem && !cellItem->text().isEmpty())
+            {
+                hasData = true;
+                break;
+            }
+        }
+
+        if (hasData)
+        {
+            auto ret = QMessageBox::warning(
+                this,
+                "",
+                "行を削除しますか？ 紐づいている言語も削除されます。",
+                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+            if (ret != QMessageBox::Yes)
+            {
+                return;
+            }
+        }
+
         Languages_->DeleteGeomgraphicRow(row);
         UpdateTable();
     }
@@ -141,6 +166,31 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
     }
     else if (selectedAction == deleteColumn)
     {
+        bool hasData = false;
+        for (int r = 0; r < MainTable_->rowCount(); ++r)
+        {
+            QTableWidgetItem *cellItem = MainTable_->item(r, column);
+            if (cellItem && !cellItem->text().isEmpty())
+            {
+                hasData = true;
+                break;
+            }
+        }
+
+        if (hasData)
+        {
+            auto ret = QMessageBox::warning(
+                this,
+                "",
+                "列を削除しますか？ 紐づいている言語も削除されます。",
+                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+            if (ret != QMessageBox::Yes)
+            {
+                return;
+            }
+        }
+
         Languages_->DeleteGeomgraphicColumn(column);
         UpdateTable();
     }
