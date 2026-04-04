@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
     //     * 地理編集
     EditGeometry_ = new QAction("地理編集", this);
     EditMenu_->addAction(EditGeometry_);
-    connect(EditGeometry_, &QAction::triggered, this, &MainWindow::Unimplemented);
+    connect(EditGeometry_, &QAction::triggered, this, &MainWindow::EditGeometryFromMenu);
 
     //     * 時間軸編集
     EditPeriod_ = new QAction("時間軸編集", this);
@@ -233,6 +233,20 @@ void MainWindow::EditLoanword()
     subWindow.SetLanguageNames(*LanguageNames_);
     subWindow.exec();
 
+    IsLanguagesSaved_ = false;
+}
+
+/**
+ * @brief 地理編集
+ *
+ */
+void MainWindow::EditGeometryFromMenu()
+{
+    EditGeometryDialog subWindow(this);
+    subWindow.SetLanguages(Languages_);
+    subWindow.exec();
+
+    DisplayLanguageFamily(Languages_);
     IsLanguagesSaved_ = false;
 }
 
