@@ -156,6 +156,22 @@ void EditGeometryDialog::OnItemChanged(QTableWidgetItem *item)
     const int row = item->row();
     const int column = item->column();
     const std::string name = item->text().toStdString();
+
+    if (name.empty())
+    {
+        auto ret = QMessageBox::warning(
+            this,
+            "",
+            "地域を削除しますか？ 紐づいている言語も削除されます。",
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+        if (ret != QMessageBox::Yes)
+        {
+            UpdateTable(); // Yes以外の場合はモデルからデータを再取得して変更を破棄する
+            return;
+        }
+    }
+
     Languages_->ChangePlaceName(row, column, name);
 }
 
