@@ -81,6 +81,42 @@ void LanguageFamily::AddDifference(const LanguageDifference &languageDifference)
 }
 
 /**
+ * @brief 地理情報の編集を一括で行う
+ *
+ * @param differences ジオメトリ操作のリスト
+ */
+void LanguageFamily::EditGeometry(const std::vector<GeometryDifference> &differences)
+{
+    for (const auto &difference : differences)
+    {
+        switch (difference.GetOperationType())
+        {
+        case GeometryOperationType::ChangePlaceName:
+            Geography_.SetPlaceName(difference.GetTargetRow(), difference.GetTargetColumn(), difference.GetPlaceName());
+            break;
+        case GeometryOperationType::AddRowAbove:
+            Geography_.AddRowAbove(difference.GetTargetRow());
+            break;
+        case GeometryOperationType::AddRowBelow:
+            Geography_.AddRowBelow(difference.GetTargetRow());
+            break;
+        case GeometryOperationType::DeleteRow:
+            Geography_.DeleteRow(difference.GetTargetRow());
+            break;
+        case GeometryOperationType::AddColumnRight:
+            Geography_.AddColumnRight(difference.GetTargetColumn());
+            break;
+        case GeometryOperationType::AddColumnLeft:
+            Geography_.AddColumnLeft(difference.GetTargetColumn());
+            break;
+        case GeometryOperationType::DeleteColumn:
+            Geography_.DeleteColumn(difference.GetTargetColumn());
+            break;
+        }
+    }
+}
+
+/**
  * @brief 地名を変更
  * * @param row 行
  * * @param column 列

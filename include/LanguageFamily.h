@@ -4,6 +4,7 @@
 #include "PhonemeTable.h"
 #include "GeometryTable.h"
 #include "PhonologicalChange.h"
+#include "GeometryDifference.h"
 
 class Language;
 
@@ -28,6 +29,8 @@ public:
     std::vector<std::vector<std::string>> GetGeography() const;
     const PhonemeTable &GetPhonemeTable() const;
     void AddDifference(const LanguageDifference &languageDifference);
+
+    void EditGeometry(const std::vector<GeometryDifference> &differences);
 
     void ChangePlaceName(const int row, const int column, const std::string &name);
     void AddGeomgraphicRowAbove(const int row);
