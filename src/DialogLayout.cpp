@@ -92,7 +92,10 @@ void DialogLayout::SetHasContextMenu(int id, bool hasContextMenu)
  */
 void DialogLayout::GenerateLayout(QWidget *parent)
 {
-    parent->setWindowTitle(QString::fromStdString(MainTitle_));
+    if (!MainTitle_.empty())
+    {
+        parent->setWindowTitle(QString::fromStdString(MainTitle_));
+    }
     UI_.MainLayout = new QVBoxLayout(parent);
 
     // ==========================================
@@ -140,7 +143,10 @@ void DialogLayout::GenerateLayout(QWidget *parent)
 
         // タイトルと付随ボタンのレイアウト
         auto *titleLayout = new QHBoxLayout();
-        titleLayout->addWidget(new QLabel(QString::fromStdString(element.Title), scrollContent));
+        if (!element.Title.empty())
+        {
+            titleLayout->addWidget(new QLabel(QString::fromStdString(element.Title), scrollContent));
+        }
 
         if (element.HasButton)
         {
@@ -202,7 +208,10 @@ void DialogLayout::GenerateLayout(QWidget *parent)
             auto table = new QTableWidget(scrollContent);
             contentLayout->addWidget(table);
 
-            table->setContextMenuPolicy(Qt::CustomContextMenu);
+            if (element.HasContextMenu)
+            {
+                table->setContextMenuPolicy(Qt::CustomContextMenu);
+            }
             UI_.Inputs[id] = table;
         }
     }
@@ -290,6 +299,44 @@ int DialogLayout::GetCurrentRow(const int id) const
     }
 
     return -1;
+}
+
+/**
+ * @brief ローカル座標から有効なセルの情報（行番号、場所、グローバル座標）を取得する
+ *
+ * @param id ID
+ * @param pos ローカル座標
+ * @return std::optional<CellInfo> セルの情報
+ */
+std::optional<CellInfo> DialogLayout::GetCellInfo(const int id, const QPoint &pos) const
+{
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0)
+    {
+        return std::nullopt;
+    }
+
+    auto *widget = UI_.Inputs.at(id);
+    if (auto *tableWidget = qobject_cast<QTableWidget *>(widget))
+    {
+        QTableWidgetItem *item = tableWidget->itemAt(pos);
+        if (!item)
+        {
+            return std::nullopt;
+        }
+
+        const int row = tableWidget->row(item);
+        const int column = tableWidget->column(item);
+        std::string place = "";
+        if (tableWidget->item(0, column))
+        {
+            place = tableWidget->item(0, column)->text().toStdString();
+        }
+
+        QPoint globalPos = tableWidget->viewport()->mapToGlobal(pos);
+
+        return CellInfo{row, place, globalPos};
+    }
+    return std::nullopt;
 }
 
 /**

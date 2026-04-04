@@ -1,8 +1,6 @@
 #pragma once
 
 #include "stdafx.h"
-#include <map>
-#include <string>
 
 constexpr int HELP_BUTTON_ID = -1;
 constexpr int OK_BUTTON_ID = -2;
@@ -54,6 +52,16 @@ struct GeneratedDialogUI
 };
 
 /**
+ * @brief セルの情報を保持する構造体
+ */
+struct CellInfo
+{
+    int row;
+    std::string place;
+    QPoint globalPos;
+};
+
+/**
  * @brief ダイアログ全体のレイアウト構成を管理するデータクラス
  */
 class DialogLayout
@@ -88,6 +96,7 @@ public:
     bool HasOKButton() const;
     bool HasButton(const int id) const;
     int GetCurrentRow(const int id) const;
+    std::optional<CellInfo> GetCellInfo(const int id, const QPoint &pos) const;
 
     // ==========================================
     // 各ウィジェット操作（レイアウト生成後）

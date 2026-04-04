@@ -37,3 +37,4 @@
 #include <QJsonObject>
 #include <QListWidget>
 #include <QCheckBox>
+#include <QPoint>

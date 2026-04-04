@@ -2,6 +2,7 @@
 
 #include "LanguageFamily.h"
 #include "stdafx.h"
+#include "DialogLayout.h"
 
 class MainWindow : public QMainWindow
 {
@@ -45,7 +46,8 @@ private:
     QAction *VersionAction_;
     QAction *QtAction_;
 
-    QTableWidget *MainTable_;
+    DialogLayout LayoutData_;
+    static constexpr int MAIN_TABLE_ID = 0;
 
     bool IsLanguagesSaved_;
 

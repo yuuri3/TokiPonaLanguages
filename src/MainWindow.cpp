@@ -91,28 +91,24 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
-    QHBoxLayout *layout = new QHBoxLayout(centralWidget);
+    LayoutData_ = DialogLayout::Create("", false, false, false);
+    LayoutData_.SetDataType(MAIN_TABLE_ID, DialogDataType::Table);
+    LayoutData_.SetHasContextMenu(MAIN_TABLE_ID, true);
 
-    //   * メインテーブル
-    MainTable_ = new QTableWidget(this);
-    layout->addWidget(MainTable_);
+    LayoutData_.GenerateLayout(centralWidget);
 
-    MainTable_->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(MainTable_, &QTableWidget::customContextMenuRequested,
-            this, &MainWindow::ShowContextMenu);
+    LayoutData_.ConnectContextMenu(MAIN_TABLE_ID, this, &MainWindow::ShowContextMenu);
 
     DisplayLanguageFamily(Languages_);
 
     // レイアウト調整
-    constexpr int BUTTON_HEIGHT = 30;
-    constexpr int BUTTON_WIDTH = 90;
     constexpr int MARGIN = 20;
     constexpr int BUTTON_SPACE = 5;
     constexpr int WINDOW_HEIGHT = 300;
     constexpr int WINDOW_WIDTH = 400;
 
-    layout->setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN);
-    layout->setSpacing(BUTTON_SPACE);
+    centralWidget->layout()->setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN);
+    centralWidget->layout()->setSpacing(BUTTON_SPACE);
 
     resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
@@ -142,7 +138,7 @@ void MainWindow::DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> lan
     {
         return;
     }
-    DisplayTable(MainTable_, *LanguageNames_);
+    LayoutData_.SetDataToTable(MAIN_TABLE_ID, *LanguageNames_);
 
     if (LanguageNames_->empty() || LanguageNames_->at(0).empty())
     {
@@ -360,10 +356,9 @@ bool MainWindow::WarningUnsaveFile()
  */
 void MainWindow::ShowContextMenu(const QPoint &pos)
 {
-    // クリックされた位置のアイテムを取得
-    QTableWidgetItem *item = MainTable_->itemAt(pos);
-    if (!item)
-        return; // セルのない場所なら何もしない
+    auto cellInfo = LayoutData_.GetCellInfo(MAIN_TABLE_ID, pos);
+    if (!cellInfo)
+        return;
 
     QMenu menu(this);
     QAction *editAction = menu.addAction("個別言語編集");
@@ -371,12 +366,12 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     QAction *editGeography = menu.addAction("地理編集");
 
     // メニューを表示し、選ばれたアクションを取得
-    QAction *selectedAction = menu.exec(MainTable_->viewport()->mapToGlobal(pos));
+    QAction *selectedAction = menu.exec(cellInfo->globalPos);
 
-    const int row = MainTable_->currentRow();
-    const int column = MainTable_->currentColumn();
-    const std::string place = MainTable_->item(0, column)->text().toStdString();
+    const int row = cellInfo->row;
+    const std::string place = cellInfo->place;
     const int period = row - 1;
+
     if (selectedAction == editAction)
     {
         EditLanguage(place, period);
