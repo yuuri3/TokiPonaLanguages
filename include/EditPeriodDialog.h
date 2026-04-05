@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 #include "DialogLayout.h"
+#include "PeriodDifference.h"
 
 class LanguageFamily;
 
@@ -30,6 +31,8 @@ private:
     DialogLayout Layout_;
 
     std::vector<std::string> CurrentPeriodArray_;
+    std::vector<PeriodDifference> PeriodDifferences_;
 
     void UpdateList();
+    void ApplyDifference(const PeriodDifference &difference);
 };

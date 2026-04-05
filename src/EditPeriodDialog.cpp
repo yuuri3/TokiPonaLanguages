@@ -85,14 +85,16 @@ void EditPeriodDialog::ShowContextMenu(const QPoint &pos)
 
     if (selectedAction == addUpAction)
     {
-        // TODO: EditGeometryDialogのように差分を内部保持する仕様であれば変更してください
-        Languages_->AddPeriodAbove(row);
+        PeriodDifference difference = PeriodDifference::CreateAddPeriodAboveOperation(row);
+        PeriodDifferences_.push_back(difference);
+        ApplyDifference(difference);
         UpdateList();
     }
     else if (selectedAction == addDownAction)
     {
-        // TODO: EditGeometryDialogのように差分を内部保持する仕様であれば変更してください
-        Languages_->AddPeriodBelow(row);
+        PeriodDifference difference = PeriodDifference::CreateAddPeriodBelowOperation(row);
+        PeriodDifferences_.push_back(difference);
+        ApplyDifference(difference);
         UpdateList();
     }
     else if (selectedAction == deleteAction)
@@ -108,8 +110,9 @@ void EditPeriodDialog::ShowContextMenu(const QPoint &pos)
             return;
         }
 
-        // TODO: EditGeometryDialogのように差分を内部保持する仕様であれば変更してください
-        Languages_->RemovePeriod(row);
+        PeriodDifference difference = PeriodDifference::CreateRemovePeriodOperation(row);
+        PeriodDifferences_.push_back(difference);
+        ApplyDifference(difference);
         UpdateList();
     }
 }
@@ -125,6 +128,31 @@ void EditPeriodDialog::ShowHelp()
 
 void EditPeriodDialog::accept()
 {
-    // TODO: 差分を一括適用する仕様であれば、ここで適用処理を実装します
+    if (Languages_)
+    {
+        // TODO: 差分を一括適用する仕様に合わせてメソッドを呼び出してください
+        // Languages_->EditPeriod(PeriodDifferences_);
+    }
     QDialog::accept();
+}
+
+void EditPeriodDialog::ApplyDifference(const PeriodDifference &difference)
+{
+    switch (difference.GetOperationType())
+    {
+    case PeriodOperationType::AddPeriodAbove:
+        CurrentPeriodArray_.insert(CurrentPeriodArray_.begin() + difference.GetTargetPeriod(), "");
+        break;
+
+    case PeriodOperationType::AddPeriodBelow:
+        CurrentPeriodArray_.insert(CurrentPeriodArray_.begin() + difference.GetTargetPeriod() + 1, "");
+        break;
+
+    case PeriodOperationType::RemovePeriod:
+        if (difference.GetTargetPeriod() < static_cast<int>(CurrentPeriodArray_.size()))
+        {
+            CurrentPeriodArray_.erase(CurrentPeriodArray_.begin() + difference.GetTargetPeriod());
+        }
+        break;
+    }
 }
