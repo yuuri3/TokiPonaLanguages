@@ -117,6 +117,30 @@ void LanguageFamily::EditGeometry(const std::vector<GeometryDifference> &differe
 }
 
 /**
+ * @brief 時代情報の編集を一括で行う
+ *
+ * @param differences 時代操作のリスト
+ */
+void LanguageFamily::EditPeriod(const std::vector<PeriodDifference> &differences)
+{
+    for (const auto &difference : differences)
+    {
+        switch (difference.GetOperationType())
+        {
+        case PeriodOperationType::AddPeriodAbove:
+            AddPeriodAbove(difference.GetTargetPeriod());
+            break;
+        case PeriodOperationType::AddPeriodBelow:
+            AddPeriodBelow(difference.GetTargetPeriod());
+            break;
+        case PeriodOperationType::RemovePeriod:
+            RemovePeriod(difference.GetTargetPeriod());
+            break;
+        }
+    }
+}
+
+/**
  * @brief 地名を変更
  * * @param row 行
  * * @param column 列

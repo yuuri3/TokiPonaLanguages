@@ -5,6 +5,7 @@
 #include "GeometryTable.h"
 #include "PhonologicalChange.h"
 #include "GeometryDifference.h"
+#include "PeriodDifference.h"
 
 class Language;
 
@@ -31,6 +32,7 @@ public:
     void AddDifference(const LanguageDifference &languageDifference);
 
     void EditGeometry(const std::vector<GeometryDifference> &differences);
+    void EditPeriod(const std::vector<PeriodDifference> &differences);
 
     void ChangePlaceName(const int row, const int column, const std::string &name);
     void AddGeomgraphicRowAbove(const int row);
