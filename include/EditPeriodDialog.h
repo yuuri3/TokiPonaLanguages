@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "DialogLayout.h"
 
 class LanguageFamily;
 
@@ -14,19 +15,21 @@ public:
     void SetLanguages(std::shared_ptr<LanguageFamily> languages);
     void SetPlace(const std::string &place);
     void SetPeriod(const int period);
+    void accept() override;
 
 private slots:
     void Unimplemented();
-    void AddAbove();
-    void AddBelow();
-    void Remove();
+    void ShowContextMenu(const QPoint &pos);
+    void ShowHelp();
 
 private:
     std::shared_ptr<LanguageFamily> Languages_;
     std::optional<std::string> Place_;
     std::optional<int> Period_;
 
-    QPushButton *AddUpButton_;
-    QPushButton *AddDownButton_;
-    QPushButton *RemoveButton_;
+    DialogLayout Layout_;
+
+    std::vector<std::string> CurrentPeriodArray_;
+
+    void UpdateList();
 };

@@ -1,102 +1,130 @@
 #include "EditPeriodDialog.h"
 #include "UnimplementedDialog.h"
 #include "LanguageFamily.h"
+#include "Utility.h"
+
+constexpr int ARRAY_ID = 1;
 
 EditPeriodDialog::EditPeriodDialog(QWidget *parent)
+    : QDialog(parent)
 {
-    setWindowTitle("時間軸編集");
+    Layout_ = DialogLayout::Create("時間軸編集", true, true, true);
+    Layout_.SetDataType(ARRAY_ID, DialogDataType::StringArray);
+    Layout_.SetHasContextMenu(ARRAY_ID, true);
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    Layout_.GenerateLayout(this);
 
-    // TODO ボタン名は検討
-    AddUpButton_ = new QPushButton("上に追加", this);
-    connect(AddUpButton_, &QPushButton::clicked, this, &EditPeriodDialog::AddAbove);
-    layout->addWidget(AddUpButton_);
+    Layout_.ConnectButtonClicked(HELP_BUTTON_ID, this, &EditPeriodDialog::ShowHelp);
+    Layout_.ConnectButtonClicked(OK_BUTTON_ID, this, &EditPeriodDialog::accept);
+    Layout_.ConnectButtonClicked(CANCEL_BUTTON_ID, this, &EditPeriodDialog::reject);
 
-    AddDownButton_ = new QPushButton("下に追加", this);
-    connect(AddDownButton_, &QPushButton::clicked, this, &EditPeriodDialog::AddBelow);
-    layout->addWidget(AddDownButton_);
-
-    RemoveButton_ = new QPushButton("削除", this);
-    connect(RemoveButton_, &QPushButton::clicked, this, &EditPeriodDialog::Remove);
-    layout->addWidget(RemoveButton_);
+    Layout_.ConnectContextMenu(ARRAY_ID, this, &EditPeriodDialog::ShowContextMenu);
 }
 
-/**
- * @brief 語族をセット
- *
- * @param languages
- */
 void EditPeriodDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
 {
     Languages_ = languages;
+    if (Languages_)
+    {
+        // TODO: 実際のメソッド名に合わせて変更してください
+        // CurrentPeriodArray_ = Languages_->GetPeriods();
+    }
+    UpdateList();
 }
 
-/**
- * @brief 地理セッタ
- *
- * @param place
- */
 void EditPeriodDialog::SetPlace(const std::string &place)
 {
     Place_ = place;
+    UpdateList();
 }
 
-/**
- * @brief 時代セッタ
- *
- * @param period
- */
 void EditPeriodDialog::SetPeriod(const int period)
 {
     Period_ = period;
+    UpdateList();
 }
 
-/**
- * @brief 未実装な機能へアクセスしたときの処理
- *
- */
 void EditPeriodDialog::Unimplemented()
 {
     UnimplementedDialog sub(this);
     sub.exec();
 }
 
-/**
- * @brief 上に時代を追加
- *
- */
-void EditPeriodDialog::AddAbove()
+void EditPeriodDialog::UpdateList()
 {
-    if (Languages_ && Period_)
+    if (Languages_)
     {
-        Languages_->AddPeriodAbove(*Period_);
+        // TODO: DialogLayoutにStringArrayのデータを一括設定するメソッドがあれば変更してください
+        // Layout_.Clear(ARRAY_ID);
+        // for(const auto& period : CurrentPeriodArray_) { ... }
     }
-    close();
 }
 
-/**
- * @brief 下に時代を追加
- *
- */
-void EditPeriodDialog::AddBelow()
+void EditPeriodDialog::ShowContextMenu(const QPoint &pos)
 {
-    if (Languages_ && Period_)
+    if (!Languages_)
     {
-        Languages_->AddPeriodBelow(*Period_);
+        return;
     }
-    close();
+
+    auto cellInformation = Layout_.GetCellInfo(ARRAY_ID, pos);
+    if (!cellInformation.has_value())
+    {
+        return;
+    }
+
+    QMenu menu(this);
+    QAction *addUpAction = menu.addAction("上に追加");
+    QAction *addDownAction = menu.addAction("下に追加");
+    QAction *deleteAction = menu.addAction("削除");
+
+    const int row = cellInformation->row;
+    const QPoint globalPos = cellInformation->globalPos;
+
+    QAction *selectedAction = menu.exec(globalPos);
+
+    if (selectedAction == addUpAction)
+    {
+        // TODO: EditGeometryDialogのように差分を内部保持する仕様であれば変更してください
+        Languages_->AddPeriodAbove(row);
+        UpdateList();
+    }
+    else if (selectedAction == addDownAction)
+    {
+        // TODO: EditGeometryDialogのように差分を内部保持する仕様であれば変更してください
+        Languages_->AddPeriodBelow(row);
+        UpdateList();
+    }
+    else if (selectedAction == deleteAction)
+    {
+        auto ret = QMessageBox::warning(
+            this,
+            "",
+            "時代を削除しますか？ 紐づいている言語も削除されます。",
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+        if (ret != QMessageBox::Yes)
+        {
+            return;
+        }
+
+        // TODO: EditGeometryDialogのように差分を内部保持する仕様であれば変更してください
+        Languages_->RemovePeriod(row);
+        UpdateList();
+    }
 }
 
-/**
- * @brief 削除
- *
- */
-void EditPeriodDialog::Remove()
+void EditPeriodDialog::ShowHelp()
 {
-    if (Languages_ && Period_)
-    {
-        Languages_->RemovePeriod(*Period_);
-    }
-    close();
+    QMessageBox::information(this, "ヘルプ - 時間軸編集",
+                             "【時間軸編集ダイアログの機能】\n\n"
+                             "■ 時代の操作\n"
+                             "リストの任意の項目を右クリックするとメニューが表示され、以下の操作が可能です。\n"
+                             "・時代の追加（上/下）と削除\n");
+}
+
+void EditPeriodDialog::accept()
+{
+    // TODO: 差分を一括適用する仕様であれば、ここで適用処理を実装します
+    QDialog::accept();
 }
