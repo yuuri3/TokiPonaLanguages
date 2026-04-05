@@ -30,7 +30,7 @@ private:
 
     DialogLayout Layout_;
 
-    std::vector<std::string> CurrentPeriodArray_;
+    std::vector<std::vector<std::string>> CurrentLanguages_;
     std::vector<PeriodDifference> PeriodDifferences_;
 
     void UpdateList();

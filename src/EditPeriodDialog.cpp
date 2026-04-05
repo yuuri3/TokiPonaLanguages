@@ -9,7 +9,7 @@ EditPeriodDialog::EditPeriodDialog(QWidget *parent)
     : QDialog(parent)
 {
     Layout_ = DialogLayout::Create("時間軸編集", true, true, true);
-    Layout_.SetDataType(ARRAY_ID, DialogDataType::StringArray);
+    Layout_.SetDataType(ARRAY_ID, DialogDataType::Table);
     Layout_.SetHasContextMenu(ARRAY_ID, true);
 
     Layout_.GenerateLayout(this);
@@ -26,8 +26,7 @@ void EditPeriodDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
     Languages_ = languages;
     if (Languages_)
     {
-        // TODO: 実際のメソッド名に合わせて変更してください
-        // CurrentPeriodArray_ = Languages_->GetPeriods();
+        CurrentLanguages_ = Languages_->ToString();
     }
     UpdateList();
 }
@@ -54,9 +53,8 @@ void EditPeriodDialog::UpdateList()
 {
     if (Languages_)
     {
-        // TODO: DialogLayoutにStringArrayのデータを一括設定するメソッドがあれば変更してください
-        // Layout_.Clear(ARRAY_ID);
-        // for(const auto& period : CurrentPeriodArray_) { ... }
+        Layout_.Clear(ARRAY_ID);
+        Layout_.SetDataToTable(ARRAY_ID, CurrentLanguages_, false);
     }
 }
 
@@ -78,7 +76,7 @@ void EditPeriodDialog::ShowContextMenu(const QPoint &pos)
     QAction *addDownAction = menu.addAction("下に追加");
     QAction *deleteAction = menu.addAction("削除");
 
-    const int row = cellInformation->row;
+    const int row = cellInformation->row - 1;
     const QPoint globalPos = cellInformation->globalPos;
 
     QAction *selectedAction = menu.exec(globalPos);
@@ -130,28 +128,28 @@ void EditPeriodDialog::accept()
 {
     if (Languages_)
     {
-        // TODO: 差分を一括適用する仕様に合わせてメソッドを呼び出してください
-        // Languages_->EditPeriod(PeriodDifferences_);
+        Languages_->EditPeriod(PeriodDifferences_);
     }
     QDialog::accept();
 }
 
 void EditPeriodDialog::ApplyDifference(const PeriodDifference &difference)
 {
+    const auto targetIndex = difference.GetTargetPeriod() + 1;
     switch (difference.GetOperationType())
     {
     case PeriodOperationType::AddPeriodAbove:
-        CurrentPeriodArray_.insert(CurrentPeriodArray_.begin() + difference.GetTargetPeriod(), "");
+        CurrentLanguages_.insert(CurrentLanguages_.begin() + targetIndex, CurrentLanguages_[targetIndex]);
         break;
 
     case PeriodOperationType::AddPeriodBelow:
-        CurrentPeriodArray_.insert(CurrentPeriodArray_.begin() + difference.GetTargetPeriod() + 1, "");
+        CurrentLanguages_.insert(CurrentLanguages_.begin() + targetIndex + 1, CurrentLanguages_[targetIndex]);
         break;
 
     case PeriodOperationType::RemovePeriod:
-        if (difference.GetTargetPeriod() < static_cast<int>(CurrentPeriodArray_.size()))
+        if (targetIndex < static_cast<int>(CurrentLanguages_.size()))
         {
-            CurrentPeriodArray_.erase(CurrentPeriodArray_.begin() + difference.GetTargetPeriod());
+            CurrentLanguages_.erase(CurrentLanguages_.begin() + targetIndex);
         }
         break;
     }
