@@ -34,18 +34,6 @@ public:
     void EditGeometry(const std::vector<GeometryDifference> &differences);
     void EditPeriod(const std::vector<PeriodDifference> &differences);
 
-    void ChangePlaceName(const int row, const int column, const std::string &name);
-    void AddGeomgraphicRowAbove(const int row);
-    void AddGeomgraphicRowBelow(const int row);
-    void DeleteGeomgraphicRow(const int row);
-    void AddGeomgraphicColumnRight(const int column);
-    void AddGeomgraphicColumnLeft(const int column);
-    void DeleteGeomgraphicColumn(const int column);
-
-    void AddPeriodAbove(const int period);
-    void AddPeriodBelow(const int period);
-    void RemovePeriod(const int period);
-
     const bool Empty() const;
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
     const std::vector<std::vector<std::string>> ToString() const;
@@ -62,4 +50,17 @@ public:
     bool Import(const std::string &filename);
 
     bool ImportJson(const std::string &filename);
+
+private:
+    void ChangePlaceName(const int row, const int column, const std::string &name);
+    void AddGeomgraphicRowAbove(const int row);
+    void AddGeomgraphicRowBelow(const int row);
+    void DeleteGeomgraphicRow(const int row);
+    void AddGeomgraphicColumnRight(const int column);
+    void AddGeomgraphicColumnLeft(const int column);
+    void DeleteGeomgraphicColumn(const int column);
+
+    void AddPeriodAbove(const int period);
+    void AddPeriodBelow(const int period);
+    void RemovePeriod(const int period);
 };
