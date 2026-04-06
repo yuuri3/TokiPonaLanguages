@@ -387,6 +387,11 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     {
         editAction->setEnabled(false);
     }
+    QAction *editPhonologicalChange = menu.addAction("音韻変化編集");
+    if (LanguageNames_->at(row).at(column).empty() || row < 2)
+    {
+        editPhonologicalChange->setEnabled(false);
+    }
     QAction *editPeriod = menu.addAction("時間軸編集");
     QAction *editGeography = menu.addAction("地理編集");
 
@@ -396,6 +401,10 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     if (selectedAction == editAction)
     {
         EditLanguage(place, period);
+    }
+    else if (selectedAction == editPhonologicalChange)
+    {
+        EditPhonologicalChangeWithIndex(row, column);
     }
     else if (selectedAction == editPeriod)
     {
@@ -509,6 +518,22 @@ void MainWindow::EditLanguage(const std::string place, const int period)
 
         IsLanguagesSaved_ = false;
     }
+}
+
+/**
+ * @brief 音韻変化編集ダイアログを開く
+ *
+ * @param row 行
+ * @param column 列
+ */
+void MainWindow::EditPhonologicalChangeWithIndex(const int row, const int column)
+{
+    EditPhonologicalChangeDialog subWindow(this);
+    subWindow.SetLanguages(Languages_);
+    subWindow.SetLanguageNames(*LanguageNames_);
+    subWindow.SetPlaceAndPeriod(row, column);
+    subWindow.exec();
+    IsLanguagesSaved_ = false;
 }
 
 /**
