@@ -15,7 +15,7 @@ public:
 
     void SetLanguages(const std::shared_ptr<LanguageFamily> languages);
     void SetLanguageNames(const std::vector<std::vector<std::string>> languageNames);
-    void SetLanguage(const std::shared_ptr<Language> language);
+    void SetPlaceAndPeriod(const int row, const int column);
 
 private slots:
     void Unimplemented();

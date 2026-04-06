@@ -82,6 +82,29 @@ void EditPhonologicalChangeDialog::SetLanguageNames(const std::vector<std::vecto
     LanguageNames_ = languageNames;
 }
 
+/**
+ * @brief 個別言語をセット
+ *
+ * @param row 行
+ * @param column 列
+ */
+void EditPhonologicalChangeDialog::SetPlaceAndPeriod(const int row, const int column)
+{
+    if (!LanguageNames_ || !Languages_)
+    {
+        return;
+    }
+
+    Place_ = LanguageNames_->at(0).at(column);
+    Period_ = row - 1;
+
+    DisplayPhonologicalChanges(Place_, Period_);
+
+    LayoutData_.SetText(NAME_ID, LanguageNames_->at(row).at(column));
+    LayoutData_.ActivateButton(PHONOLOGICAL_CHANGE_ID, true);
+    LayoutData_.ActivateButton(OK_BUTTON_ID, true);
+}
+
 void EditPhonologicalChangeDialog::Unimplemented()
 {
     // 未実装であることをユーザーに通知
@@ -157,23 +180,16 @@ void EditPhonologicalChangeDialog::SelectLanguageName()
         return;
     }
     auto subWindow = SelectLanguageDialog(this);
-    int place = -1;
-    int period = -1;
-    subWindow.Set(*LanguageNames_, &place, &period);
+    int column = -1;
+    int row = -1;
+    subWindow.Set(*LanguageNames_, &column, &row);
     subWindow.exec();
-    if (place < 0 || period < 0)
+    if (column < 0 || row < 0)
     {
         return;
     }
 
-    Place_ = LanguageNames_->at(0).at(place);
-    Period_ = period - 1;
-
-    DisplayPhonologicalChanges(Place_, Period_);
-
-    LayoutData_.SetText(NAME_ID, LanguageNames_->at(period).at(place));
-    LayoutData_.ActivateButton(PHONOLOGICAL_CHANGE_ID, true);
-    LayoutData_.ActivateButton(OK_BUTTON_ID, true);
+    SetPlaceAndPeriod(row, column);
 }
 
 void EditPhonologicalChangeDialog::AddPhonologicalChange()
