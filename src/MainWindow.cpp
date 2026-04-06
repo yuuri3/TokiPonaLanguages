@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent)
     //     * 時間軸編集
     EditPeriod_ = new QAction("時間軸編集", this);
     EditMenu_->addAction(EditPeriod_);
-    connect(EditPeriod_, &QAction::triggered, this, &MainWindow::Unimplemented);
+    connect(EditPeriod_, &QAction::triggered, this, &MainWindow::EditPeriodFromMenu);
 
     //   * ヘルプメニュー
     HelpMenu_ = MenuBar_->addMenu("ヘルプ");
@@ -239,6 +239,20 @@ void MainWindow::EditLoanword()
 void MainWindow::EditGeometryFromMenu()
 {
     EditGeometryDialog subWindow(this);
+    subWindow.SetLanguages(Languages_);
+    subWindow.exec();
+
+    DisplayLanguageFamily(Languages_);
+    IsLanguagesSaved_ = false;
+}
+
+/**
+ * @brief 時間軸編集
+ *
+ */
+void MainWindow::EditPeriodFromMenu()
+{
+    EditPeriodDialog subWindow(this);
     subWindow.SetLanguages(Languages_);
     subWindow.exec();
 

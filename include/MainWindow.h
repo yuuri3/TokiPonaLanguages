@@ -18,6 +18,7 @@ private slots:
     void EditPhonologicalChange();
     void EditLoanword();
     void EditGeometryFromMenu();
+    void EditPeriodFromMenu();
     void OpenFile();
     void NewFile();
     void ShowContextMenu(const QPoint &pos);
