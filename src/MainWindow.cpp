@@ -107,9 +107,6 @@ MainWindow::MainWindow(QWidget *parent)
     constexpr int WINDOW_HEIGHT = 300;
     constexpr int WINDOW_WIDTH = 400;
 
-    centralWidget->layout()->setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN);
-    centralWidget->layout()->setSpacing(BUTTON_SPACE);
-
     resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
@@ -370,21 +367,31 @@ bool MainWindow::WarningUnsaveFile()
  */
 void MainWindow::ShowContextMenu(const QPoint &pos)
 {
-    auto cellInfo = LayoutData_.GetCellInfo(MAIN_TABLE_ID, pos);
-    if (!cellInfo)
+    if (!LanguageNames_)
+    {
         return;
+    }
+
+    auto cellInfo = LayoutData_.GetCellInfo(MAIN_TABLE_ID, pos);
+    if (!cellInfo || cellInfo->row < 1)
+        return;
+
+    const int row = cellInfo->row;
+    const int column = cellInfo->column;
+    const std::string place = cellInfo->place;
+    const int period = row - 1;
 
     QMenu menu(this);
     QAction *editAction = menu.addAction("個別言語編集");
+    if (LanguageNames_->at(row).at(column).empty())
+    {
+        editAction->setEnabled(false);
+    }
     QAction *editPeriod = menu.addAction("時間軸編集");
     QAction *editGeography = menu.addAction("地理編集");
 
     // メニューを表示し、選ばれたアクションを取得
     QAction *selectedAction = menu.exec(cellInfo->globalPos);
-
-    const int row = cellInfo->row;
-    const std::string place = cellInfo->place;
-    const int period = row - 1;
 
     if (selectedAction == editAction)
     {
