@@ -117,11 +117,6 @@ void SelectWordDialog::SearchWord()
     }
 
     std::vector<std::vector<std::string>> wordData;
-    std::vector<std::string> header;
-
-    header.emplace_back("単語");
-    header.emplace_back("訳語");
-    wordData.emplace_back(header);
 
     DisplayedWordIds_.clear();
 
@@ -146,7 +141,7 @@ void SelectWordDialog::SearchWord()
         }
     }
 
-    LayoutData_.SetData(tableId, wordData);
+    LayoutData_.SetData(tableId, {"単語", "訳語"}, wordData);
 }
 
 /**

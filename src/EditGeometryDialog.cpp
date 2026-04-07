@@ -77,7 +77,7 @@ void EditGeometryDialog::UpdateTable()
 {
     if (Languages_)
     {
-        Layout_.SetData(TABLE_ID, CurrentGeometryTable_, true);
+        Layout_.SetData(TABLE_ID, {}, CurrentGeometryTable_, true);
     }
 }
 

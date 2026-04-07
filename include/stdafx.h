@@ -38,3 +38,5 @@
 #include <QListWidget>
 #include <QCheckBox>
 #include <QPoint>
+#include <QStyledItemDelegate>
+#include <QPainter>

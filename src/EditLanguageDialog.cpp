@@ -84,11 +84,6 @@ void EditLanguageDialog::UpdateTable()
         std::vector<std::vector<std::string>> wordData;
         std::vector<std::string> line;
 
-        line.emplace_back("単語");
-        line.emplace_back("訳語");
-        wordData.emplace_back(line);
-        line.clear();
-
         for (int i = 0; i < language->CountWord(); i++)
         {
             const auto &[_, word] = language->GetNthWord(i);
@@ -102,7 +97,7 @@ void EditLanguageDialog::UpdateTable()
             line.clear();
         }
 
-        Layout_.SetData(tableId, wordData);
+        Layout_.SetData(tableId, {"単語", "訳語"}, wordData);
     }
 }
 

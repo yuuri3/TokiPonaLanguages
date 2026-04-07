@@ -41,6 +41,6 @@ private:
     std::shared_ptr<Language> Language_;
 
     void UpdateDialog();
-    void AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths);
-    void DisplayLine(const int id, const std::vector<std::vector<std::string>> &values, const std::vector<int> &widths);
+    void AddLine(const int id, const std::vector<std::string> &values);
+    void DisplayLine(const int id, const std::vector<std::vector<std::string>> &values);
 };

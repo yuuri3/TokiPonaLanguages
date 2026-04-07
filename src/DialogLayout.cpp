@@ -1,5 +1,177 @@
 #include "DialogLayout.h"
-#include "Utility.h"
+
+namespace
+{
+    class TableBorderDelegate : public QStyledItemDelegate
+    {
+    public:
+        explicit TableBorderDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
+
+        void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
+        {
+            QStyledItemDelegate::paint(painter, option, index);
+
+            painter->save();
+            QPen pen;
+            pen.setWidth(2);
+            pen.setColor(Qt::black);
+            painter->setPen(pen);
+
+            QRect rectangle = option.rect;
+            int row = index.row();
+            int column = index.column();
+            int rowCount = index.model()->rowCount();
+            int columnCount = index.model()->columnCount();
+
+            // 1行目の上 (外周)
+            if (row == 0)
+            {
+                painter->drawLine(rectangle.topLeft(), rectangle.topRight());
+            }
+            // 最後の行の下 (外周)
+            if (row == rowCount - 1)
+            {
+                painter->drawLine(rectangle.bottomLeft(), rectangle.bottomRight());
+            }
+            // 1列目の左 (外周)
+            if (column == 0)
+            {
+                painter->drawLine(rectangle.topLeft(), rectangle.bottomLeft());
+            }
+            // 最後の列の右 (外周)
+            if (column == columnCount - 1)
+            {
+                painter->drawLine(rectangle.topRight(), rectangle.bottomRight());
+            }
+
+            // 1行目の下
+            if (row == 0)
+            {
+                painter->drawLine(rectangle.bottomLeft(), rectangle.bottomRight());
+            }
+
+            // 1列目の右
+            if (column == 0)
+            {
+                painter->drawLine(rectangle.topRight(), rectangle.bottomRight());
+            }
+
+            painter->restore();
+        }
+    };
+
+    /**
+     * @brief ウィンドウに表を表示
+     *
+     * @param table 表
+     * @param headers ヘッダ
+     * @param data データ
+     */
+    void DisplayTable(QTableWidget *table, const std::vector<std::string> &headers, const std::vector<std::vector<std::string>> &data, const bool IsEdit)
+    {
+        constexpr int CELL_HEIGHT = 30;
+        constexpr int CELL_WIDTH = 30;
+        table->clear();
+        table->setRowCount(0);
+        table->setColumnCount(0);
+
+        if (!data.empty())
+        {
+            // 1行目と1列目を空けるため、サイズを+1する
+            int rows = static_cast<int>(data.size()) + 1;
+            int cols = 0;
+
+            for (const auto &row : data)
+            {
+                cols = std::max(cols, static_cast<int>(row.size()));
+            }
+            cols += 1;
+
+            table->setRowCount(rows);
+            table->setColumnCount(cols);
+
+            // 1行目（インデックス0）を空文字のアイテムで初期化
+            for (int columnIndex = 0; columnIndex < cols; ++columnIndex)
+            {
+                if (columnIndex != 0 && columnIndex < headers.size() + 1)
+                {
+                    table->setItem(0, columnIndex, new QTableWidgetItem(QString::fromStdString(headers[columnIndex - 1])));
+                }
+                else
+                {
+                    table->setItem(0, columnIndex, new QTableWidgetItem(""));
+                }
+            }
+
+            // 1列目（インデックス0）を空文字のアイテムで初期化（2行目以降）
+            for (int rowIndex = 1; rowIndex < rows; ++rowIndex)
+            {
+                table->setItem(rowIndex, 0, new QTableWidgetItem(""));
+            }
+
+            // 3. データの流し込み（2行目2列目、すなわちインデックス(1, 1)から開始）
+            for (int i = 0; i < static_cast<int>(data.size()); ++i)
+            {
+                for (int j = 0; j < (cols - 1); ++j)
+                {
+                    // 対象となるテーブルの行列インデックス
+                    int targetRow = i + 1;
+                    int targetColumn = j + 1;
+
+                    if (j < static_cast<int>(data[i].size()))
+                    {
+                        QString content = QString::fromStdString(data[i][j]);
+                        table->setItem(targetRow, targetColumn, new QTableWidgetItem(content));
+                    }
+                    else
+                    {
+                        table->setItem(targetRow, targetColumn, new QTableWidgetItem(""));
+                    }
+                }
+            }
+        }
+
+        table->verticalHeader()->setVisible(false);
+        table->horizontalHeader()->setVisible(false);
+        table->verticalHeader()->setDefaultSectionSize(CELL_HEIGHT);
+        table->horizontalHeader()->setDefaultSectionSize(CELL_WIDTH);
+        if (!IsEdit)
+        {
+            table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        }
+        table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+
+        table->setShowGrid(false);
+        table->setItemDelegate(new TableBorderDelegate(table));
+
+        table->resizeColumnsToContents();
+    }
+
+    /**
+     * @brief レイアウトの中身を消去
+     *
+     * @param layout レイアウト
+     */
+    void ClearLayout(QLayout *layout)
+    {
+        if (!layout)
+            return;
+
+        while (QLayoutItem *item = layout->takeAt(0))
+        {
+            if (QWidget *widget = item->widget())
+            {
+                widget->setParent(nullptr);
+                widget->deleteLater();
+            }
+            else if (QLayout *childLayout = item->layout())
+            {
+                ClearLayout(childLayout);
+            }
+            delete item;
+        }
+    }
+}
 
 /**
  * @brief 全体設定を指定してインスタンスを生成する
@@ -324,8 +496,8 @@ std::optional<CellInfo> DialogLayout::GetCellInfo(const int id, const QPoint &po
             return std::nullopt;
         }
 
-        const int row = tableWidget->row(item);
-        const int column = tableWidget->column(item);
+        const int row = tableWidget->row(item) - 1;
+        const int column = tableWidget->column(item) - 1;
 
         QPoint globalPos = tableWidget->viewport()->mapToGlobal(pos);
 
@@ -492,9 +664,8 @@ void DialogLayout::SetData(const int id, const std::vector<std::string> &values)
  *
  * @param id ID
  * @param values 入力値
- * @param isEdit 編集可能か
  */
-void DialogLayout::SetData(const int id, const std::vector<std::vector<std::string>> &values, bool isEdit)
+void DialogLayout::SetData(const int id, const std::vector<std::vector<std::string>> &values)
 {
     if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
     {
@@ -538,12 +709,30 @@ void DialogLayout::SetData(const int id, const std::vector<std::vector<std::stri
             widget->layout()->addWidget(rowContainer);
         }
     }
-    else if (type == DialogDataType::Table)
+}
+
+/**
+ * @brief 値セット
+ *
+ * @param id ID
+ * @param headers ヘッダ
+ * @param values 入力値
+ * @param isEdit セルを編集可能か
+ */
+void DialogLayout::SetData(const int id, const std::vector<std::string> &haeders, const std::vector<std::vector<std::string>> &values, bool isEdit)
+{
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
+    {
+        return;
+    }
+    const auto type = Elements_.at(id).DataType;
+
+    if (type == DialogDataType::Table)
     {
         if (auto *tableWidget = qobject_cast<QTableWidget *>(UI_.Inputs.at(id)))
         {
             tableWidget->blockSignals(true);
-            DisplayTable(tableWidget, values, isEdit);
+            DisplayTable(tableWidget, haeders, values, isEdit);
             tableWidget->blockSignals(false);
         }
     }

@@ -107,7 +107,8 @@ public:
     void Clear(const int id);
 
     void SetData(const int id, const std::vector<std::string> &values);
-    void SetData(const int id, const std::vector<std::vector<std::string>> &values, bool isEdit = false);
+    void SetData(const int id, const std::vector<std::vector<std::string>> &values);
+    void SetData(const int id, const std::vector<std::string> &haeders, const std::vector<std::vector<std::string>> &values, bool isEdit = false);
 
     const std::vector<std::string> GetLine(const int id);
     const int GetLineCount(const int id) const;
@@ -131,7 +132,7 @@ public:
     template <typename Receiver, typename Slot>
     void ConnectRightClicked(const int id, Receiver *receiver, Slot slot) const;
     template <typename Receiver, typename Slot>
-    void AddLineAndConnectRightClicked(const int id, const std::vector<std::string> &values, const std::vector<int> &widths, Receiver *receiver, Slot slot);
+    void AddLineAndConnectRightClicked(const int id, const std::vector<std::string> &values, Receiver *receiver, Slot slot);
     template <typename Receiver, typename Slot>
     void ConnectContextMenu(const int id, Receiver *receiver, Slot slot) const;
     template <typename Receiver, typename Slot>

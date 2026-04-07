@@ -131,7 +131,7 @@ void EditWordDialog::UpdateDialog()
             translations.push_back({title, formsStr});
         }
         translations.push_back({"", ""});
-        DisplayLine(TRANSLATION_ID, translations, TWO_WIDTHS);
+        DisplayLine(TRANSLATION_ID, translations);
 
         // タグ
         std::vector<std::vector<std::string>> tags;
@@ -141,7 +141,7 @@ void EditWordDialog::UpdateDialog()
             tags.push_back({tag});
         }
         tags.push_back({""});
-        DisplayLine(TAG_ID, tags, ONE_WIDTH);
+        DisplayLine(TAG_ID, tags);
 
         // 自由記述
         std::vector<std::vector<std::string>> contentsData;
@@ -152,7 +152,7 @@ void EditWordDialog::UpdateDialog()
             contentsData.push_back({title, content});
         }
         contentsData.push_back({"", ""});
-        DisplayLine(CONTENT_ID, contentsData, TWO_WIDTHS);
+        DisplayLine(CONTENT_ID, contentsData);
 
         // 変化形
         std::vector<std::vector<std::string>> variationsData;
@@ -163,7 +163,7 @@ void EditWordDialog::UpdateDialog()
             variationsData.push_back({title, Languages_->GetPhonemeTable().ConvertToString(variation)});
         }
         variationsData.push_back({"", ""});
-        DisplayLine(VARIATION_ID, variationsData, TWO_WIDTHS);
+        DisplayLine(VARIATION_ID, variationsData);
 
         // 関連語
         std::vector<std::vector<std::string>> relationsData;
@@ -175,7 +175,7 @@ void EditWordDialog::UpdateDialog()
             relationsData.push_back({title, Languages_->GetPhonemeTable().ConvertToString(relatedWord->GetForm())});
         }
         relationsData.push_back({"", ""});
-        DisplayLine(RELATION_ID, relationsData, TWO_WIDTHS);
+        DisplayLine(RELATION_ID, relationsData);
     }
 }
 
@@ -186,13 +186,10 @@ void EditWordDialog::UpdateDialog()
  * @param values 値のリスト
  * @param widths 各列の幅
  */
-void EditWordDialog::DisplayLine(const int id, const std::vector<std::vector<std::string>> &values, const std::vector<int> &widths)
+void EditWordDialog::DisplayLine(const int id, const std::vector<std::vector<std::string>> &values)
 {
     LayoutData_.Clear(id);
-    for (const auto value : values)
-    {
-        AddLine(id, value, widths);
-    }
+    LayoutData_.SetData(id, values);
 }
 
 /**
@@ -201,7 +198,7 @@ void EditWordDialog::DisplayLine(const int id, const std::vector<std::vector<std
  */
 void EditWordDialog::AddTranslationButtonPushed()
 {
-    AddLine(TRANSLATION_ID, {"", ""}, TWO_WIDTHS);
+    AddLine(TRANSLATION_ID, {"", ""});
 }
 
 /**
@@ -210,7 +207,7 @@ void EditWordDialog::AddTranslationButtonPushed()
  */
 void EditWordDialog::AddTagsButtonPushed()
 {
-    AddLine(TAG_ID, {""}, ONE_WIDTH);
+    AddLine(TAG_ID, {""});
 }
 
 /**
@@ -219,7 +216,7 @@ void EditWordDialog::AddTagsButtonPushed()
  */
 void EditWordDialog::AddContentsButtonPushed()
 {
-    AddLine(CONTENT_ID, {"", ""}, TWO_WIDTHS);
+    AddLine(CONTENT_ID, {"", ""});
 }
 
 /**
@@ -228,7 +225,7 @@ void EditWordDialog::AddContentsButtonPushed()
  */
 void EditWordDialog::AddVariationsButtonPushed()
 {
-    AddLine(VARIATION_ID, {"", ""}, TWO_WIDTHS);
+    AddLine(VARIATION_ID, {"", ""});
 }
 
 /**
@@ -237,7 +234,7 @@ void EditWordDialog::AddVariationsButtonPushed()
  */
 void EditWordDialog::AddRelationsButtonPushed()
 {
-    AddLine(RELATION_ID, {"", ""}, TWO_WIDTHS);
+    AddLine(RELATION_ID, {"", ""});
 }
 
 /**
@@ -245,11 +242,10 @@ void EditWordDialog::AddRelationsButtonPushed()
  *
  * @param widget 親ウィジェット
  * @param values 入力値（[0]: タイトル, [1]: 内容）
- * @param widths 幅のリスト
  */
-void EditWordDialog::AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths)
+void EditWordDialog::AddLine(const int id, const std::vector<std::string> &values)
 {
-    LayoutData_.AddLineAndConnectRightClicked(id, values, widths, this, [this, id](const QPoint &pos)
+    LayoutData_.AddLineAndConnectRightClicked(id, values, this, [this, id](const QPoint &pos)
                                               { ClickLine(id, pos); });
 }
 
@@ -273,23 +269,16 @@ void EditWordDialog::ClickLine(const int id, const QPoint &pos)
 
     if (selectedAction == addAction)
     {
-        QWidget *rowContainer = senderWidget->parentWidget();
-
-        // 1つの rowContainer 内にある入力要素（QLineEdit と QTextEdit）の合計数を取得
-        int boxCount = rowContainer->findChildren<QLineEdit *>().count() +
-                       rowContainer->findChildren<QTextEdit *>().count();
+        const int columnCount = LayoutData_.GetLine(id).at(0).size();
 
         // ボックスの数に応じた幅設定を維持
-        auto widths = (boxCount == 1) ? ONE_WIDTH : TWO_WIDTHS;
-        std::vector<std::string> newValues(boxCount, "");
-        AddLine(id, newValues, widths);
+        auto widths = (columnCount == 1) ? ONE_WIDTH : TWO_WIDTHS;
+        std::vector<std::string> newValues(columnCount, "");
+        AddLine(id, newValues);
     }
     else if (selectedAction == removeAction)
     {
-        QWidget *rowContainer = senderWidget->parentWidget();
-        if (rowContainer)
-        {
-            DeleteWidget(rowContainer);
-        }
+        const auto lineIndex = LayoutData_.GetCurrentRow(id);
+        LayoutData_.DeleteLine(id, lineIndex);
     }
 }

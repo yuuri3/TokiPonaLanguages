@@ -85,8 +85,9 @@ void DialogLayout::ConnectRightClicked(const int id, Receiver *receiver, Slot sl
     QObject::connect(widget, &QWidget::customContextMenuRequested, receiver, slot);
 }
 template <typename Receiver, typename Slot>
-void DialogLayout::AddLineAndConnectRightClicked(const int id, const std::vector<std::string> &values, const std::vector<int> &widths, Receiver *receiver, Slot slot)
+void DialogLayout::AddLineAndConnectRightClicked(const int id, const std::vector<std::string> &values, Receiver *receiver, Slot slot)
 {
+    const std::vector<int> widths = {50, 200};
     if (Elements_[id].DataType == DialogDataType::StringPairArray)
     {
         auto widget = UI_.Inputs.at(id);
