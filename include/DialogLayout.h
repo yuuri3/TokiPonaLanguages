@@ -106,13 +106,19 @@ public:
     // ==========================================
 
     void Clear(const int id);
-    void AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths);
+
+    void SetData(const int id, const std::vector<std::string> &values);
+    void SetData(const int id, const std::vector<std::vector<std::string>> &values, bool isEdit = false);
+
     const std::vector<std::string> GetLine(const int id);
+    const int GetLineCount(const int id) const;
+
     void MoveUp(const int id, const int lineIndex);
     void MoveDown(const int id, const int lineIndex);
+    void AddLine(const int id, const int lineIndex);
     void DeleteLine(const int id, const int lineIndex);
+
     void SetText(const int id, const std::string text);
-    void SetDataToTable(const int id, const std::vector<std::vector<std::string>> &data, bool isEdit = false);
     void ActivateButton(const int id, const int isActivete);
 
     // ==========================================

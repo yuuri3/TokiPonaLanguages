@@ -102,7 +102,7 @@ void EditLanguageDialog::UpdateTable()
             line.clear();
         }
 
-        Layout_.SetDataToTable(tableId, wordData);
+        Layout_.SetData(tableId, wordData);
     }
 }
 

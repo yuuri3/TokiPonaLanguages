@@ -146,7 +146,7 @@ void SelectWordDialog::SearchWord()
         }
     }
 
-    LayoutData_.SetDataToTable(tableId, wordData);
+    LayoutData_.SetData(tableId, wordData);
 }
 
 /**

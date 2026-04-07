@@ -53,8 +53,7 @@ void EditPeriodDialog::UpdateList()
 {
     if (Languages_)
     {
-        Layout_.Clear(ARRAY_ID);
-        Layout_.SetDataToTable(ARRAY_ID, CurrentLanguages_, false);
+        Layout_.SetData(ARRAY_ID, CurrentLanguages_, false);
     }
 }
 

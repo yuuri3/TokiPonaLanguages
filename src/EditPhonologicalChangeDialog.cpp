@@ -194,7 +194,7 @@ void EditPhonologicalChangeDialog::SelectLanguageName()
 
 void EditPhonologicalChangeDialog::AddPhonologicalChange()
 {
-    LayoutData_.AddLine(PHONOLOGICAL_CHANGE_ID, {""}, {});
+    LayoutData_.AddLine(PHONOLOGICAL_CHANGE_ID, LayoutData_.GetLineCount(PHONOLOGICAL_CHANGE_ID));
 }
 
 /**
@@ -255,6 +255,5 @@ void EditPhonologicalChangeDialog::DisplayPhonologicalChanges(const std::string 
     {
         return;
     }
-    LayoutData_.Clear(PHONOLOGICAL_CHANGE_ID);
-    LayoutData_.AddLine(PHONOLOGICAL_CHANGE_ID, Languages_->GetPhonologicalChangeStrings(place, period), {});
+    LayoutData_.SetData(PHONOLOGICAL_CHANGE_ID, Languages_->GetPhonologicalChangeStrings(place, period));
 }

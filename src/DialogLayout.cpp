@@ -454,74 +454,103 @@ void DialogLayout::Clear(const int id)
 }
 
 /**
- * @brief 行追加
+ * @brief 値セット
  *
  * @param id ID
- * @param values 入力値（[0]: タイトル, [1]: 内容）
- * @param widths 幅のリスト
+ * @param values 入力値
  */
-void DialogLayout::AddLine(const int id, const std::vector<std::string> &values, const std::vector<int> &widths)
+void DialogLayout::SetData(const int id, const std::vector<std::string> &values)
 {
     if (Elements_.count(id) == 0 || Elements_[id].DataType == DialogDataType::NoData)
     {
         return;
     }
+    const auto type = Elements_.at(id).DataType;
 
-    if (Elements_[id].DataType == DialogDataType::StringArray)
+    if (type == DialogDataType::StringArray)
     {
-        if (Elements_[id].DataType == DialogDataType::StringArray)
-        {
-            // 対象のウィジェットを QListWidget として取得する
-            auto listWidget = qobject_cast<QListWidget *>(UI_.Inputs.at(id));
-            if (!listWidget)
-            {
-                return;
-            }
-
-            // 渡された文字列の数だけリストアイテムを生成して追加
-            for (const auto &value : values)
-            {
-                auto *item = new QListWidgetItem(QString::fromStdString(value));
-                if (Elements_[id].IsEditable)
-                {
-                    // ダブルクリックで直接テキストを編集できるようにフラグを設定
-                    item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-                }
-
-                listWidget->addItem(item);
-            }
-        }
-    }
-    else if (Elements_[id].DataType == DialogDataType::StringPairArray)
-    {
-        auto widget = UI_.Inputs.at(id);
-        if (!widget)
+        Clear(id);
+        // 対象のウィジェットを QListWidget として取得する
+        auto listWidget = qobject_cast<QListWidget *>(UI_.Inputs.at(id));
+        if (!listWidget)
         {
             return;
         }
-        if (!widget->layout())
-        {
-            widget->setLayout(new QVBoxLayout(widget));
-            widget->layout()->setContentsMargins(0, 0, 0, 0);
-        }
 
-        QWidget *rowContainer = new QWidget(widget);
-        QHBoxLayout *subLayout = new QHBoxLayout(rowContainer);
-        subLayout->setContentsMargins(0, 0, 0, 0);
-        subLayout->setAlignment(Qt::AlignTop); // 複数行入力時に左側のボックスが上に寄るように設定
-
-        for (size_t i = 0; i < values.size(); i++)
+        // 渡された文字列の数だけリストアイテムを生成して追加
+        for (const auto &value : values)
         {
+            auto *item = new QListWidgetItem(QString::fromStdString(value));
+            if (Elements_[id].IsEditable)
             {
-                auto line = new QLineEdit(rowContainer);
-                line->setText(QString::fromStdString(values[i]));
-                line->setFixedWidth(widths[i]);
-                line->setContextMenuPolicy(Qt::CustomContextMenu);
-                subLayout->addWidget(line);
+                // ダブルクリックで直接テキストを編集できるようにフラグを設定
+                item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             }
-        }
 
-        widget->layout()->addWidget(rowContainer);
+            listWidget->addItem(item);
+        }
+    }
+}
+
+/**
+ * @brief 値セット
+ *
+ * @param id ID
+ * @param values 入力値
+ * @param isEdit 編集可能か
+ */
+void DialogLayout::SetData(const int id, const std::vector<std::vector<std::string>> &values, bool isEdit)
+{
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
+    {
+        return;
+    }
+    const auto type = Elements_.at(id).DataType;
+
+    if (Elements_[id].DataType == DialogDataType::StringPairArray)
+    {
+        Clear(id);
+        for (const auto &lineData : values)
+        {
+            const std::vector<int> widths = {50, 200};
+            auto widget = UI_.Inputs.at(id);
+            if (!widget)
+            {
+                return;
+            }
+            if (!widget->layout())
+            {
+                widget->setLayout(new QVBoxLayout(widget));
+                widget->layout()->setContentsMargins(0, 0, 0, 0);
+            }
+
+            QWidget *rowContainer = new QWidget(widget);
+            QHBoxLayout *subLayout = new QHBoxLayout(rowContainer);
+            subLayout->setContentsMargins(0, 0, 0, 0);
+            subLayout->setAlignment(Qt::AlignTop); // 複数行入力時に左側のボックスが上に寄るように設定
+
+            for (size_t i = 0; i < lineData.size(); i++)
+            {
+                {
+                    auto line = new QLineEdit(rowContainer);
+                    line->setText(QString::fromStdString(lineData[i]));
+                    line->setFixedWidth(widths[i]);
+                    line->setContextMenuPolicy(Qt::CustomContextMenu);
+                    subLayout->addWidget(line);
+                }
+            }
+
+            widget->layout()->addWidget(rowContainer);
+        }
+    }
+    else if (type == DialogDataType::Table)
+    {
+        if (auto *tableWidget = qobject_cast<QTableWidget *>(UI_.Inputs.at(id)))
+        {
+            tableWidget->blockSignals(true);
+            DisplayTable(tableWidget, values, isEdit);
+            tableWidget->blockSignals(false);
+        }
     }
 }
 
@@ -596,6 +625,51 @@ const std::vector<std::string> DialogLayout::GetLine(const int id)
 }
 
 /**
+ * @brief 行数を取得する
+ *
+ * @param id ID
+ * @return const int 行数
+ */
+const int DialogLayout::GetLineCount(const int id) const
+{
+    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
+    {
+        return 0;
+    }
+
+    auto *widget = UI_.Inputs.at(id);
+    const auto dataType = Elements_.at(id).DataType;
+
+    if (dataType == DialogDataType::StringArray)
+    {
+        if (auto *listWidget = qobject_cast<QListWidget *>(widget))
+        {
+            return listWidget->count();
+        }
+    }
+    else if (dataType == DialogDataType::StringPairArray)
+    {
+        if (auto *layout = widget->layout())
+        {
+            return layout->count();
+        }
+    }
+    else if (dataType == DialogDataType::Table)
+    {
+        if (auto *tableWidget = qobject_cast<QTableWidget *>(widget))
+        {
+            return tableWidget->rowCount();
+        }
+    }
+    else if (dataType == DialogDataType::String)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
  * @brief 選択された行を1つ上へ移動する
  *
  * @param id 要素ID
@@ -659,6 +733,66 @@ void DialogLayout::MoveDown(const int id, const int lineIndex)
 }
 
 /**
+ * @brief 行追加
+ *
+ * @param id 要素ID
+ * @param lineIndex 行
+ */
+void DialogLayout::AddLine(const int id, const int lineIndex)
+{
+    if (Elements_.count(id) == 0 || Elements_[id].DataType == DialogDataType::NoData)
+        return;
+
+    if (Elements_[id].DataType == DialogDataType::StringArray)
+    {
+        auto widget = qobject_cast<QListWidget *>(UI_.Inputs.at(id));
+        if (!widget)
+            return;
+
+        if (lineIndex >= 0 && lineIndex <= widget->count())
+        {
+            auto *item = new QListWidgetItem("");
+            if (Elements_[id].IsEditable)
+            {
+                item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            }
+            widget->insertItem(lineIndex, item);
+        }
+    }
+    else if (Elements_[id].DataType == DialogDataType::StringPairArray)
+    {
+        auto widget = UI_.Inputs.at(id);
+        if (!widget)
+            return;
+
+        auto layout = qobject_cast<QVBoxLayout *>(widget->layout());
+        if (!layout)
+            return;
+
+        if (lineIndex >= 0 && lineIndex <= layout->count())
+        {
+            const std::vector<int> widths = {50, 200};
+
+            QWidget *rowContainer = new QWidget(widget);
+            QHBoxLayout *subLayout = new QHBoxLayout(rowContainer);
+            subLayout->setContentsMargins(0, 0, 0, 0);
+            subLayout->setAlignment(Qt::AlignTop);
+
+            for (size_t i = 0; i < widths.size(); i++)
+            {
+                auto line = new QLineEdit(rowContainer);
+                line->setText("");
+                line->setFixedWidth(widths[i]);
+                line->setContextMenuPolicy(Qt::CustomContextMenu);
+                subLayout->addWidget(line);
+            }
+
+            layout->insertWidget(lineIndex, rowContainer);
+        }
+    }
+}
+
+/**
  * @brief 選択された行を削除する
  *
  * @param id 要素ID
@@ -703,31 +837,6 @@ void DialogLayout::SetText(const int id, const std::string text)
     if (type == DialogDataType::String)
     {
         qobject_cast<QLineEdit *>(UI_.Inputs.at(id))->setText(QString::fromStdString(text));
-    }
-}
-
-/**
- * @brief 表にデータをセット
- *
- * @param id ID
- * @param data データ
- * @param isEdit 編集フラグ
- */
-void DialogLayout::SetDataToTable(const int id, const std::vector<std::vector<std::string>> &data, bool isEdit)
-{
-    if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
-    {
-        return;
-    }
-    const auto type = Elements_.at(id).DataType;
-    if (type == DialogDataType::Table)
-    {
-        if (auto *tableWidget = qobject_cast<QTableWidget *>(UI_.Inputs.at(id)))
-        {
-            tableWidget->blockSignals(true);
-            DisplayTable(tableWidget, data, isEdit);
-            tableWidget->blockSignals(false);
-        }
     }
 }
 

@@ -311,6 +311,5 @@ void EditLoanwordDialog::DisplayLoanword()
     {
         loanwords.emplace_back(Languages_->GetPhonemeTable().ConvertToString(ReferenceLanguage_->GetWord(referenceWordID)->GetForm()));
     }
-    layoutData_.Clear(LOANWORD_ID);
-    layoutData_.AddLine(LOANWORD_ID, loanwords, {});
+    layoutData_.SetData(LOANWORD_ID, loanwords);
 }

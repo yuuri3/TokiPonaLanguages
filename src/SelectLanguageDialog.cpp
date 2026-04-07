@@ -41,7 +41,7 @@ SelectLanguageDialog::SelectLanguageDialog(QWidget *parent)
 void SelectLanguageDialog::Set(const std::vector<std::vector<std::string>> languageNames, int *place, int *period)
 {
     LanguageNames_ = languageNames;
-    LayoutData_.SetDataToTable(TABLE_ID, languageNames);
+    LayoutData_.SetData(TABLE_ID, languageNames);
     Place_ = place;
     Period_ = period;
 }

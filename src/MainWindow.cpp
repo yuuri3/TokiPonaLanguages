@@ -135,7 +135,7 @@ void MainWindow::DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> lan
     {
         return;
     }
-    LayoutData_.SetDataToTable(MAIN_TABLE_ID, *LanguageNames_);
+    LayoutData_.SetData(MAIN_TABLE_ID, *LanguageNames_);
 
     if (LanguageNames_->empty() || LanguageNames_->at(0).empty())
     {
