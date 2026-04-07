@@ -378,7 +378,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
 
     const int row = cellInfo->row;
     const int column = cellInfo->column;
-    const std::string place = cellInfo->place;
+    const std::string place = LanguageNames_->at(0).at(column);
     const int period = row - 1;
 
     QMenu menu(this);

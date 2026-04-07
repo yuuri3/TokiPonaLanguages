@@ -58,7 +58,6 @@ struct CellInfo
 {
     int row;
     int column;
-    std::string place;
     QPoint globalPos;
 };
 

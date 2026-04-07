@@ -326,15 +326,10 @@ std::optional<CellInfo> DialogLayout::GetCellInfo(const int id, const QPoint &po
 
         const int row = tableWidget->row(item);
         const int column = tableWidget->column(item);
-        std::string place = "";
-        if (tableWidget->item(0, column))
-        {
-            place = tableWidget->item(0, column)->text().toStdString();
-        }
 
         QPoint globalPos = tableWidget->viewport()->mapToGlobal(pos);
 
-        return CellInfo{row, column, place, globalPos};
+        return CellInfo{row, column, globalPos};
     }
     return std::nullopt;
 }
