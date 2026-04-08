@@ -26,7 +26,7 @@ void EditPeriodDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
     Languages_ = languages;
     if (Languages_)
     {
-        CurrentLanguages_ = Languages_->ToString();
+        CurrentLanguages_ = Languages_->GetLanguageNames();
     }
     UpdateList();
 }
@@ -53,7 +53,7 @@ void EditPeriodDialog::UpdateList()
 {
     if (Languages_)
     {
-        Layout_.SetData(ARRAY_ID, {}, CurrentLanguages_, false);
+        Layout_.SetData(ARRAY_ID, CurrentLanguages_, false);
     }
 }
 
@@ -75,7 +75,7 @@ void EditPeriodDialog::ShowContextMenu(const QPoint &pos)
     QAction *addDownAction = menu.addAction("下に追加");
     QAction *deleteAction = menu.addAction("削除");
 
-    const int row = cellInformation->row - 1;
+    const int row = cellInformation->row;
     const QPoint globalPos = cellInformation->globalPos;
 
     QAction *selectedAction = menu.exec(globalPos);
@@ -134,21 +134,21 @@ void EditPeriodDialog::accept()
 
 void EditPeriodDialog::ApplyDifference(const PeriodDifference &difference)
 {
-    const auto targetIndex = difference.GetTargetPeriod() + 1;
+    const auto targetIndex = difference.GetTargetPeriod();
     switch (difference.GetOperationType())
     {
     case PeriodOperationType::AddPeriodAbove:
-        CurrentLanguages_.insert(CurrentLanguages_.begin() + targetIndex, CurrentLanguages_[targetIndex]);
+        CurrentLanguages_.Body.insert(CurrentLanguages_.Body.begin() + targetIndex, CurrentLanguages_.Body[targetIndex - 1]);
         break;
 
     case PeriodOperationType::AddPeriodBelow:
-        CurrentLanguages_.insert(CurrentLanguages_.begin() + targetIndex + 1, CurrentLanguages_[targetIndex]);
+        CurrentLanguages_.Body.insert(CurrentLanguages_.Body.begin() + targetIndex + 1, CurrentLanguages_.Body[targetIndex]);
         break;
 
     case PeriodOperationType::RemovePeriod:
-        if (targetIndex < static_cast<int>(CurrentLanguages_.size()))
+        if (targetIndex < static_cast<int>(CurrentLanguages_.Body.size()))
         {
-            CurrentLanguages_.erase(CurrentLanguages_.begin() + targetIndex);
+            CurrentLanguages_.Body.erase(CurrentLanguages_.Body.begin() + targetIndex);
         }
         break;
     }

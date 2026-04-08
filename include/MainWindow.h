@@ -3,6 +3,7 @@
 #include "LanguageFamily.h"
 #include "stdafx.h"
 #include "DialogLayout.h"
+#include "TableData.h"
 
 class MainWindow : public QMainWindow
 {
@@ -34,7 +35,7 @@ private:
     QMenu *HelpMenu_;
 
     std::shared_ptr<LanguageFamily> Languages_;
-    std::optional<std::vector<std::vector<std::string>>> LanguageNames_;
+    std::optional<TableData> LanguageNames_;
 
     QAction *NewFileAction_;
     QAction *OpenFileAction_;

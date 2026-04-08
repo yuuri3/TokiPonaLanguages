@@ -8,6 +8,7 @@
 #include "PeriodDifference.h"
 
 class Language;
+struct TableData;
 
 /**
  * @brief 語族
@@ -27,7 +28,7 @@ public:
     static std::vector<std::vector<std::string>> RomanAlphabetTable;
 
     static LanguageFamily Create(const std::vector<std::vector<std::string>> &geography, const PhonemeTable &phonemeTable);
-    std::vector<std::vector<std::string>> GetGeography() const;
+    const GeometryTable &GetGeometryTable() const;
     const PhonemeTable &GetPhonemeTable() const;
     void AddDifference(const LanguageDifference &languageDifference);
 
@@ -36,7 +37,7 @@ public:
 
     const bool Empty() const;
     std::optional<Language> CalculateLanguage(const std::string place, const int period);
-    const std::vector<std::vector<std::string>> ToString() const;
+    const TableData GetLanguageNames() const;
 
     const std::vector<PhonologicalChange> GetPhonologicalChanges(const std::string place, const int period);
     const std::vector<std::string> GetPhonologicalChangeStrings(const std::string place, const int period);

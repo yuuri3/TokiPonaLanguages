@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "DialogLayout.h"
 #include "PeriodDifference.h"
+#include "TableData.h"
 
 class LanguageFamily;
 
@@ -30,7 +31,7 @@ private:
 
     DialogLayout Layout_;
 
-    std::vector<std::vector<std::string>> CurrentLanguages_;
+    TableData CurrentLanguages_;
     std::vector<PeriodDifference> PeriodDifferences_;
 
     void UpdateList();

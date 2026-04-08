@@ -1,6 +1,7 @@
 #include "SelectWordDialog.h"
 #include "Utility.h"
 #include "HelpDialog.h"
+#include "TableData.h"
 
 namespace
 {
@@ -116,6 +117,7 @@ void SelectWordDialog::SearchWord()
         query = lines[0];
     }
 
+    std::vector<std::string> headers = {"単語", "訳語"};
     std::vector<std::vector<std::string>> wordData;
 
     DisplayedWordIds_.clear();
@@ -141,7 +143,8 @@ void SelectWordDialog::SearchWord()
         }
     }
 
-    LayoutData_.SetData(tableId, {"単語", "訳語"}, wordData);
+    TableData data = {headers, wordData};
+    LayoutData_.SetData(tableId, data);
 }
 
 /**

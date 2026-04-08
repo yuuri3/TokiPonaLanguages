@@ -38,10 +38,10 @@ SelectLanguageDialog::SelectLanguageDialog(QWidget *parent)
  * @param place 地域
  * @param period 時代
  */
-void SelectLanguageDialog::Set(const std::vector<std::vector<std::string>> languageNames, int *place, int *period)
+void SelectLanguageDialog::Set(const TableData &languageNames, int *place, int *period)
 {
     LanguageNames_ = languageNames;
-    LayoutData_.SetData(TABLE_ID, {}, languageNames);
+    LayoutData_.SetData(TABLE_ID, languageNames);
     Place_ = place;
     Period_ = period;
 }
@@ -65,14 +65,14 @@ void SelectLanguageDialog::Unimplemented()
 void SelectLanguageDialog::SelectLanguage(int row, int column)
 {
     // 1行目（インデックス0）と2行目（インデックス1）は選択対象外とする
-    if (row < 3 || column < 1)
+    if (row < 2 || column < 1)
     {
         return;
     }
 
     SelectedPlace_ = column - 1;
     SelectedPeriod_ = row - 1;
-    LayoutData_.SetText(SELECTED_LANGUAGE_ID, (*LanguageNames_)[SelectedPeriod_][SelectedPlace_]);
+    LayoutData_.SetText(SELECTED_LANGUAGE_ID, LanguageNames_->Body[SelectedPeriod_][SelectedPlace_]);
     LayoutData_.ActivateButton(OK_BUTTON_ID, true);
 }
 

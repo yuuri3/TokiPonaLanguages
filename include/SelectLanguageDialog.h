@@ -4,6 +4,7 @@
 #include "LanguageFamily.h"
 #include "Language.h"
 #include "DialogLayout.h"
+#include "TableData.h"
 
 class SelectLanguageDialog : public QDialog
 {
@@ -13,7 +14,7 @@ public:
     explicit SelectLanguageDialog(QWidget *parent = nullptr);
     ~SelectLanguageDialog() override = default;
 
-    void Set(const std::vector<std::vector<std::string>> languageNames, int *place, int *period);
+    void Set(const TableData &languageNames, int *place, int *period);
 
 public slots:
     void Unimplemented();
@@ -23,7 +24,7 @@ public slots:
 private:
     DialogLayout LayoutData_;
 
-    std::optional<std::vector<std::vector<std::string>>> LanguageNames_;
+    std::optional<TableData> LanguageNames_;
     int *Place_;
     int *Period_;
     int SelectedPlace_;

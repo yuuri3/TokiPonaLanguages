@@ -72,7 +72,7 @@ void EditLoanwordDialog::SetLanguages(const std::shared_ptr<LanguageFamily> lang
     Languages_ = languages;
 }
 
-void EditLoanwordDialog::SetLanguageNames(const std::vector<std::vector<std::string>> languageNames)
+void EditLoanwordDialog::SetLanguageNames(const TableData &languageNames)
 {
     LanguageNames_ = languageNames;
 }
@@ -125,17 +125,17 @@ void EditLoanwordDialog::SelectLanguage()
     subWindow.Set(*LanguageNames_, &place, &period);
     subWindow.exec();
 
-    if (place < 0 || period < 0)
+    if (place < 0 || period < 1)
     {
         return;
     }
 
     // 選択された言語名をUIに反映
-    layoutData_.SetText(LANGUAGE_ID, LanguageNames_->at(period).at(place));
+    layoutData_.SetText(LANGUAGE_ID, LanguageNames_->Body.at(period).at(place));
 
     // 内部状態の更新（EditPhonologicalChangeDialog の実装を参考）
-    TargetPlace_ = LanguageNames_->at(0).at(place);
-    TargetPeriod_ = period - 1;
+    TargetPlace_ = LanguageNames_->Header.at(place);
+    TargetPeriod_ = period;
     TargetLanguage_ = Languages_->CalculateLanguage(TargetPlace_, TargetPeriod_);
 
     if (TargetLanguage_)
@@ -168,17 +168,17 @@ void EditLoanwordDialog::SelectReferenceLanguage()
     subWindow.Set(*LanguageNames_, &place, &period);
     subWindow.exec();
 
-    if (place < 0 || period < 0)
+    if (place < 0 || period < 1)
     {
         return;
     }
 
     // 選択された言語名をUIの参照言語テキストボックスに反映
-    layoutData_.SetText(REFERENCE_LANGUAGE_ID, LanguageNames_->at(period).at(place));
+    layoutData_.SetText(REFERENCE_LANGUAGE_ID, LanguageNames_->Body.at(period).at(place));
 
     // 後続の借用処理のため、内部状態の更新を推奨
-    ReferencePlace_ = LanguageNames_->at(0).at(place);
-    ReferencePeriod_ = period - 1;
+    ReferencePlace_ = LanguageNames_->Header.at(place);
+    ReferencePeriod_ = period;
     ReferenceLanguage_ = Languages_->CalculateLanguage(ReferencePlace_, ReferencePeriod_);
 
     if (TargetLanguage_ && ReferenceLanguage_)

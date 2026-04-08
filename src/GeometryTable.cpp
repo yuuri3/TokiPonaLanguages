@@ -1,5 +1,6 @@
 #include "GeometryTable.h"
 #include "Utility.h"
+#include "TableData.h"
 
 /**
  * @brief ジオメトリマスタデータ（場所名・グリッドマップ）を出力する
@@ -130,14 +131,15 @@ void GeometryTable::InitializeFromVector(const std::vector<std::vector<std::stri
  * @brief ジオメトリテーブルを2次元配列に変換する
  * * @return std::vector<std::vector<std::string>>
  */
-std::vector<std::vector<std::string>> GeometryTable::ToVector() const
+TableData GeometryTable::GetData() const
 {
     if (RowCount_ == 0 || ColumnCount_ == 0)
     {
         return {};
     }
 
-    std::vector<std::vector<std::string>> result(RowCount_, std::vector<std::string>(ColumnCount_, ""));
+    TableData result;
+    result.Body = std::vector<std::vector<std::string>>(RowCount_, std::vector<std::string>(ColumnCount_, ""));
 
     for (const auto &[coord, id] : GridMap_)
     {
@@ -146,7 +148,7 @@ std::vector<std::vector<std::string>> GeometryTable::ToVector() const
         {
             if (coord.second < RowCount_ && coord.first < ColumnCount_)
             {
-                result[coord.second][coord.first] = it->second;
+                result.Body[coord.second][coord.first] = it->second;
             }
         }
     }

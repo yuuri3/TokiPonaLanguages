@@ -1,4 +1,5 @@
 #include "DialogLayout.h"
+#include "TableData.h"
 
 namespace
 {
@@ -715,12 +716,13 @@ void DialogLayout::SetData(const int id, const std::vector<std::vector<std::stri
  * @brief 値セット
  *
  * @param id ID
- * @param headers ヘッダ
- * @param values 入力値
+ * @param data 入力値
  * @param isEdit セルを編集可能か
  */
-void DialogLayout::SetData(const int id, const std::vector<std::string> &haeders, const std::vector<std::vector<std::string>> &values, bool isEdit)
+void DialogLayout::SetData(const int id, const TableData &data, bool isEdit)
 {
+    const auto headers = data.Header;
+    const auto values = data.Body;
     if (Elements_.count(id) == 0 || UI_.Inputs.count(id) == 0 || Elements_.at(id).DataType == DialogDataType::NoData)
     {
         return;
@@ -732,7 +734,7 @@ void DialogLayout::SetData(const int id, const std::vector<std::string> &haeders
         if (auto *tableWidget = qobject_cast<QTableWidget *>(UI_.Inputs.at(id)))
         {
             tableWidget->blockSignals(true);
-            DisplayTable(tableWidget, haeders, values, isEdit);
+            DisplayTable(tableWidget, headers, values, isEdit);
             tableWidget->blockSignals(false);
         }
     }

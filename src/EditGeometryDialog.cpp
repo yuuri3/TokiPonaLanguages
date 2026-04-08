@@ -32,7 +32,7 @@ void EditGeometryDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
     Languages_ = languages;
     if (Languages_)
     {
-        CurrentGeometryTable_ = Languages_->GetGeography();
+        CurrentGeometryTable_ = Languages_->GetGeometryTable().GetData();
     }
     UpdateTable();
 }
@@ -77,7 +77,7 @@ void EditGeometryDialog::UpdateTable()
 {
     if (Languages_)
     {
-        Layout_.SetData(TABLE_ID, {}, CurrentGeometryTable_, true);
+        Layout_.SetData(TABLE_ID, CurrentGeometryTable_, true);
     }
 }
 
@@ -255,50 +255,50 @@ void EditGeometryDialog::ApplyDifference(const GeometryDifference &difference)
     switch (difference.GetOperationType())
     {
     case GeometryOperationType::ChangePlaceName:
-        if (difference.GetTargetRow() < static_cast<int>(CurrentGeometryTable_.size()) &&
-            difference.GetTargetColumn() < static_cast<int>(CurrentGeometryTable_[difference.GetTargetRow()].size()))
+        if (difference.GetTargetRow() < static_cast<int>(CurrentGeometryTable_.Body.size()) &&
+            difference.GetTargetColumn() < static_cast<int>(CurrentGeometryTable_.Body[difference.GetTargetRow()].size()))
         {
-            CurrentGeometryTable_[difference.GetTargetRow()][difference.GetTargetColumn()] = difference.GetPlaceName();
+            CurrentGeometryTable_.Body[difference.GetTargetRow()][difference.GetTargetColumn()] = difference.GetPlaceName();
         }
         break;
 
     case GeometryOperationType::AddRowAbove:
     {
-        int columnCount = CurrentGeometryTable_.empty() ? 0 : static_cast<int>(CurrentGeometryTable_[0].size());
-        CurrentGeometryTable_.insert(CurrentGeometryTable_.begin() + difference.GetTargetRow(), std::vector<std::string>(columnCount, ""));
+        int columnCount = CurrentGeometryTable_.Body.empty() ? 0 : static_cast<int>(CurrentGeometryTable_.Body[0].size());
+        CurrentGeometryTable_.Body.insert(CurrentGeometryTable_.Body.begin() + difference.GetTargetRow(), std::vector<std::string>(columnCount, ""));
         break;
     }
 
     case GeometryOperationType::AddRowBelow:
     {
-        int columnCount = CurrentGeometryTable_.empty() ? 0 : static_cast<int>(CurrentGeometryTable_[0].size());
-        CurrentGeometryTable_.insert(CurrentGeometryTable_.begin() + difference.GetTargetRow() + 1, std::vector<std::string>(columnCount, ""));
+        int columnCount = CurrentGeometryTable_.Body.empty() ? 0 : static_cast<int>(CurrentGeometryTable_.Body[0].size());
+        CurrentGeometryTable_.Body.insert(CurrentGeometryTable_.Body.begin() + difference.GetTargetRow() + 1, std::vector<std::string>(columnCount, ""));
         break;
     }
 
     case GeometryOperationType::DeleteRow:
-        if (difference.GetTargetRow() < static_cast<int>(CurrentGeometryTable_.size()))
+        if (difference.GetTargetRow() < static_cast<int>(CurrentGeometryTable_.Body.size()))
         {
-            CurrentGeometryTable_.erase(CurrentGeometryTable_.begin() + difference.GetTargetRow());
+            CurrentGeometryTable_.Body.erase(CurrentGeometryTable_.Body.begin() + difference.GetTargetRow());
         }
         break;
 
     case GeometryOperationType::AddColumnLeft:
-        for (auto &rowVector : CurrentGeometryTable_)
+        for (auto &rowVector : CurrentGeometryTable_.Body)
         {
             rowVector.insert(rowVector.begin() + difference.GetTargetColumn(), "");
         }
         break;
 
     case GeometryOperationType::AddColumnRight:
-        for (auto &rowVector : CurrentGeometryTable_)
+        for (auto &rowVector : CurrentGeometryTable_.Body)
         {
             rowVector.insert(rowVector.begin() + difference.GetTargetColumn() + 1, "");
         }
         break;
 
     case GeometryOperationType::DeleteColumn:
-        for (auto &rowVector : CurrentGeometryTable_)
+        for (auto &rowVector : CurrentGeometryTable_.Body)
         {
             if (difference.GetTargetColumn() < static_cast<int>(rowVector.size()))
             {

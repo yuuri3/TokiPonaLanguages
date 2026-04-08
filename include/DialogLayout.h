@@ -6,6 +6,8 @@ constexpr int HELP_BUTTON_ID = -1;
 constexpr int OK_BUTTON_ID = -2;
 constexpr int CANCEL_BUTTON_ID = -3;
 
+struct TableData;
+
 /**
  * @brief 各要素が扱うデータ型
  */
@@ -108,7 +110,7 @@ public:
 
     void SetData(const int id, const std::vector<std::string> &values);
     void SetData(const int id, const std::vector<std::vector<std::string>> &values);
-    void SetData(const int id, const std::vector<std::string> &haeders, const std::vector<std::vector<std::string>> &values, bool isEdit = false);
+    void SetData(const int id, const TableData &data, bool isEdit = false);
 
     const std::vector<std::string> GetLine(const int id);
     const int GetLineCount(const int id) const;

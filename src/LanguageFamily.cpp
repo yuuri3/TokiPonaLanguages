@@ -1,6 +1,7 @@
 #include "LanguageFamily.h"
 #include "Language.h"
 #include "Utility.h"
+#include "TableData.h"
 
 namespace
 {
@@ -55,9 +56,9 @@ LanguageFamily LanguageFamily::Create(const std::vector<std::vector<std::string>
  * @brief 地理を取得
  * * @return std::vector<std::vector<std::string>>
  */
-std::vector<std::vector<std::string>> LanguageFamily::GetGeography() const
+const GeometryTable &LanguageFamily::GetGeometryTable() const
 {
-    return Geography_.ToVector();
+    return Geography_;
 }
 
 /**
@@ -625,19 +626,19 @@ bool LanguageFamily::SetLoanwords(const std::string &targetPlace, const std::str
  *
  * @return const std::vector<std::vector<std::string>>
  */
-const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
+const TableData LanguageFamily::GetLanguageNames() const
 {
     int currentPeriod = 0;
-    std::vector<std::vector<std::string>> result;
+    TableData result;
     std::vector<std::string> line;
     int period = 0;
     std::map<std::string, Language> languages;
 
-    for (const auto &place : getNonEmptyStrings(GetGeography()))
+    for (const auto &place : getNonEmptyStrings(Geography_.GetData().Body))
     {
         line.emplace_back(place);
     }
-    result.emplace_back(line);
+    result.Header = line;
     line.clear();
 
     for (const auto &diff : languageDifference_)
@@ -645,7 +646,7 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
         while (diff.GetPeriod() > currentPeriod)
         {
             currentPeriod++;
-            for (const auto &place : getNonEmptyStrings(GetGeography()))
+            for (const auto &place : getNonEmptyStrings(Geography_.GetData().Body))
             {
                 if (languages.count(place) == 0 || languages.find(place) == languages.end() || languages.at(place).Empty())
                 {
@@ -656,7 +657,7 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
                     line.emplace_back(PhonemeTable_.ConvertToString(languages.at(place).GetWord(0)->GetForm()));
                 }
             }
-            result.emplace_back(line);
+            result.Body.emplace_back(line);
             line.clear();
         }
         if (!LanguageUtility::ApplyDifference(diff, languages, this))
@@ -665,7 +666,7 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
         }
     }
 
-    for (const auto &place : getNonEmptyStrings(GetGeography()))
+    for (const auto &place : getNonEmptyStrings(Geography_.GetData().Body))
     {
         if (languages.count(place) == 0 || languages.find(place) == languages.end() || languages.at(place).Empty())
         {
@@ -676,7 +677,7 @@ const std::vector<std::vector<std::string>> LanguageFamily::ToString() const
             line.emplace_back(PhonemeTable_.ConvertToString(languages.at(place).GetWord(0)->GetForm()));
         }
     }
-    result.emplace_back(line);
+    result.Body.emplace_back(line);
     line.clear();
 
     return result;

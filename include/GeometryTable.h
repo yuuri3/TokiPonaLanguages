@@ -3,6 +3,8 @@
 #include <stdafx.h>
 #include "Utility.h"
 
+struct TableData;
+
 class GeometryTable
 {
 public:
@@ -10,7 +12,7 @@ public:
     bool Import(std::ifstream &file);
 
     void InitializeFromVector(const std::vector<std::vector<std::string>> &geography);
-    std::vector<std::vector<std::string>> ToVector() const;
+    TableData GetData() const;
 
     void SetPlaceName(const int row, const int column, const std::string &name);
     void AddRowAbove(const int row);

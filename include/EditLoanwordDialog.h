@@ -4,6 +4,7 @@
 #include "DialogLayout.h"
 #include "LanguageFamily.h"
 #include "Language.h"
+#include "TableData.h"
 
 class EditLoanwordDialog : public QDialog
 {
@@ -14,7 +15,7 @@ public:
     ~EditLoanwordDialog() override = default;
 
     void SetLanguages(const std::shared_ptr<LanguageFamily> languages);
-    void SetLanguageNames(const std::vector<std::vector<std::string>> languageNames);
+    void SetLanguageNames(const TableData &languageNames);
 
 private slots:
     void ShowHelp();
@@ -30,7 +31,7 @@ private:
     DialogLayout layoutData_;
 
     std::shared_ptr<LanguageFamily> Languages_;
-    std::optional<std::vector<std::vector<std::string>>> LanguageNames_;
+    std::optional<TableData> LanguageNames_;
     std::optional<Language> TargetLanguage_;
     std::string TargetPlace_;
     int TargetPeriod_;

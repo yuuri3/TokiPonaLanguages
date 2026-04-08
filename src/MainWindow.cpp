@@ -130,14 +130,14 @@ void MainWindow::Unimplemented()
  */
 void MainWindow::DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> languages)
 {
-    LanguageNames_ = languages->ToString();
+    LanguageNames_ = languages->GetLanguageNames();
     if (!LanguageNames_)
     {
         return;
     }
-    LayoutData_.SetData(MAIN_TABLE_ID, {}, *LanguageNames_);
+    LayoutData_.SetData(MAIN_TABLE_ID, *LanguageNames_);
 
-    if (LanguageNames_->empty() || LanguageNames_->at(0).empty())
+    if (LanguageNames_->Header.empty() || LanguageNames_->Body.empty())
     {
         SaveFileAction_->setEnabled(false);
         PhonologicalChangeAction_->setEnabled(false);
@@ -373,30 +373,30 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     }
 
     auto cellInfo = LayoutData_.GetCellInfo(MAIN_TABLE_ID, pos);
-    if (!cellInfo || cellInfo->row < 1)
+    if (!cellInfo || cellInfo->row < 0)
         return;
 
     const int row = cellInfo->row;
     const int column = cellInfo->column;
-    if (row < 0 && row >= LanguageNames_->size())
+    if (row < 0 && row >= LanguageNames_->Body.size())
     {
         return;
     }
-    if (column < 0 && column >= LanguageNames_->at(row).size())
+    if (column < 0 && column >= LanguageNames_->Body.at(0).size())
     {
         return;
     }
-    const std::string place = LanguageNames_->at(0).at(column);
-    const int period = row - 1;
+    const std::string place = LanguageNames_->Header.at(column);
+    const int period = row;
 
     QMenu menu(this);
     QAction *editAction = menu.addAction("個別言語編集");
-    if (LanguageNames_->at(row).at(column).empty())
+    if (LanguageNames_->Body.at(period).at(column).empty())
     {
         editAction->setEnabled(false);
     }
     QAction *editPhonologicalChange = menu.addAction("音韻変化編集");
-    if (LanguageNames_->at(row).at(column).empty() || row < 2)
+    if (LanguageNames_->Body.at(period).at(column).empty() || row < 1)
     {
         editPhonologicalChange->setEnabled(false);
     }

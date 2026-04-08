@@ -57,6 +57,7 @@ add_library(src
     ../include/Random.h
     ../include/SelectLanguageDialog.h
     ../include/SelectWordDialog.h
+    ../include/TableData.h
     ../include/UnimplementedDialog.h
     ../include/Utility.h
     ../include/Word.h

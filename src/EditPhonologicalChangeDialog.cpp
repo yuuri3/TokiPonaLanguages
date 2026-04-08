@@ -77,7 +77,7 @@ void EditPhonologicalChangeDialog::SetLanguages(const std::shared_ptr<LanguageFa
  *
  * @param languageNames 言語名
  */
-void EditPhonologicalChangeDialog::SetLanguageNames(const std::vector<std::vector<std::string>> languageNames)
+void EditPhonologicalChangeDialog::SetLanguageNames(const TableData &languageNames)
 {
     LanguageNames_ = languageNames;
 }
@@ -95,12 +95,12 @@ void EditPhonologicalChangeDialog::SetPlaceAndPeriod(const int row, const int co
         return;
     }
 
-    Place_ = LanguageNames_->at(0).at(column);
-    Period_ = row - 1;
+    Place_ = LanguageNames_->Header.at(column);
+    Period_ = row;
 
     DisplayPhonologicalChanges(Place_, Period_);
 
-    LayoutData_.SetText(NAME_ID, LanguageNames_->at(row).at(column));
+    LayoutData_.SetText(NAME_ID, LanguageNames_->Body.at(row).at(column));
     LayoutData_.ActivateButton(PHONOLOGICAL_CHANGE_ID, true);
     LayoutData_.ActivateButton(OK_BUTTON_ID, true);
 }

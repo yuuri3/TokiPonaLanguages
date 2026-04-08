@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "GeometryDifference.h"
 #include "DialogLayout.h"
+#include "TableData.h"
 
 class LanguageFamily;
 
@@ -33,7 +34,7 @@ private:
     std::vector<GeometryDifference> GeometryDifferences_;
 
     // 現在の地理データの状態を保持するメンバ
-    std::vector<std::vector<std::string>> CurrentGeometryTable_;
+    TableData CurrentGeometryTable_;
 
     void UpdateTable();
     void ApplyDifference(const GeometryDifference &difference);

@@ -4,6 +4,7 @@
 #include "DialogLayout.h"
 #include "LanguageFamily.h"
 #include "Language.h"
+#include "TableData.h"
 
 class EditPhonologicalChangeDialog : public QDialog
 {
@@ -14,7 +15,7 @@ public:
     ~EditPhonologicalChangeDialog() override = default;
 
     void SetLanguages(const std::shared_ptr<LanguageFamily> languages);
-    void SetLanguageNames(const std::vector<std::vector<std::string>> languageNames);
+    void SetLanguageNames(const TableData &languageNames);
     void SetPlaceAndPeriod(const int row, const int column);
 
 private slots:
@@ -32,7 +33,7 @@ private:
     DialogLayout LayoutData_;
 
     std::shared_ptr<LanguageFamily> Languages_;
-    std::optional<std::vector<std::vector<std::string>>> LanguageNames_;
+    std::optional<TableData> LanguageNames_;
     std::string Place_;
     int Period_;
 

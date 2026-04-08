@@ -3,6 +3,7 @@
 #include "EditWordDialog.h"
 #include "LanguageFamily.h"
 #include "Utility.h"
+#include "TableData.h"
 
 constexpr int tableId = 0;
 constexpr int searchId = 1;
@@ -81,6 +82,7 @@ void EditLanguageDialog::UpdateTable()
             return;
         }
 
+        std::vector<std::string> header = {"単語", "訳語"};
         std::vector<std::vector<std::string>> wordData;
         std::vector<std::string> line;
 
@@ -97,7 +99,8 @@ void EditLanguageDialog::UpdateTable()
             line.clear();
         }
 
-        Layout_.SetData(tableId, {"単語", "訳語"}, wordData);
+        TableData data = {header, wordData};
+        Layout_.SetData(tableId, data);
     }
 }
 
