@@ -135,7 +135,7 @@ void MainWindow::DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> lan
     {
         return;
     }
-    LayoutData_.SetData(MAIN_TABLE_ID, *LanguageNames_);
+    LayoutData_.SetData(MAIN_TABLE_ID, LanguageNames_->Fill());
 
     if (LanguageNames_->Header.empty() || LanguageNames_->Body.empty())
     {
@@ -378,11 +378,11 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
 
     const int row = cellInfo->row;
     const int column = cellInfo->column;
-    if (row < 0 && row >= LanguageNames_->Body.size())
+    if (row < 0 || row >= LanguageNames_->Body.size())
     {
         return;
     }
-    if (column < 0 && column >= LanguageNames_->Body.at(0).size())
+    if (column < 0 || column >= LanguageNames_->Body.at(0).size())
     {
         return;
     }

@@ -13,16 +13,40 @@ namespace
             QStyledItemDelegate::paint(painter, option, index);
 
             painter->save();
-            QPen pen;
-            pen.setWidth(2);
-            pen.setColor(Qt::black);
-            painter->setPen(pen);
 
             QRect rectangle = option.rect;
             int row = index.row();
             int column = index.column();
             int rowCount = index.model()->rowCount();
             int columnCount = index.model()->columnCount();
+
+            // =========================
+            // 細い線（内側グリッド）
+            // =========================
+            QPen thinPen;
+            thinPen.setWidthF(0.3);
+            thinPen.setColor(QColor(180, 180, 180)); // 薄いグレー
+            painter->setPen(thinPen);
+
+            // 右側の線（最終列以外）
+            if (column < columnCount - 1)
+            {
+                painter->drawLine(rectangle.topRight(), rectangle.bottomRight());
+            }
+
+            // 下側の線（最終行以外）
+            if (row < rowCount - 1)
+            {
+                painter->drawLine(rectangle.bottomLeft(), rectangle.bottomRight());
+            }
+
+            // =========================
+            // 太い線（既存の強調線）
+            // =========================
+            QPen thickPen;
+            thickPen.setWidth(2);
+            thickPen.setColor(Qt::black);
+            painter->setPen(thickPen);
 
             // 1行目の上 (外周)
             if (row == 0)
@@ -75,6 +99,8 @@ namespace
         table->clear();
         table->setRowCount(0);
         table->setColumnCount(0);
+        table->setColumnWidth(0, 20);
+        table->verticalHeader()->setDefaultSectionSize(32);
 
         if (!data.empty())
         {
@@ -91,23 +117,31 @@ namespace
             table->setRowCount(rows);
             table->setColumnCount(cols);
 
-            // 1行目（インデックス0）を空文字のアイテムで初期化
+            // 1行目（インデックス0）をヘッダで初期化
             for (int columnIndex = 0; columnIndex < cols; ++columnIndex)
             {
+                QTableWidgetItem *item;
+
                 if (columnIndex != 0 && columnIndex < headers.size() + 1)
                 {
-                    table->setItem(0, columnIndex, new QTableWidgetItem(QString::fromStdString(headers[columnIndex - 1])));
+                    item = new QTableWidgetItem(QString::fromStdString(headers[columnIndex - 1]));
                 }
                 else
                 {
-                    table->setItem(0, columnIndex, new QTableWidgetItem(""));
+                    item = new QTableWidgetItem("");
                 }
+
+                // ヘッダを青色で表示
+                item->setBackground(QBrush(QColor(200, 220, 255)));
+                item->setForeground(QBrush(Qt::black));
+
+                table->setItem(0, columnIndex, item);
             }
 
             // 1列目（インデックス0）を空文字のアイテムで初期化（2行目以降）
             for (int rowIndex = 1; rowIndex < rows; ++rowIndex)
             {
-                table->setItem(rowIndex, 0, new QTableWidgetItem(""));
+                table->setItem(rowIndex, 0, new QTableWidgetItem(QString::fromStdString(std::to_string(rowIndex - 1))));
             }
 
             // 3. データの流し込み（2行目2列目、すなわちインデックス(1, 1)から開始）
@@ -270,6 +304,8 @@ void DialogLayout::GenerateLayout(QWidget *parent)
         parent->setWindowTitle(QString::fromStdString(MainTitle_));
     }
     UI_.MainLayout = new QVBoxLayout(parent);
+    UI_.MainLayout->setContentsMargins(12, 12, 12, 12);
+    UI_.MainLayout->setSpacing(10);
 
     // ==========================================
     // 1. ヘルプボタン (最上部・右寄せ)
@@ -293,7 +329,16 @@ void DialogLayout::GenerateLayout(QWidget *parent)
     UI_.MainLayout->addWidget(scrollArea);
 
     auto *scrollContent = new QWidget(scrollArea);
-    auto *contentLayout = new QVBoxLayout(scrollContent);
+    auto *outerLayout = new QVBoxLayout(scrollContent);
+    outerLayout->setContentsMargins(0, 0, 0, 0);
+
+    // ★追加：グループボックス
+    auto *groupBox = new QGroupBox(QString::fromStdString(MainTitle_), scrollContent);
+    auto *contentLayout = new QVBoxLayout(groupBox);
+    contentLayout->setContentsMargins(10, 10, 10, 10);
+    contentLayout->setSpacing(8);
+
+    outerLayout->addWidget(groupBox);
     scrollArea->setWidget(scrollContent);
 
     // ==========================================
@@ -318,7 +363,14 @@ void DialogLayout::GenerateLayout(QWidget *parent)
         auto *titleLayout = new QHBoxLayout();
         if (!element.Title.empty())
         {
-            titleLayout->addWidget(new QLabel(QString::fromStdString(element.Title), scrollContent));
+            auto *label = new QLabel(QString::fromStdString(element.Title), scrollContent);
+
+            // ★追加
+            QFont font = label->font();
+            font.setBold(true);
+            label->setFont(font);
+
+            titleLayout->addWidget(label);
         }
 
         if (element.HasButton)
@@ -379,7 +431,14 @@ void DialogLayout::GenerateLayout(QWidget *parent)
         else if (element.DataType == DialogDataType::Table)
         {
             auto table = new QTableWidget(scrollContent);
-            contentLayout->addWidget(table);
+
+            // ★追加（重要）
+            table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            table->horizontalHeader()->setStretchLastSection(true);
+            table->setAlternatingRowColors(true);
+            table->setFrameShape(QFrame::StyledPanel);
+
+            contentLayout->addWidget(table, 1);
 
             if (element.HasContextMenu)
             {
@@ -397,6 +456,7 @@ void DialogLayout::GenerateLayout(QWidget *parent)
     if (HasOKButton_ || HasCancelButton_)
     {
         auto *buttonLayout = new QHBoxLayout();
+        buttonLayout->setContentsMargins(0, 10, 0, 0); // ★追加
         buttonLayout->addStretch();
 
         if (HasOKButton_)

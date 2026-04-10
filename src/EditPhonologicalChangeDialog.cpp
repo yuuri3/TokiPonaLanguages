@@ -60,6 +60,11 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
     LayoutData_.ConnectButtonClicked(NAME_ID, this, &EditPhonologicalChangeDialog::SelectLanguageName);
     LayoutData_.ConnectButtonClicked(PHONOLOGICAL_CHANGE_ID, this, &EditPhonologicalChangeDialog::AddPhonologicalChange);
     LayoutData_.ConnectContextMenu(PHONOLOGICAL_CHANGE_ID, this, &EditPhonologicalChangeDialog::ShowContextMenu);
+
+    constexpr int WINDOW_HEIGHT = 400;
+    constexpr int WINDOW_WIDTH = 300;
+
+    resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 /**

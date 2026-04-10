@@ -40,3 +40,4 @@
 #include <QPoint>
 #include <QStyledItemDelegate>
 #include <QPainter>
+#include <QGroupBox>

@@ -65,6 +65,11 @@ EditLoanwordDialog::EditLoanwordDialog(QWidget *parent)
     layoutData_.ConnectContextMenu(LOANWORD_ID, this, &EditLoanwordDialog::ShowContextMenu);
 
     SelectedWordID_ = -1;
+
+    constexpr int WINDOW_HEIGHT = 400;
+    constexpr int WINDOW_WIDTH = 300;
+
+    resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 void EditLoanwordDialog::SetLanguages(const std::shared_ptr<LanguageFamily> languages)

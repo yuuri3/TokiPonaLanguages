@@ -20,6 +20,11 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
 
     Layout_.ConnectContextMenu(TABLE_ID, this, &EditGeometryDialog::ShowContextMenu);
     Layout_.ConnectItemChanged(TABLE_ID, this, &EditGeometryDialog::OnItemChanged);
+
+    constexpr int WINDOW_HEIGHT = 300;
+    constexpr int WINDOW_WIDTH = 400;
+
+    resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 /**
@@ -77,7 +82,7 @@ void EditGeometryDialog::UpdateTable()
 {
     if (Languages_)
     {
-        Layout_.SetData(TABLE_ID, CurrentGeometryTable_, true);
+        Layout_.SetData(TABLE_ID, CurrentGeometryTable_.Fill(), true);
     }
 }
 
@@ -109,6 +114,15 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
     const int row = cellInformation->row;
     const int column = cellInformation->column;
     const QPoint globalPos = cellInformation->globalPos;
+
+    if (row < 0 || row >= CurrentGeometryTable_.Body.size())
+    {
+        return;
+    }
+    if (column < 0 || column >= CurrentGeometryTable_.Body.at(0).size())
+    {
+        return;
+    }
 
     // メニューを表示し、選ばれたアクションを取得
     QAction *selectedAction = menu.exec(globalPos);
@@ -192,8 +206,8 @@ void EditGeometryDialog::ShowContextMenu(const QPoint &pos)
  */
 void EditGeometryDialog::OnItemChanged(QTableWidgetItem *item)
 {
-    const int row = item->row();
-    const int column = item->column();
+    const int row = item->row() - 1;
+    const int column = item->column() - 1;
     const std::string name = item->text().toStdString();
 
     if (name.empty())

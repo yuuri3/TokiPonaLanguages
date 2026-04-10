@@ -65,6 +65,11 @@ EditWordDialog::EditWordDialog(QWidget *parent)
     LayoutData_.ConnectButtonClicked(CONTENT_ID, this, &EditWordDialog::AddContentsButtonPushed);
     LayoutData_.ConnectButtonClicked(VARIATION_ID, this, &EditWordDialog::AddVariationsButtonPushed);
     LayoutData_.ConnectButtonClicked(RELATION_ID, this, &EditWordDialog::AddRelationsButtonPushed);
+
+    constexpr int WINDOW_HEIGHT = 400;
+    constexpr int WINDOW_WIDTH = 300;
+
+    resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 /**

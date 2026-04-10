@@ -29,6 +29,11 @@ SelectLanguageDialog::SelectLanguageDialog(QWidget *parent)
     LayoutData_.ConnectClicked(TABLE_ID, this, &SelectLanguageDialog::SelectLanguage);
 
     LayoutData_.ActivateButton(OK_BUTTON_ID, false);
+
+    constexpr int WINDOW_HEIGHT = 300;
+    constexpr int WINDOW_WIDTH = 400;
+
+    resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 /**
@@ -41,7 +46,7 @@ SelectLanguageDialog::SelectLanguageDialog(QWidget *parent)
 void SelectLanguageDialog::Set(const TableData &languageNames, int *place, int *period)
 {
     LanguageNames_ = languageNames;
-    LayoutData_.SetData(TABLE_ID, languageNames);
+    LayoutData_.SetData(TABLE_ID, languageNames.Fill());
     Place_ = place;
     Period_ = period;
 }
@@ -65,7 +70,15 @@ void SelectLanguageDialog::Unimplemented()
 void SelectLanguageDialog::SelectLanguage(int row, int column)
 {
     // 1行目（インデックス0）と2行目（インデックス1）は選択対象外とする
-    if (row < 2 || column < 1)
+    if (!LanguageNames_)
+    {
+        return;
+    }
+    if (row < 2 || row >= LanguageNames_->Body.size() + 1)
+    {
+        return;
+    }
+    if (column < 1 || column >= LanguageNames_->Body.at(0).size() + 1)
     {
         return;
     }

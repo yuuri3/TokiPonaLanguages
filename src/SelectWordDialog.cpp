@@ -40,6 +40,11 @@ SelectWordDialog::SelectWordDialog(QWidget *parent)
     LayoutData_.ConnectClicked(tableId, this, &SelectWordDialog::SelectWord);
 
     LayoutData_.ActivateButton(OK_BUTTON_ID, false);
+
+    constexpr int WINDOW_HEIGHT = 400;
+    constexpr int WINDOW_WIDTH = 300;
+
+    resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 /**

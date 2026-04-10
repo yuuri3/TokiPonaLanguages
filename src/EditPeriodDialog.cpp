@@ -19,6 +19,11 @@ EditPeriodDialog::EditPeriodDialog(QWidget *parent)
     Layout_.ConnectButtonClicked(CANCEL_BUTTON_ID, this, &EditPeriodDialog::reject);
 
     Layout_.ConnectContextMenu(ARRAY_ID, this, &EditPeriodDialog::ShowContextMenu);
+
+    constexpr int WINDOW_HEIGHT = 300;
+    constexpr int WINDOW_WIDTH = 400;
+
+    resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 void EditPeriodDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
@@ -53,7 +58,7 @@ void EditPeriodDialog::UpdateList()
 {
     if (Languages_)
     {
-        Layout_.SetData(ARRAY_ID, CurrentLanguages_, false);
+        Layout_.SetData(ARRAY_ID, CurrentLanguages_.Fill(), false);
     }
 }
 
@@ -77,6 +82,11 @@ void EditPeriodDialog::ShowContextMenu(const QPoint &pos)
 
     const int row = cellInformation->row;
     const QPoint globalPos = cellInformation->globalPos;
+
+    if (row < 0 || row >= CurrentLanguages_.Body.size())
+    {
+        return;
+    }
 
     QAction *selectedAction = menu.exec(globalPos);
 

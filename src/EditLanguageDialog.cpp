@@ -33,6 +33,11 @@ EditLanguageDialog::EditLanguageDialog(QWidget *parent)
     Layout_.ConnectContextMenu(tableId, this, &EditLanguageDialog::ShowContextMenu);
     Layout_.ConnectButtonClicked(searchId, this, &EditLanguageDialog::Unimplemented);
     Layout_.ConnectButtonClicked(addWordId, this, &EditLanguageDialog::Unimplemented);
+
+    constexpr int WINDOW_HEIGHT = 400;
+    constexpr int WINDOW_WIDTH = 300;
+
+    resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 /**
