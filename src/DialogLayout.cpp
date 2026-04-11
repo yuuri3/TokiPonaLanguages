@@ -44,7 +44,7 @@ namespace
             // 太い線（既存の強調線）
             // =========================
             QPen thickPen;
-            thickPen.setWidth(2);
+            thickPen.setWidth(1);
             thickPen.setColor(Qt::black);
             painter->setPen(thickPen);
 
