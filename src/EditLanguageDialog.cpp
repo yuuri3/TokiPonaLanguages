@@ -14,7 +14,7 @@ EditLanguageDialog::EditLanguageDialog(QWidget *parent)
     Layout_ = DialogLayout::Create("個別言語編集", false, false, false);
 
     // 単語表示
-    Layout_.SetTitle(tableId, "");
+    Layout_.SetTitle(tableId, "単語一覧");
     Layout_.SetDataType(tableId, DialogDataType::Table);
     Layout_.SetHasContextMenu(tableId, true);
 
@@ -24,9 +24,9 @@ EditLanguageDialog::EditLanguageDialog(QWidget *parent)
     Layout_.SetButton(searchId, "検索");
 
     // 単語追加ボタン
-    Layout_.SetTitle(addWordId, "");
+    Layout_.SetTitle(addWordId, "単語追加");
     Layout_.SetDataType(addWordId, DialogDataType::NoData);
-    Layout_.SetButton(addWordId, "単語追加");
+    Layout_.SetButton(addWordId, "追加");
 
     Layout_.GenerateLayout(this);
 
