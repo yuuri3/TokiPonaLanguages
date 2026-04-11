@@ -373,6 +373,8 @@ void DialogLayout::GenerateLayout(QWidget *parent)
             titleLayout->addWidget(label);
         }
 
+        titleLayout->addStretch();
+
         if (element.HasButton)
         {
             UI_.Buttons[id] = new QPushButton(QString::fromStdString(element.ButtonName), scrollContent);
@@ -380,7 +382,6 @@ void DialogLayout::GenerateLayout(QWidget *parent)
             UI_.Buttons[id]->setFixedWidth(50);
             titleLayout->addWidget(UI_.Buttons[id]);
         }
-        titleLayout->addStretch();
         contentLayout->addLayout(titleLayout);
 
         // 入力ウィジェットの生成
