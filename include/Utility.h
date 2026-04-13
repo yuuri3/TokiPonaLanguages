@@ -21,6 +21,7 @@ static const std::string SECTION_NAME_PHONEMETABLE_PHONEME_FEATURE = "PHF";
 static const std::string SECTION_NAME_PHONEMETABLE_GRIDMAP = "GRM";
 static const std::string SECTION_NAME_DIFFERENCES = "DIF";
 static const std::string SECTION_NAME_DIFFERENCES_PERIOD = "PRD";
+static const std::string SECTION_NAME_DIFFERENCES_PLACE = "LPL";
 static const std::string SECTION_NAME_DIFFERENCES_TYPE = "TYP";
 static const std::string SECTION_NAME_DIFFERENCES_INT_PARAM = "IPR";
 static const std::string SECTION_NAME_DIFFERENCES_DOUBLE_PARAM = "DPR";

@@ -36,7 +36,7 @@ void EditPeriodDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
     UpdateList();
 }
 
-void EditPeriodDialog::SetPlace(const std::string &place)
+void EditPeriodDialog::SetPlace(const int place)
 {
     Place_ = place;
     UpdateList();

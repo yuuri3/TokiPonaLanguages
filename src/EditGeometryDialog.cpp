@@ -47,7 +47,7 @@ void EditGeometryDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
  *
  * @param place
  */
-void EditGeometryDialog::SetPlace(const std::string &place)
+void EditGeometryDialog::SetPlace(const int place)
 {
     Place_ = place;
     UpdateTable();

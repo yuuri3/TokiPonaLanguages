@@ -15,6 +15,8 @@ private:
     LanguageDifferenceType Type_;
     // 時代
     int Period_;
+    // 地理
+    int Place_;
     // 整数パラメータ
     std::vector<int> IntParam_;
     // 実数パラメータ
@@ -27,27 +29,28 @@ private:
     PhonologicalChange PhonologicalChanges_;
 
 public:
-    static LanguageDifference CreateAddWord(const std::string &place, const int period, const int wordID, const std::vector<int> &wordForm);
-    static LanguageDifference CreateChangeStrength(const std::string &place, const int period, const double strength);
-    static LanguageDifference CreatePhonologicalChange(const std::string &place, const int period, const PhonologicalChange phonologicalChange);
-    static LanguageDifference CreateLoanword(const std::string &place1, const std::string &place2, const int period, const int wordID1, const int wordID2);
-    static LanguageDifference CreateAddCompound(const std::string &place, const int period, const int wordID, const std::vector<int> wordIDs);
-    static LanguageDifference CreateObsoleteWord(const std::string &place, const int period, const int wordID);
-    static LanguageDifference CreateEditPart(const std::string &place, const int period, const int wordID, const int partID, const std::string &part);
-    static LanguageDifference CreateDeletePart(const std::string &place, const int period, const int wordID, const int partID);
-    static LanguageDifference CreateEditTranslation(const std::string &place, const int period, const int wordID, const int partID, const int translationID, const std::string &translation);
-    static LanguageDifference CreateDeleteTranslation(const std::string &place, const int period, const int wordID, const int partID, const int translationID);
-    static LanguageDifference CreateEditTag(const std::string &place, const int period, const int wordID, const int tagID, const std::string &tag);
-    static LanguageDifference CreateDeleteTag(const std::string &place, const int period, const int wordID, const int tagID);
-    static LanguageDifference CreateEditContent(const std::string &place, const int period, const int wordID, const int contentID, const std::string &title, const std::string &content);
-    static LanguageDifference CreateDeleteContent(const std::string &place, const int period, const int wordID, const int contentID);
-    static LanguageDifference CreateEditVariation(const std::string &place, const int period, const int wordID, const int variationID, const std::string &title, const std::vector<int> variation);
-    static LanguageDifference CreateDeleteVariation(const std::string &place, const int period, const int wordID, const int variationID);
-    static LanguageDifference CreateSetRelation(const std::string &place, const int period, const int wordID, const int relationID, const std::string &title, const int targetWordID);
-    static LanguageDifference CreateDeleteRelation(const std::string &place, const int period, const int wordID, const int relationID);
+    static LanguageDifference CreateAddWord(const int place, const int period, const int wordID, const std::vector<int> &wordForm);
+    static LanguageDifference CreateChangeStrength(const int place, const int period, const double strength);
+    static LanguageDifference CreatePhonologicalChange(const int place, const int period, const PhonologicalChange phonologicalChange);
+    static LanguageDifference CreateLoanword(const int place1, const int place2, const int period, const int wordID1, const int wordID2);
+    static LanguageDifference CreateAddCompound(const int place, const int period, const int wordID, const std::vector<int> wordIDs);
+    static LanguageDifference CreateObsoleteWord(const int place, const int period, const int wordID);
+    static LanguageDifference CreateEditPart(const int place, const int period, const int wordID, const int partID, const std::string &part);
+    static LanguageDifference CreateDeletePart(const int place, const int period, const int wordID, const int partID);
+    static LanguageDifference CreateEditTranslation(const int place, const int period, const int wordID, const int partID, const int translationID, const std::string &translation);
+    static LanguageDifference CreateDeleteTranslation(const int place, const int period, const int wordID, const int partID, const int translationID);
+    static LanguageDifference CreateEditTag(const int place, const int period, const int wordID, const int tagID, const std::string &tag);
+    static LanguageDifference CreateDeleteTag(const int place, const int period, const int wordID, const int tagID);
+    static LanguageDifference CreateEditContent(const int place, const int period, const int wordID, const int contentID, const std::string &title, const std::string &content);
+    static LanguageDifference CreateDeleteContent(const int place, const int period, const int wordID, const int contentID);
+    static LanguageDifference CreateEditVariation(const int place, const int period, const int wordID, const int variationID, const std::string &title, const std::vector<int> variation);
+    static LanguageDifference CreateDeleteVariation(const int place, const int period, const int wordID, const int variationID);
+    static LanguageDifference CreateSetRelation(const int place, const int period, const int wordID, const int relationID, const std::string &title, const int targetWordID);
+    static LanguageDifference CreateDeleteRelation(const int place, const int period, const int wordID, const int relationID);
 
     const LanguageDifferenceType &GetType() const;
     const int GetPeriod() const;
+    const int GetPlace() const;
     void AddPeriod();
     void SubPeriod();
 

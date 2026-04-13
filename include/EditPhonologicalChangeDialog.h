@@ -34,8 +34,8 @@ private:
 
     std::shared_ptr<LanguageFamily> Languages_;
     std::optional<TableData> LanguageNames_;
-    std::string Place_;
+    int Place_;
     int Period_;
 
-    void DisplayPhonologicalChanges(const std::string place, const int period);
+    void DisplayPhonologicalChanges(const int place, const int period);
 };

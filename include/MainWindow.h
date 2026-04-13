@@ -55,10 +55,10 @@ private:
 
     void DisplayLanguageFamily(const std::shared_ptr<LanguageFamily> languages);
     bool WarningUnsaveFile();
-    void EditLanguage(const std::string place, const int period);
+    void EditLanguage(const int place, const int period);
     void EditPhonologicalChangeWithIndex(const int row, const int column);
-    void EditPeriod(const std::string place, const int period);
-    void EditGeometry(const std::string place, const int period);
+    void EditPeriod(const int place, const int period);
+    void EditGeometry(const int place, const int period);
 
 protected:
     void closeEvent(QCloseEvent *event) override;

@@ -13,6 +13,8 @@ public:
 
     void InitializeFromVector(const std::vector<std::vector<std::string>> &geography);
     TableData GetData() const;
+    std::vector<int> GetIDs() const;
+    std::string GetPlaceName(const int) const;
 
     void SetPlaceName(const int row, const int column, const std::string &name);
     void AddRowAbove(const int row);

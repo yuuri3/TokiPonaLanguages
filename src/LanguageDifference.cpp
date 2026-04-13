@@ -31,12 +31,12 @@ namespace
  * @param wordForm 語形
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateAddWord(const std::string &place, const int period, const int wordID, const std::vector<int> &wordForm)
+LanguageDifference LanguageDifference::CreateAddWord(const int place, const int period, const int wordID, const std::vector<int> &wordForm)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::AddWord;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.PhonemeIDs_ = wordForm;
     return diff;
@@ -50,12 +50,12 @@ LanguageDifference LanguageDifference::CreateAddWord(const std::string &place, c
  * @param strength 影響度
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateChangeStrength(const std::string &place, const int period, const double strength)
+LanguageDifference LanguageDifference::CreateChangeStrength(const int place, const int period, const double strength)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::ChangeStrength;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.DoubleParam_.emplace_back(strength);
     return diff;
 }
@@ -68,12 +68,12 @@ LanguageDifference LanguageDifference::CreateChangeStrength(const std::string &p
  * @param phonologicalChange 音韻変化
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreatePhonologicalChange(const std::string &place, const int period, const PhonologicalChange phonologicalChange)
+LanguageDifference LanguageDifference::CreatePhonologicalChange(const int place, const int period, const PhonologicalChange phonologicalChange)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::PhonologicalChange;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.PhonologicalChanges_ = phonologicalChange;
     return diff;
 }
@@ -88,14 +88,14 @@ LanguageDifference LanguageDifference::CreatePhonologicalChange(const std::strin
  * @param wordID2 借用先単語ID
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateLoanword(const std::string &place1, const std::string &place2, const int period, const int wordID1, const int wordID2)
+LanguageDifference LanguageDifference::CreateLoanword(const int place1, const int place2, const int period, const int wordID1, const int wordID2)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::Loanword;
-    diff.StringParam_.emplace_back(place1);
+    diff.Place_ = place2;                // 借用先をメインの場所として設定
+    diff.IntParam_.emplace_back(place1); // 借用元
     diff.IntParam_.emplace_back(wordID1);
-    diff.StringParam_.emplace_back(place2);
     diff.IntParam_.emplace_back(wordID2);
     return diff;
 }
@@ -109,12 +109,12 @@ LanguageDifference LanguageDifference::CreateLoanword(const std::string &place1,
  * @param wordIDs 参照単語ID
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateAddCompound(const std::string &place, const int period, const int wordID, const std::vector<int> wordIDs)
+LanguageDifference LanguageDifference::CreateAddCompound(const int place, const int period, const int wordID, const std::vector<int> wordIDs)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::AddCompound;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.insert(diff.IntParam_.end(), wordIDs.begin(), wordIDs.end());
     return diff;
@@ -128,12 +128,12 @@ LanguageDifference LanguageDifference::CreateAddCompound(const std::string &plac
  * @param wordID 単語ID
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateObsoleteWord(const std::string &place, const int period, const int wordID)
+LanguageDifference LanguageDifference::CreateObsoleteWord(const int place, const int period, const int wordID)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::ObsoleteWord;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     return diff;
 }
@@ -148,12 +148,12 @@ LanguageDifference LanguageDifference::CreateObsoleteWord(const std::string &pla
  * @param part 品詞名
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateEditPart(const std::string &place, const int period, const int wordID, const int partID, const std::string &part)
+LanguageDifference LanguageDifference::CreateEditPart(const int place, const int period, const int wordID, const int partID, const std::string &part)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::EditPart;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(partID);
     diff.StringParam_.emplace_back(part);
@@ -169,12 +169,12 @@ LanguageDifference LanguageDifference::CreateEditPart(const std::string &place, 
  * @param partID 品詞ID
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateDeletePart(const std::string &place, const int period, const int wordID, const int partID)
+LanguageDifference LanguageDifference::CreateDeletePart(const int place, const int period, const int wordID, const int partID)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::DeletePart;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(partID);
     return diff;
@@ -191,12 +191,12 @@ LanguageDifference LanguageDifference::CreateDeletePart(const std::string &place
  * @param translation 訳語
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateEditTranslation(const std::string &place, const int period, const int wordID, const int partID, const int translationID, const std::string &translation)
+LanguageDifference LanguageDifference::CreateEditTranslation(const int place, const int period, const int wordID, const int partID, const int translationID, const std::string &translation)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::EditTranslation;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(partID);
     diff.IntParam_.emplace_back(translationID);
@@ -214,12 +214,12 @@ LanguageDifference LanguageDifference::CreateEditTranslation(const std::string &
  * @param translationID 訳語ID
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateDeleteTranslation(const std::string &place, const int period, const int wordID, const int partID, const int translationID)
+LanguageDifference LanguageDifference::CreateDeleteTranslation(const int place, const int period, const int wordID, const int partID, const int translationID)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::DeleteTranslation;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(partID);
     diff.IntParam_.emplace_back(translationID);
@@ -236,12 +236,12 @@ LanguageDifference LanguageDifference::CreateDeleteTranslation(const std::string
  * @param tag タグ
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateEditTag(const std::string &place, const int period, const int wordID, const int tagID, const std::string &tag)
+LanguageDifference LanguageDifference::CreateEditTag(const int place, const int period, const int wordID, const int tagID, const std::string &tag)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::EditTag;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(tagID);
     diff.StringParam_.emplace_back(tag);
@@ -257,12 +257,12 @@ LanguageDifference LanguageDifference::CreateEditTag(const std::string &place, c
  * @param tagID タグID
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateDeleteTag(const std::string &place, const int period, const int wordID, const int tagID)
+LanguageDifference LanguageDifference::CreateDeleteTag(const int place, const int period, const int wordID, const int tagID)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::DeleteTag;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(tagID);
     return diff;
@@ -278,12 +278,12 @@ LanguageDifference LanguageDifference::CreateDeleteTag(const std::string &place,
  * @param content 自由記述
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateEditContent(const std::string &place, const int period, const int wordID, const int contentID, const std::string &title, const std::string &content)
+LanguageDifference LanguageDifference::CreateEditContent(const int place, const int period, const int wordID, const int contentID, const std::string &title, const std::string &content)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::EditContent;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(contentID);
     diff.StringParam_.emplace_back(title);
@@ -300,12 +300,12 @@ LanguageDifference LanguageDifference::CreateEditContent(const std::string &plac
  * @param contentID 自由記述ID
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateDeleteContent(const std::string &place, const int period, const int wordID, const int contentID)
+LanguageDifference LanguageDifference::CreateDeleteContent(const int place, const int period, const int wordID, const int contentID)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::DeleteContent;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(contentID);
     return diff;
@@ -322,7 +322,7 @@ LanguageDifference LanguageDifference::CreateDeleteContent(const std::string &pl
  * @return LanguageDifference
  */
 LanguageDifference LanguageDifference::CreateEditVariation(
-    const std::string &place,
+    const int place,
     const int period,
     const int wordID,
     const int variationID,
@@ -333,8 +333,7 @@ LanguageDifference LanguageDifference::CreateEditVariation(
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::EditTranslation; // 列挙型にこの値があることを想定
 
-    // 文字列パラメータ: 0:地域, 1:タイトル
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.StringParam_.emplace_back(title);
 
     // 数値パラメータ: 0:単語ID, 1:変化形ID
@@ -355,12 +354,12 @@ LanguageDifference LanguageDifference::CreateEditVariation(
  * @param variationID 変化形ID
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateDeleteVariation(const std::string &place, const int period, const int wordID, const int variationID)
+LanguageDifference LanguageDifference::CreateDeleteVariation(const int place, const int period, const int wordID, const int variationID)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::DeleteVariation;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(variationID);
     return diff;
@@ -376,14 +375,13 @@ LanguageDifference LanguageDifference::CreateDeleteVariation(const std::string &
  * @param targetWordID 参照先の単語ID
  * @return LanguageDifference
  */
-LanguageDifference LanguageDifference::CreateSetRelation(const std::string &place, const int period, const int wordID, const int relationID, const std::string &title, const int targetWordID)
+LanguageDifference LanguageDifference::CreateSetRelation(const int place, const int period, const int wordID, const int relationID, const std::string &title, const int targetWordID)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::SetRelation;
 
-    // StringParam: [0]=place, [1]=title
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.StringParam_.emplace_back(title);
 
     // IntParam: [0]=wordID, [1]=relationID, [2]=targetWordID
@@ -394,12 +392,12 @@ LanguageDifference LanguageDifference::CreateSetRelation(const std::string &plac
     return diff;
 }
 
-LanguageDifference LanguageDifference::CreateDeleteRelation(const std::string &place, const int period, const int wordID, const int relationID)
+LanguageDifference LanguageDifference::CreateDeleteRelation(const int place, const int period, const int wordID, const int relationID)
 {
     LanguageDifference diff;
     diff.Period_ = period;
     diff.Type_ = LanguageDifferenceType::DeleteRelation;
-    diff.StringParam_.emplace_back(place);
+    diff.Place_ = place;
     diff.IntParam_.emplace_back(wordID);
     diff.IntParam_.emplace_back(relationID);
     return diff;
@@ -426,6 +424,16 @@ const int LanguageDifference::GetPeriod() const
 }
 
 /**
+ * @brief 地域をゲット
+ *
+ * @return const int
+ */
+const int LanguageDifference::GetPlace() const
+{
+    return Place_;
+}
+
+/**
  * @brief 時代を1加算
  *
  */
@@ -435,7 +443,7 @@ void LanguageDifference::AddPeriod()
 }
 
 /**
- * @brief 時代を1加算
+ * @brief 時代を1減算
  *
  */
 void LanguageDifference::SubPeriod()
@@ -511,7 +519,7 @@ const int LanguageDifference::DoubleParamSize() const
  * @brief 文字列パラメータを取得
  *
  * @param i
- * @return const std::optional<double>
+ * @return const std::optional<std::string>
  */
 const std::optional<std::string> LanguageDifference::StringParam(const int i) const
 {
@@ -542,7 +550,7 @@ const int LanguageDifference::StringParamSize() const
 /**
  * @brief 音素列パラメータ
  *
- * @return const std::vector<Phoneme>&
+ * @return const std::vector<int>&
  */
 const std::vector<int> &LanguageDifference::GetPhonemeParam() const
 {
@@ -597,12 +605,17 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
         return false;
     dif.Period_ = parsedValue;
 
-    // 2. Type
+    // 2. Place
+    if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_PLACE, parsedValue))
+        return false;
+    dif.Place_ = parsedValue;
+
+    // 3. Type
     if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_TYPE, parsedValue))
         return false;
     dif.Type_ = ConvertToLanguageDifferenceType(parsedValue);
 
-    // 3. IntParam
+    // 4. IntParam
     if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_INT_PARAM, count))
         return false;
     for (int i = 0; i < count; ++i)
@@ -614,7 +627,7 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
             dif.IntParam_.push_back(val[0]);
     }
 
-    // 4. DoubleParam
+    // 5. DoubleParam
     if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_DOUBLE_PARAM, count))
         return false;
     for (int i = 0; i < count; ++i)
@@ -626,7 +639,7 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
             dif.DoubleParam_.push_back(val[0]);
     }
 
-    // 5. StringParam
+    // 6. StringParam
     if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_STRING_PARAM, count))
         return false;
     for (int i = 0; i < count; ++i)
@@ -648,7 +661,7 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
         }
     }
 
-    // 6. Form
+    // 7. Form
     if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_FORM, count))
         return false;
     for (int i = 0; i < count; ++i)
@@ -662,7 +675,7 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
 
     auto &phonologicalChange = dif.PhonologicalChanges_;
 
-    // 7. BeforePhoneme
+    // 8. BeforePhoneme
     if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_BEFORE_PHONEME, count))
         return false;
     for (int i = 0; i < count; ++i)
@@ -679,7 +692,7 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
         }
     }
 
-    // 8. AfterPhoneme
+    // 9. AfterPhoneme
     if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_AFTER_PHONEME, count))
         return false;
     for (int i = 0; i < count; ++i)
@@ -696,7 +709,7 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
         }
     }
 
-    // 9. Environment
+    // 10. Environment
     if (!GetCleanLine(line, true) || !ParseStringAndInt(line, SECTION_NAME_DIFFERENCES_ENVIRONMENT, count))
         return false;
     for (int i = 0; i < count; ++i)
@@ -724,6 +737,7 @@ bool LanguageDifference::Import(std::ifstream &file, LanguageDifference &dif)
 void LanguageDifference::Export(std::ofstream &file) const
 {
     file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_PERIOD, GetPeriod()) << "\n";
+    file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_PLACE, GetPlace()) << "\n";
     file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_TYPE, ConvertFromLanguageDifferenceType(GetType())) << "\n";
 
     file << JoinStringAndInt(SECTION_NAME_DIFFERENCES_INT_PARAM, IntParam_.size()) << "\n";

@@ -14,7 +14,7 @@ public:
     ~EditWordDialog() = default;
     void Set(std::shared_ptr<LanguageFamily> languages,
              std::shared_ptr<Language> language,
-             const std::string &place,
+             const int place,
              const int period,
              const int wordID);
 
@@ -35,7 +35,7 @@ private:
     DialogLayout LayoutData_;
 
     std::shared_ptr<LanguageFamily> Languages_;
-    std::string Place_;
+    int Place_;
     int Period_;
     int WordID_;
     std::shared_ptr<Language> Language_;

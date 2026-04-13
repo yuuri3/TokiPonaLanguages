@@ -276,9 +276,9 @@ const bool LanguageFamily::Empty() const
  * @param period 時代
  * @return std::optional<Language>
  */
-std::optional<Language> LanguageFamily::CalculateLanguage(const std::string place, const int period)
+std::optional<Language> LanguageFamily::CalculateLanguage(const int place, const int period)
 {
-    std::map<std::string, Language> languages;
+    std::map<int, Language> languages;
 
     std::vector<const LanguageDifference *> sortedDifferences;
     sortedDifferences.reserve(languageDifference_.size());
@@ -318,7 +318,7 @@ std::optional<Language> LanguageFamily::CalculateLanguage(const std::string plac
  * @param period 時代
  * @return const std::vector<PhonologicalChange> 音韻変化のリスト
  */
-const std::vector<PhonologicalChange> LanguageFamily::GetPhonologicalChanges(const std::string place, const int period)
+const std::vector<PhonologicalChange> LanguageFamily::GetPhonologicalChanges(const int place, const int period)
 {
     std::vector<PhonologicalChange> phonologicalChanges;
 
@@ -327,8 +327,7 @@ const std::vector<PhonologicalChange> LanguageFamily::GetPhonologicalChanges(con
         if (languageDifference.GetPeriod() == period &&
             languageDifference.GetType() == LanguageDifferenceType::PhonologicalChange)
         {
-            const std::optional<std::string> targetPlace = languageDifference.StringParam(0);
-            if (targetPlace.has_value() && targetPlace.value() == place)
+            if (languageDifference.GetPlace() == place)
             {
                 phonologicalChanges.emplace_back(languageDifference.GetPhonologicalChange());
             }
@@ -344,7 +343,7 @@ const std::vector<PhonologicalChange> LanguageFamily::GetPhonologicalChanges(con
  * * @param period 時代
  * * @return const std::vector<std::string>
  */
-const std::vector<std::string> LanguageFamily::GetPhonologicalChangeStrings(const std::string place, const int period)
+const std::vector<std::string> LanguageFamily::GetPhonologicalChangeStrings(const int place, const int period)
 {
     std::vector<std::string> resultStrings;
     const std::vector<PhonologicalChange> changes = GetPhonologicalChanges(place, period);
@@ -412,7 +411,7 @@ const std::vector<std::string> LanguageFamily::GetPhonologicalChangeStrings(cons
  * @param period 時代
  * @param phonologicalChange 音韻変化のリスト
  */
-bool LanguageFamily::SetPhonologicalChanges(const std::string place, const int period, const std::vector<PhonologicalChange> &phonologicalChange)
+bool LanguageFamily::SetPhonologicalChanges(const int place, const int period, const std::vector<PhonologicalChange> &phonologicalChange)
 {
     bool result = true;
     languageDifference_.erase(
@@ -421,8 +420,7 @@ bool LanguageFamily::SetPhonologicalChanges(const std::string place, const int p
                        {
                            if (difference.GetPeriod() == period && difference.GetType() == LanguageDifferenceType::PhonologicalChange)
                            {
-                               const std::optional<std::string> targetPlace = difference.StringParam(0);
-                               if (targetPlace.has_value() && targetPlace.value() == place)
+                               if (difference.GetPlace() == place)
                                {
                                    return true;
                                }
@@ -458,7 +456,7 @@ bool LanguageFamily::SetPhonologicalChanges(const std::string place, const int p
  * @param period 時代
  * @param phonologicalChange 音韻変化の文字列リスト
  */
-bool LanguageFamily::SetPhonologicalChangesFromString(const std::string place, const int period, const std::vector<std::string> &phonologicalChange)
+bool LanguageFamily::SetPhonologicalChangesFromString(const int place, const int period, const std::vector<std::string> &phonologicalChange)
 {
     std::vector<PhonologicalChange> parsedChanges;
 
@@ -549,7 +547,7 @@ bool LanguageFamily::SetPhonologicalChangesFromString(const std::string place, c
  * @param period 時代
  * @return 借用元単語ID, 借用先単語ID
  */
-std::vector<std::pair<int, int>> LanguageFamily::GetLoanwordIDs(const std::string &targetPlace, const std::string &referencePlace, const int period)
+std::vector<std::pair<int, int>> LanguageFamily::GetLoanwordIDs(const int targetPlace, const int referencePlace, const int period)
 {
     std::vector<std::pair<int, int>> loanwords;
 
@@ -584,7 +582,7 @@ std::vector<std::pair<int, int>> LanguageFamily::GetLoanwordIDs(const std::strin
  * @param referenceWordIDs 参照の単語IDのリスト
  * @return bool
  */
-bool LanguageFamily::SetLoanwords(const std::string &targetPlace, const std::string &referencePlace, const int period, const std::vector<std::pair<int, int>> &wordIDs)
+bool LanguageFamily::SetLoanwords(const int targetPlace, const int referencePlace, const int period, const std::vector<std::pair<int, int>> &wordIDs)
 {
     bool result = true;
     languageDifference_.erase(
@@ -593,10 +591,8 @@ bool LanguageFamily::SetLoanwords(const std::string &targetPlace, const std::str
                        {
                            if (difference.GetPeriod() == period && difference.GetType() == LanguageDifferenceType::Loanword)
                            {
-                               const std::optional<std::string> currentTargetPlace = difference.StringParam(0);
-                               const std::optional<std::string> currentReferencePlace = difference.StringParam(1);
-                               if (currentTargetPlace.has_value() && currentTargetPlace.value() == targetPlace &&
-                                   currentReferencePlace.has_value() && currentReferencePlace.value() == referencePlace)
+                               if (difference.GetPlace() == targetPlace &&
+                                   difference.IntParam(0).has_value() && difference.IntParam(0).value() == referencePlace)
                                {
                                    return true;
                                }
@@ -632,11 +628,12 @@ const TableData LanguageFamily::GetLanguageNames() const
     TableData result;
     std::vector<std::string> line;
     int period = 0;
-    std::map<std::string, Language> languages;
+    std::map<int, Language> languages;
 
-    for (const auto &place : getNonEmptyStrings(Geography_.GetData().Body))
+    for (const auto placeID : Geography_.GetIDs())
     {
-        line.emplace_back(place);
+        const auto placeName = Geography_.GetPlaceName(placeID);
+        line.emplace_back(placeName);
     }
     result.Header = line;
     line.clear();
@@ -646,15 +643,15 @@ const TableData LanguageFamily::GetLanguageNames() const
         while (diff.GetPeriod() > currentPeriod)
         {
             currentPeriod++;
-            for (const auto &place : getNonEmptyStrings(Geography_.GetData().Body))
+            for (const auto placeID : Geography_.GetIDs())
             {
-                if (languages.count(place) == 0 || languages.find(place) == languages.end() || languages.at(place).Empty())
+                if (languages.count(placeID) == 0 || languages.find(placeID) == languages.end() || languages.at(placeID).Empty())
                 {
                     line.emplace_back("");
                 }
                 else
                 {
-                    line.emplace_back(PhonemeTable_.ConvertToString(languages.at(place).GetWord(0)->GetForm()));
+                    line.emplace_back(PhonemeTable_.ConvertToString(languages.at(placeID).GetWord(0)->GetForm()));
                 }
             }
             result.Body.emplace_back(line);
@@ -666,16 +663,18 @@ const TableData LanguageFamily::GetLanguageNames() const
         }
     }
 
-    for (const auto &place : getNonEmptyStrings(Geography_.GetData().Body))
+    int placeID = 0;
+    for (const auto &placeName : getNonEmptyStrings(Geography_.GetData().Body))
     {
-        if (languages.count(place) == 0 || languages.find(place) == languages.end() || languages.at(place).Empty())
+        if (languages.count(placeID) == 0 || languages.find(placeID) == languages.end() || languages.at(placeID).Empty())
         {
             line.emplace_back("");
         }
         else
         {
-            line.emplace_back(PhonemeTable_.ConvertToString(languages.at(place).GetWord(0)->GetForm()));
+            line.emplace_back(PhonemeTable_.ConvertToString(languages.at(placeID).GetWord(0)->GetForm()));
         }
+        placeID++;
     }
     result.Body.emplace_back(line);
     line.clear();
@@ -806,43 +805,43 @@ bool LanguageFamily::ImportJson(const std::string &filename)
 
         // 単語追加
         languageDifference_.emplace_back(
-            LanguageDifference::CreateAddWord("0", 0, wordID, word.GetForm()));
+            LanguageDifference::CreateAddWord(0, 0, wordID, word.GetForm()));
 
         // 各要素の編集差分を追加
         for (const auto partID : word.GetPartIDs())
         {
             languageDifference_.emplace_back(
-                LanguageDifference::CreateEditPart("0", 0, wordID, partID, word.GetPart(partID)));
+                LanguageDifference::CreateEditPart(0, 0, wordID, partID, word.GetPart(partID)));
 
             for (const auto translationID : word.GetTranslationIDs(partID))
             {
                 languageDifference_.emplace_back(
-                    LanguageDifference::CreateEditTranslation("0", 0, wordID, partID, translationID, word.GetTranslation(partID, translationID)));
+                    LanguageDifference::CreateEditTranslation(0, 0, wordID, partID, translationID, word.GetTranslation(partID, translationID)));
             }
         }
 
         for (const int tagID : word.GetTagIDs())
         {
             languageDifference_.emplace_back(
-                LanguageDifference::CreateEditTag("0", 0, wordID, tagID, word.GetTag(tagID)));
+                LanguageDifference::CreateEditTag(0, 0, wordID, tagID, word.GetTag(tagID)));
         }
 
         for (const int contentID : word.GetContentIDs())
         {
             languageDifference_.emplace_back(
-                LanguageDifference::CreateEditContent("0", 0, wordID, contentID, word.GetContentTitle(contentID), word.GetContent(contentID)));
+                LanguageDifference::CreateEditContent(0, 0, wordID, contentID, word.GetContentTitle(contentID), word.GetContent(contentID)));
         }
 
         for (const int variationID : word.GetVariationIDs())
         {
             languageDifference_.emplace_back(
-                LanguageDifference::CreateEditVariation("0", 0, wordID, variationID, word.GetVariationTitle(variationID), word.GetVariation(variationID)));
+                LanguageDifference::CreateEditVariation(0, 0, wordID, variationID, word.GetVariationTitle(variationID), word.GetVariation(variationID)));
         }
 
         for (const int relationID : word.GetRelationIDs())
         {
             languageDifference_.emplace_back(
-                LanguageDifference::CreateSetRelation("0", 0, wordID, relationID, word.GetRelationTitle(relationID), word.GetRelationWordID(relationID)));
+                LanguageDifference::CreateSetRelation(0, 0, wordID, relationID, word.GetRelationTitle(relationID), word.GetRelationWordID(relationID)));
         }
 
         wordID++;

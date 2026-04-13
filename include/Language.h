@@ -34,7 +34,7 @@ public:
     void LoanWord(const LanguageDifference &dif, const Language &referenceLanguage);
     const double GetStrength() const;
     const bool IsStronger(const Language &lang) const;
-    const LanguageDifference ChangeStrength(const std::string &place, const int period);
+    const LanguageDifference ChangeStrength(const int &place, const int period);
     const int CountWord() const;
     const int GetNewWordID() const;
     const std::pair<const int, Word> &GetNthWord(const int n) const;
@@ -44,6 +44,6 @@ public:
 
 namespace LanguageUtility
 {
-    bool ApplyDifference(const LanguageDifference &diff, std::map<std::string, Language> &languages, const LanguageFamily *family);
-    bool ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<std::string, Language> &languages, const LanguageFamily *family);
+    bool ApplyDifference(const LanguageDifference &diff, std::map<int, Language> &languages, const LanguageFamily *family);
+    bool ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<int, Language> &languages, const LanguageFamily *family);
 }

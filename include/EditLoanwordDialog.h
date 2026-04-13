@@ -33,10 +33,10 @@ private:
     std::shared_ptr<LanguageFamily> Languages_;
     std::optional<TableData> LanguageNames_;
     std::optional<Language> TargetLanguage_;
-    std::string TargetPlace_;
+    int TargetPlace_;
     int TargetPeriod_;
     std::optional<Language> ReferenceLanguage_;
-    std::string ReferencePlace_;
+    int ReferencePlace_;
     int ReferencePeriod_;
     int SelectedWordID_;
     int TargetWordID_;

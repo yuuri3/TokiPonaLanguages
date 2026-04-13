@@ -139,7 +139,7 @@ void EditLoanwordDialog::SelectLanguage()
     layoutData_.SetText(LANGUAGE_ID, LanguageNames_->Body.at(period).at(place));
 
     // 内部状態の更新（EditPhonologicalChangeDialog の実装を参考）
-    TargetPlace_ = LanguageNames_->Header.at(place);
+    TargetPlace_ = place;
     TargetPeriod_ = period;
     TargetLanguage_ = Languages_->CalculateLanguage(TargetPlace_, TargetPeriod_);
 
@@ -182,7 +182,7 @@ void EditLoanwordDialog::SelectReferenceLanguage()
     layoutData_.SetText(REFERENCE_LANGUAGE_ID, LanguageNames_->Body.at(period).at(place));
 
     // 後続の借用処理のため、内部状態の更新を推奨
-    ReferencePlace_ = LanguageNames_->Header.at(place);
+    ReferencePlace_ = place;
     ReferencePeriod_ = period;
     ReferenceLanguage_ = Languages_->CalculateLanguage(ReferencePlace_, ReferencePeriod_);
 

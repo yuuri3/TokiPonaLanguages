@@ -386,7 +386,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     {
         return;
     }
-    const std::string place = LanguageNames_->Header.at(column);
+    const int place = column;
     const int period = row;
 
     QMenu menu(this);
@@ -514,7 +514,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
  * @param place 地域
  * @param period 時代
  */
-void MainWindow::EditLanguage(const std::string place, const int period)
+void MainWindow::EditLanguage(const int place, const int period)
 {
     if (!Languages_->Empty())
     {
@@ -569,7 +569,7 @@ void MainWindow::ShowQtLicense()
  * @param place 地域
  * @param period 時代
  */
-void MainWindow::EditPeriod(const std::string place, const int period)
+void MainWindow::EditPeriod(const int place, const int period)
 {
     EditPeriodDialog subWindow(this);
     subWindow.SetLanguages(Languages_);
@@ -587,7 +587,7 @@ void MainWindow::EditPeriod(const std::string place, const int period)
  * @param place 地域
  * @param period 時代
  */
-void MainWindow::EditGeometry(const std::string place, const int period)
+void MainWindow::EditGeometry(const int place, const int period)
 {
     EditGeometryDialog subWindow(this);
     subWindow.SetLanguages(Languages_);

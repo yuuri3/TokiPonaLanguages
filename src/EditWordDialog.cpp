@@ -92,7 +92,7 @@ void EditWordDialog::Unimplemented()
  */
 void EditWordDialog::Set(std::shared_ptr<LanguageFamily> languages,
                          std::shared_ptr<Language> language,
-                         const std::string &place,
+                         const int place,
                          const int period,
                          const int wordID)
 {

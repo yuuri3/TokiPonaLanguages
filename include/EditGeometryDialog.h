@@ -15,7 +15,7 @@ public:
     EditGeometryDialog(QWidget *parent = nullptr);
     ~EditGeometryDialog() = default;
     void SetLanguages(std::shared_ptr<LanguageFamily> languages);
-    void SetPlace(const std::string &place);
+    void SetPlace(const int place);
     void SetPeriod(const int period);
     void accept() override;
 
@@ -27,7 +27,7 @@ private slots:
 
 private:
     std::shared_ptr<LanguageFamily> Languages_;
-    std::string Place_;
+    int Place_;
     int Period_;
 
     DialogLayout Layout_;

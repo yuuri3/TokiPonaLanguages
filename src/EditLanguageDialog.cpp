@@ -56,7 +56,7 @@ void EditLanguageDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
  *
  * @param place
  */
-void EditLanguageDialog::SetPlace(const std::string &place)
+void EditLanguageDialog::SetPlace(const int place)
 {
     Place_ = place;
     UpdateTable();

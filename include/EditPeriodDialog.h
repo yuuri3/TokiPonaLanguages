@@ -15,7 +15,7 @@ public:
     EditPeriodDialog(QWidget *parent = nullptr);
     ~EditPeriodDialog() = default;
     void SetLanguages(std::shared_ptr<LanguageFamily> languages);
-    void SetPlace(const std::string &place);
+    void SetPlace(const int place);
     void SetPeriod(const int period);
     void accept() override;
 
@@ -26,7 +26,7 @@ private slots:
 
 private:
     std::shared_ptr<LanguageFamily> Languages_;
-    std::optional<std::string> Place_;
+    std::optional<int> Place_;
     std::optional<int> Period_;
 
     DialogLayout Layout_;

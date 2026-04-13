@@ -174,7 +174,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         {
             break;
         }
-        const auto part = dif.StringParam(1);
+        const auto part = dif.StringParam(0);
         if (!part)
         {
             break;
@@ -199,7 +199,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         {
             break;
         }
-        const auto translation = dif.StringParam(1);
+        const auto translation = dif.StringParam(0);
         if (!translation)
         {
             break;
@@ -254,7 +254,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         {
             break;
         }
-        const auto tag = dif.StringParam(1);
+        const auto tag = dif.StringParam(0);
         if (!tag)
         {
             break;
@@ -289,12 +289,12 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         {
             break;
         }
-        const auto title = dif.StringParam(1);
+        const auto title = dif.StringParam(0);
         if (!title)
         {
             break;
         }
-        const auto content = dif.StringParam(2);
+        const auto content = dif.StringParam(1);
         if (!content)
         {
             break;
@@ -329,7 +329,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         {
             break;
         }
-        const auto title = dif.StringParam(1);
+        const auto title = dif.StringParam(0);
         if (!title)
         {
             break;
@@ -358,7 +358,7 @@ void Language::ApplyDifference(const LanguageDifference &dif)
         const auto wordID = dif.IntParam(0);
         const auto relationID = dif.IntParam(1);
         const auto targetWordID = dif.IntParam(2);
-        const auto title = dif.StringParam(1); // 0はplace
+        const auto title = dif.StringParam(0); // 0はplace
 
         if (!wordID || !relationID || !targetWordID || !title)
         {
@@ -472,7 +472,7 @@ const bool Language::IsStronger(const Language &lang) const
  * @param period 時代
  * @return LanguageDifference
  */
-const LanguageDifference Language::ChangeStrength(const std::string &place, const int period)
+const LanguageDifference Language::ChangeStrength(const int &place, const int period)
 {
     Strength_ = Strength_ * 0.9 + getRandomDouble(-1.0, 1.0) * 0.1;
     return LanguageDifference::CreateChangeStrength(place, period, Strength_);
@@ -545,7 +545,7 @@ const bool Language::Empty() const
  *
  * @return 成否
  */
-bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<std::string, Language> &languages, const LanguageFamily *family)
+bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<int, Language> &languages, const LanguageFamily *family)
 {
     // const auto places = getNonEmptyStrings(LanguageFamily_.GetGeography());
 
@@ -553,16 +553,13 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
     {
     case LanguageDifferenceType::Loanword:
     {
-        const auto referenceGeometry = diff.StringParam(0);
+        const auto referenceGeometry = diff.IntParam(0);
         if (!referenceGeometry)
         {
             return false;
         }
-        const auto targetGeometry = diff.StringParam(1);
-        if (!targetGeometry)
-        {
-            return false;
-        }
+        const auto targetGeometry = diff.GetPlace();
+
         const auto referenceWordID = diff.IntParam(0);
         if (!referenceWordID)
         {
@@ -577,22 +574,19 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
         if (languages.count(*referenceGeometry) == 1)
         {
             const auto referenceLanguage = languages.at(*referenceGeometry);
-            languages.at(*targetGeometry).LoanWord(diff, referenceLanguage);
+            languages.at(targetGeometry).LoanWord(diff, referenceLanguage);
         }
         break;
     }
     default:
     {
-        const auto geometry = diff.StringParam(0);
-        if (!geometry)
+        const auto geometry = diff.GetPlace();
+
+        if (languages.count(geometry) == 0)
         {
-            return false;
+            languages.emplace(geometry, family);
         }
-        if (languages.count(*geometry) == 0)
-        {
-            languages.emplace(*geometry, family);
-        }
-        languages.at(*geometry).ApplyDifference(diff);
+        languages.at(geometry).ApplyDifference(diff);
         break;
     }
     }
@@ -606,7 +600,7 @@ bool LanguageUtility::ApplyDifference(const LanguageDifference &diff, std::map<s
  *
  * @return 成否
  */
-bool LanguageUtility::ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<std::string, Language> &languages, const LanguageFamily *family)
+bool LanguageUtility::ApplyDifferences(const std::vector<LanguageDifference> &diffs, std::map<int, Language> &languages, const LanguageFamily *family)
 {
     for (const auto &diff : diffs)
     {

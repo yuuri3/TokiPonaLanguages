@@ -100,7 +100,7 @@ void EditPhonologicalChangeDialog::SetPlaceAndPeriod(const int row, const int co
         return;
     }
 
-    Place_ = LanguageNames_->Header.at(column);
+    Place_ = column;
     Period_ = row;
 
     DisplayPhonologicalChanges(Place_, Period_);
@@ -253,7 +253,7 @@ void EditPhonologicalChangeDialog::DeleteRule()
  * @param place 場所
  * @param period 時代
  */
-void EditPhonologicalChangeDialog::DisplayPhonologicalChanges(const std::string place, const int period)
+void EditPhonologicalChangeDialog::DisplayPhonologicalChanges(const int place, const int period)
 {
 
     if (!Languages_)

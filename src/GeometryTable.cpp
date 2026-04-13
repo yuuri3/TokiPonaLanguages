@@ -157,6 +157,36 @@ TableData GeometryTable::GetData() const
 }
 
 /**
+ * @brief 登録されているすべての場所IDを取得する
+ * * @return std::vector<int>
+ */
+std::vector<int> GeometryTable::GetIDs() const
+{
+    std::vector<int> ids;
+    ids.reserve(PlaceName_.size());
+    for (const auto &[id, name] : PlaceName_)
+    {
+        ids.push_back(id);
+    }
+    return ids;
+}
+
+/**
+ * @brief 指定したIDの場所名を取得する
+ * * @param id 場所ID
+ * * @return std::string
+ */
+std::string GeometryTable::GetPlaceName(const int id) const
+{
+    auto it = PlaceName_.find(id);
+    if (it != PlaceName_.end())
+    {
+        return it->second;
+    }
+    return "";
+}
+
+/**
  * @brief 指定した座標の地名を設定・更新する
  * * @param row 行
  * * @param column 列

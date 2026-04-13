@@ -36,16 +36,16 @@ public:
     void EditPeriod(const std::vector<PeriodDifference> &differences);
 
     const bool Empty() const;
-    std::optional<Language> CalculateLanguage(const std::string place, const int period);
+    std::optional<Language> CalculateLanguage(const int place, const int period);
     const TableData GetLanguageNames() const;
 
-    const std::vector<PhonologicalChange> GetPhonologicalChanges(const std::string place, const int period);
-    const std::vector<std::string> GetPhonologicalChangeStrings(const std::string place, const int period);
-    bool SetPhonologicalChanges(const std::string place, const int period, const std::vector<PhonologicalChange> &phonologicalChange);
-    bool SetPhonologicalChangesFromString(const std::string place, const int period, const std::vector<std::string> &phonologicalChange);
+    const std::vector<PhonologicalChange> GetPhonologicalChanges(const int place, const int period);
+    const std::vector<std::string> GetPhonologicalChangeStrings(const int place, const int period);
+    bool SetPhonologicalChanges(const int place, const int period, const std::vector<PhonologicalChange> &phonologicalChange);
+    bool SetPhonologicalChangesFromString(const int place, const int period, const std::vector<std::string> &phonologicalChange);
 
-    std::vector<std::pair<int, int>> GetLoanwordIDs(const std::string &targetPlace, const std::string &referencePlace, const int period);
-    bool SetLoanwords(const std::string &targetPlace, const std::string &referencePlace, const int period, const std::vector<std::pair<int, int>> &wordIDs);
+    std::vector<std::pair<int, int>> GetLoanwordIDs(const int targetPlace, const int referencePlace, const int period);
+    bool SetLoanwords(const int targetPlace, const int referencePlace, const int period, const std::vector<std::pair<int, int>> &wordIDs);
 
     void Export(const std::string &filename);
     bool Import(const std::string &filename);
