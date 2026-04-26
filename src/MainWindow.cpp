@@ -222,8 +222,7 @@ void MainWindow::EditLoanword()
     }
 
     EditLoanwordDialog subWindow(this);
-    subWindow.SetLanguages(Languages_);
-    subWindow.SetLanguageNames(*LanguageNames_);
+    subWindow.Set(Languages_, *LanguageNames_);
     subWindow.exec();
 
     IsLanguagesSaved_ = false;

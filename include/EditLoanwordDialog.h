@@ -14,8 +14,7 @@ public:
     explicit EditLoanwordDialog(QWidget *parent = nullptr);
     ~EditLoanwordDialog() override = default;
 
-    void SetLanguages(const std::shared_ptr<LanguageFamily> languages);
-    void SetLanguageNames(const TableData &languageNames);
+    void Set(const std::shared_ptr<LanguageFamily> languages, const TableData &languageNames);
 
 private slots:
     void ShowHelp();

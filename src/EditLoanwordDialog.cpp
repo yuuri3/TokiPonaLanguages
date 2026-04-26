@@ -72,13 +72,15 @@ EditLoanwordDialog::EditLoanwordDialog(QWidget *parent)
     resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
-void EditLoanwordDialog::SetLanguages(const std::shared_ptr<LanguageFamily> languages)
+/**
+ * @brief セッタ
+ * 
+ * @param languages 
+ * @param languageNames 
+ */
+void EditLoanwordDialog::Set(const std::shared_ptr<LanguageFamily> languages, const TableData &languageNames)
 {
     Languages_ = languages;
-}
-
-void EditLoanwordDialog::SetLanguageNames(const TableData &languageNames)
-{
     LanguageNames_ = languageNames;
 }
 
