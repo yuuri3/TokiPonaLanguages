@@ -41,34 +41,15 @@ EditLanguageDialog::EditLanguageDialog(QWidget *parent)
 }
 
 /**
- * @brief 語族セッタ
- *
- * @param languages
+ * @brief セッタ
+ * 
+ * @param languages 
+ * @param place 
+ * @param period 
  */
-void EditLanguageDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
-{
+void EditLanguageDialog::Set(std::shared_ptr<LanguageFamily> languages, const int place, const int period){
     Languages_ = languages;
-    UpdateTable();
-}
-
-/**
- * @brief 地理セッタ
- *
- * @param place
- */
-void EditLanguageDialog::SetPlace(const int place)
-{
     Place_ = place;
-    UpdateTable();
-}
-
-/**
- * @brief 時代セッタ
- *
- * @param period
- */
-void EditLanguageDialog::SetPeriod(const int period)
-{
     Period_ = period;
     UpdateTable();
 }

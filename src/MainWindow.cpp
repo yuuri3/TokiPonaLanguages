@@ -519,9 +519,7 @@ void MainWindow::EditLanguage(const int place, const int period)
     if (!Languages_->Empty())
     {
         EditLanguageDialog subWindow(this);
-        subWindow.SetLanguages(Languages_);
-        subWindow.SetPlace(place);
-        subWindow.SetPeriod(period);
+        subWindow.Set(Languages_,place,period);
         subWindow.exec();
 
         IsLanguagesSaved_ = false;

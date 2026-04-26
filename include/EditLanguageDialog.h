@@ -13,9 +13,7 @@ class EditLanguageDialog : public QDialog
 public:
     EditLanguageDialog(QWidget *parent = nullptr);
     ~EditLanguageDialog() = default;
-    void SetLanguages(std::shared_ptr<LanguageFamily> languages);
-    void SetPlace(const int place);
-    void SetPeriod(const int period);
+    void Set(std::shared_ptr<LanguageFamily> languages, const int place, const int period);
 
 private slots:
     void Unimplemented();
