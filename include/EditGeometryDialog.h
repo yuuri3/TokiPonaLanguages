@@ -14,9 +14,7 @@ class EditGeometryDialog : public QDialog
 public:
     EditGeometryDialog(QWidget *parent = nullptr);
     ~EditGeometryDialog() = default;
-    void SetLanguages(std::shared_ptr<LanguageFamily> languages);
-    void SetPlace(const int place);
-    void SetPeriod(const int period);
+    void Set(std::shared_ptr<LanguageFamily> languages);
     void accept() override;
 
 private slots:
@@ -27,8 +25,6 @@ private slots:
 
 private:
     std::shared_ptr<LanguageFamily> Languages_;
-    int Place_;
-    int Period_;
 
     DialogLayout Layout_;
     std::vector<GeometryDifference> GeometryDifferences_;

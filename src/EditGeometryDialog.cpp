@@ -28,39 +28,17 @@ EditGeometryDialog::EditGeometryDialog(QWidget *parent)
 }
 
 /**
- * @brief 語族セッタ
- *
- * @param languages
+ * @brief セッタ
+ * 
+ * @param languages 
  */
-void EditGeometryDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
+void EditGeometryDialog::Set(std::shared_ptr<LanguageFamily> languages)
 {
     Languages_ = languages;
     if (Languages_)
     {
         CurrentGeometryTable_ = Languages_->GetGeometryTable().GetData();
     }
-    UpdateTable();
-}
-
-/**
- * @brief 地理セッタ
- *
- * @param place
- */
-void EditGeometryDialog::SetPlace(const int place)
-{
-    Place_ = place;
-    UpdateTable();
-}
-
-/**
- * @brief 時代セッタ
- *
- * @param period
- */
-void EditGeometryDialog::SetPeriod(const int period)
-{
-    Period_ = period;
     UpdateTable();
 }
 
