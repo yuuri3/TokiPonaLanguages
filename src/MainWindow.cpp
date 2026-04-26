@@ -249,7 +249,7 @@ void MainWindow::EditGeometryFromMenu()
 void MainWindow::EditPeriodFromMenu()
 {
     EditPeriodDialog subWindow(this);
-    subWindow.SetLanguages(Languages_);
+    subWindow.Set(Languages_);
     subWindow.exec();
 
     DisplayLanguageFamily(Languages_);
@@ -569,9 +569,7 @@ void MainWindow::ShowQtLicense()
 void MainWindow::EditPeriod(const int place, const int period)
 {
     EditPeriodDialog subWindow(this);
-    subWindow.SetLanguages(Languages_);
-    subWindow.SetPlace(place);
-    subWindow.SetPeriod(period);
+    subWindow.Set(Languages_);
     subWindow.exec();
 
     DisplayLanguageFamily(Languages_);

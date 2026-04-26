@@ -26,25 +26,18 @@ EditPeriodDialog::EditPeriodDialog(QWidget *parent)
     resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
-void EditPeriodDialog::SetLanguages(std::shared_ptr<LanguageFamily> languages)
+/**
+ * @brief セッタ
+ * 
+ * @param languages 
+ */
+void EditPeriodDialog::Set(std::shared_ptr<LanguageFamily> languages)
 {
     Languages_ = languages;
     if (Languages_)
     {
         CurrentLanguages_ = Languages_->GetLanguageNames();
     }
-    UpdateList();
-}
-
-void EditPeriodDialog::SetPlace(const int place)
-{
-    Place_ = place;
-    UpdateList();
-}
-
-void EditPeriodDialog::SetPeriod(const int period)
-{
-    Period_ = period;
     UpdateList();
 }
 
