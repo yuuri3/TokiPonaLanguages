@@ -14,8 +14,7 @@ public:
     explicit EditPhonologicalChangeDialog(QWidget *parent = nullptr);
     ~EditPhonologicalChangeDialog() override = default;
 
-    void SetLanguages(const std::shared_ptr<LanguageFamily> languages);
-    void SetLanguageNames(const TableData &languageNames);
+    void Set(const std::shared_ptr<LanguageFamily> languages, const TableData &languageNames);
     void SetPlaceAndPeriod(const int row, const int column);
 
 private slots:

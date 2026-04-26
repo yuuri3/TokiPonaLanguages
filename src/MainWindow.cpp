@@ -200,8 +200,7 @@ void MainWindow::EditPhonologicalChange()
         return;
     }
     EditPhonologicalChangeDialog subWindow(this);
-    subWindow.SetLanguages(Languages_);
-    subWindow.SetLanguageNames(*LanguageNames_);
+    subWindow.Set(Languages_, *LanguageNames_);
     subWindow.exec();
     IsLanguagesSaved_ = false;
 }
@@ -534,8 +533,7 @@ void MainWindow::EditLanguage(const int place, const int period)
 void MainWindow::EditPhonologicalChangeWithIndex(const int row, const int column)
 {
     EditPhonologicalChangeDialog subWindow(this);
-    subWindow.SetLanguages(Languages_);
-    subWindow.SetLanguageNames(*LanguageNames_);
+    subWindow.Set(Languages_, *LanguageNames_);
     subWindow.SetPlaceAndPeriod(row, column);
     subWindow.exec();
     IsLanguagesSaved_ = false;

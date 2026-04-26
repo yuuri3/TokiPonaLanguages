@@ -68,38 +68,29 @@ EditPhonologicalChangeDialog::EditPhonologicalChangeDialog(QWidget *parent)
 }
 
 /**
- * @brief 語族をセット
- *
- * @param languages 語族
+ * @brief セッタ
+ * 
+ * @param languages 
+ * @param languageNames 
  */
-void EditPhonologicalChangeDialog::SetLanguages(const std::shared_ptr<LanguageFamily> languages)
+void EditPhonologicalChangeDialog::Set(const std::shared_ptr<LanguageFamily> languages, const TableData &languageNames)
 {
     Languages_ = languages;
-}
-
-/**
- * @brief 言語名をセット
- *
- * @param languageNames 言語名
- */
-void EditPhonologicalChangeDialog::SetLanguageNames(const TableData &languageNames)
-{
     LanguageNames_ = languageNames;
-}
-
-/**
- * @brief 個別言語をセット
- *
- * @param row 行
- * @param column 列
- */
-void EditPhonologicalChangeDialog::SetPlaceAndPeriod(const int row, const int column)
-{
     if (!LanguageNames_ || !Languages_)
     {
         return;
     }
+}
 
+/**
+ * @brief インデックスをセット
+ * 
+ * @param row 
+ * @param column 
+ */
+void EditPhonologicalChangeDialog::SetPlaceAndPeriod(const int row, const int column)
+{
     Place_ = column;
     Period_ = row;
 
