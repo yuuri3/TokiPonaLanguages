@@ -14,8 +14,9 @@ public:
     explicit SelectWordDialog(QWidget *parent = nullptr);
     ~SelectWordDialog() override = default;
 
-    void SetLanguageFamily(std::shared_ptr<LanguageFamily> languageFamily);
-    void SetLanguage(std::shared_ptr<Language> targetLanguage, int *outSelectedWordId);
+    void Set(std::shared_ptr<LanguageFamily> languageFamily,
+        std::shared_ptr<Language> targetLanguage,
+        int *outSelectedWordId);
 
 public slots:
     void ShowHelp();

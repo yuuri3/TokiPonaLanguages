@@ -214,10 +214,9 @@ void EditLoanwordDialog::SelectWord()
 
     // 単語選択ダイアログの生成と設定
     SelectWordDialog subWindow(this);
-    subWindow.SetLanguageFamily(Languages_);
 
     SelectedWordID_ = -1;
-    subWindow.SetLanguage(std::make_shared<Language>(ReferenceLanguage_.value()), &SelectedWordID_);
+    subWindow.Set(Languages_, std::make_shared<Language>(ReferenceLanguage_.value()), &SelectedWordID_);
     subWindow.exec();
 
     // 単語が選択された場合の処理

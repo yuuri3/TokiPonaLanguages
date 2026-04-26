@@ -48,23 +48,17 @@ SelectWordDialog::SelectWordDialog(QWidget *parent)
 }
 
 /**
- * @brief 語族のセッタ
- *
- * @param languageFamily 対象の語族
+ * @brief セッタ
+ * 
+ * @param languageFamily 
+ * @param targetLanguage 
+ * @param outSelectedWordId 
  */
-void SelectWordDialog::SetLanguageFamily(std::shared_ptr<LanguageFamily> languageFamily)
+void SelectWordDialog::Set(std::shared_ptr<LanguageFamily> languageFamily,
+    std::shared_ptr<Language> targetLanguage,
+    int *outSelectedWordId)
 {
     LanguageFamily_ = languageFamily;
-}
-
-/**
- * @brief 言語・出力先ポインタのセッタ
- *
- * @param targetLanguage 対象の言語
- * @param outSelectedWordId 選択された単語IDを格納するポインタ
- */
-void SelectWordDialog::SetLanguage(std::shared_ptr<Language> targetLanguage, int *outSelectedWordId)
-{
     Language_ = targetLanguage;
     SelectedWordId_ = outSelectedWordId;
 
