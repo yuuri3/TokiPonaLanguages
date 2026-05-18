@@ -78,6 +78,8 @@ const PhonemeTable &LanguageFamily::GetPhonemeTable() const
  */
 void LanguageFamily::AddDifference(const LanguageDifference &languageDifference)
 {
+    PeriodCount_ = std::max(PeriodCount_, languageDifference.GetPeriod());
+
     languageDifference_.emplace_back(languageDifference);
 }
 
@@ -213,6 +215,8 @@ void LanguageFamily::DeleteGeomgraphicColumn(const int column)
  */
 void LanguageFamily::AddPeriodAbove(const int period)
 {
+    PeriodCount_++;
+
     for (auto &diff : languageDifference_)
     {
         if (diff.GetPeriod() >= period)
@@ -229,6 +233,8 @@ void LanguageFamily::AddPeriodAbove(const int period)
  */
 void LanguageFamily::AddPeriodBelow(const int period)
 {
+    PeriodCount_++;
+
     for (auto &diff : languageDifference_)
     {
         if (diff.GetPeriod() > period)
@@ -245,6 +251,13 @@ void LanguageFamily::AddPeriodBelow(const int period)
  */
 void LanguageFamily::RemovePeriod(const int period)
 {
+    if (PeriodCount_ <= 1)
+    {
+        return;
+    }
+
+    PeriodCount_--;
+
     languageDifference_.erase(
         std::remove_if(languageDifference_.begin(), languageDifference_.end(),
                        [&](const LanguageDifference &diff)
@@ -627,7 +640,6 @@ const TableData LanguageFamily::GetLanguageNames() const
     int currentPeriod = 0;
     TableData result;
     std::vector<std::string> line;
-    int period = 0;
     std::map<int, Language> languages;
 
     for (const auto placeID : Geography_.GetIDs())
@@ -638,24 +650,31 @@ const TableData LanguageFamily::GetLanguageNames() const
     result.Header = line;
     line.clear();
 
+    auto appendCurrentLanguageNames = [&]()
+    {
+        int placeID = 0;
+        for (const auto &placeName : getNonEmptyStrings(Geography_.GetData().Body))
+        {
+            if (languages.count(placeID) == 0 || languages.find(placeID) == languages.end() || languages.at(placeID).Empty())
+            {
+                line.emplace_back("");
+            }
+            else
+            {
+                line.emplace_back(PhonemeTable_.ConvertToString(languages.at(placeID).GetWord(0)->GetForm()));
+            }
+            placeID++;
+        }
+        result.Body.emplace_back(line);
+        line.clear();
+    };
+
     for (const auto &diff : languageDifference_)
     {
         while (diff.GetPeriod() > currentPeriod)
         {
             currentPeriod++;
-            for (const auto placeID : Geography_.GetIDs())
-            {
-                if (languages.count(placeID) == 0 || languages.find(placeID) == languages.end() || languages.at(placeID).Empty())
-                {
-                    line.emplace_back("");
-                }
-                else
-                {
-                    line.emplace_back(PhonemeTable_.ConvertToString(languages.at(placeID).GetWord(0)->GetForm()));
-                }
-            }
-            result.Body.emplace_back(line);
-            line.clear();
+            appendCurrentLanguageNames();
         }
         if (!LanguageUtility::ApplyDifference(diff, languages, this))
         {
@@ -663,21 +682,12 @@ const TableData LanguageFamily::GetLanguageNames() const
         }
     }
 
-    int placeID = 0;
-    for (const auto &placeName : getNonEmptyStrings(Geography_.GetData().Body))
+    appendCurrentLanguageNames();
+
+    while (static_cast<int>(result.Body.size()) <= PeriodCount_)
     {
-        if (languages.count(placeID) == 0 || languages.find(placeID) == languages.end() || languages.at(placeID).Empty())
-        {
-            line.emplace_back("");
-        }
-        else
-        {
-            line.emplace_back(PhonemeTable_.ConvertToString(languages.at(placeID).GetWord(0)->GetForm()));
-        }
-        placeID++;
+        appendCurrentLanguageNames();
     }
-    result.Body.emplace_back(line);
-    line.clear();
 
     return result;
 }
@@ -697,6 +707,10 @@ void LanguageFamily::Export(const std::string &filename)
     // 2. Map (地理情報)
     file << JoinStringAndInt(SECTION_NAME_GEOGRAPHY, 0) << "\n";
     Geography_.Export(file);
+
+    // 時間軸情報
+    file << JoinStringAndInt(SECTION_NAME_PERIOD, 0) << "\n";
+    file << PeriodCount_ << "\n";
 
     // 3. PhonemeTable (音韻マスタデータ)
     // 旧 PhoneticsMap セクションは、詳細なマスタデータ構造へ置き換え
@@ -738,6 +752,11 @@ bool LanguageFamily::Import(const std::string &filename)
                 {
                     return false;
                 }
+            }
+            if (ParseStringAndInt(line, SECTION_NAME_PERIOD, count))
+            {
+                std::getline(file, line);
+                PeriodCount_ = std::stoi(line);
             }
             else if (ParseStringAndInt(line, SECTION_NAME_PHONEMETABLE, count))
             {

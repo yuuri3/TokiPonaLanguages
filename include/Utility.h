@@ -10,6 +10,7 @@ static const std::string APPLICATION_VERSION = "0.5.0";
 static const std::string SECTION_NAME_GEOGRAPHY = "GEO";
 static const std::string SECTION_NAME_GEOGRAPHY_PLACE_NAME = "PLN";
 static const std::string SECTION_NAME_GEOGRAPHY_GRIDMAP = "GGM";
+static const std::string SECTION_NAME_PERIOD = "PER";
 static const std::string SECTION_NAME_PHONEMETABLE = "PHT";
 static const std::string SECTION_NAME_PHONEMETABLE_FEATURE = "FET";
 static const std::string SECTION_NAME_PHONEMETABLE_PLACE = "PLC";

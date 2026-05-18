@@ -23,6 +23,8 @@ private:
     PhonemeTable PhonemeTable_;
     // 差分
     std::vector<LanguageDifference> languageDifference_;
+    // 時代数
+    int PeriodCount_ = 0;
 
 public:
     static std::vector<std::vector<std::string>> RomanAlphabetTable;
