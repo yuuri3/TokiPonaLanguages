@@ -15,6 +15,7 @@ public:
     ~EditLoanwordDialog() override = default;
 
     void Set(const std::shared_ptr<LanguageFamily> languages, const TableData &languageNames);
+    void SetPlaceAndPeriod(const int row, const int column);
 
 private slots:
     void ShowHelp();

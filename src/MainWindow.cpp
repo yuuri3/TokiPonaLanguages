@@ -398,6 +398,11 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     {
         editPhonologicalChange->setEnabled(false);
     }
+    QAction *editLoanword = menu.addAction("借用");
+    if (LanguageNames_->Body.at(period).at(column).empty())
+    {
+        editLoanword->setEnabled(false);
+    }
     QAction *editPeriod = menu.addAction("時間軸編集");
     QAction *editGeography = menu.addAction("地理編集");
 
@@ -411,6 +416,10 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
     else if (selectedAction == editPhonologicalChange)
     {
         EditPhonologicalChangeWithIndex(row, column);
+    }
+    else if (selectedAction == editLoanword)
+    {
+        EditLoanword();
     }
     else if (selectedAction == editPeriod)
     {
@@ -533,6 +542,21 @@ void MainWindow::EditLanguage(const int place, const int period)
 void MainWindow::EditPhonologicalChangeWithIndex(const int row, const int column)
 {
     EditPhonologicalChangeDialog subWindow(this);
+    subWindow.Set(Languages_, *LanguageNames_);
+    subWindow.SetPlaceAndPeriod(row, column);
+    subWindow.exec();
+    IsLanguagesSaved_ = false;
+}
+
+/**
+ * @brief 借用ダイアログを開く
+ * 
+ * @param row 行
+ * @param column 列
+ */
+void MainWindow::EditLoanwordWithIndex(const int row, const int column)
+{
+    EditLoanwordDialog subWindow(this);
     subWindow.Set(Languages_, *LanguageNames_);
     subWindow.SetPlaceAndPeriod(row, column);
     subWindow.exec();

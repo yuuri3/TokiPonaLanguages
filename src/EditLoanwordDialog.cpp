@@ -85,6 +85,58 @@ void EditLoanwordDialog::Set(const std::shared_ptr<LanguageFamily> languages, co
 }
 
 /**
+ * @brief 借用先言語のインデックスをセット
+ *
+ * @param row 時代
+ * @param column 地域
+ */
+void EditLoanwordDialog::SetPlaceAndPeriod(const int row, const int column)
+{
+    if (!LanguageNames_ || !Languages_)
+    {
+        return;
+    }
+
+    if (row < 1 || column < 0)
+    {
+        return;
+    }
+
+    if (row >= LanguageNames_->Body.size())
+    {
+        return;
+    }
+
+    if (column >= LanguageNames_->Body.at(row).size())
+    {
+        return;
+    }
+
+    if (LanguageNames_->Body.at(row).at(column).empty())
+    {
+        return;
+    }
+
+    TargetPlace_ = column;
+    TargetPeriod_ = row;
+    TargetLanguage_ = Languages_->CalculateLanguage(TargetPlace_, TargetPeriod_);
+
+    if (TargetLanguage_)
+    {
+        TargetWordID_ = TargetLanguage_->GetNewWordID();
+    }
+
+    layoutData_.SetText(LANGUAGE_ID, LanguageNames_->Body.at(row).at(column));
+
+    if (TargetLanguage_ && ReferenceLanguage_)
+    {
+        LoanwordIDs_ = Languages_->GetLoanwordIDs(TargetPlace_, ReferencePlace_, TargetPeriod_);
+    }
+
+    DisplayLoanword();
+}
+
+/**
  * @brief ヘルプ表示
  *
  */

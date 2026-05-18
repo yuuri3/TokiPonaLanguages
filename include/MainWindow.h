@@ -57,6 +57,7 @@ private:
     bool WarningUnsaveFile();
     void EditLanguage(const int place, const int period);
     void EditPhonologicalChangeWithIndex(const int row, const int column);
+    void EditLoanwordWithIndex(const int row, const int column);
     void EditPeriod(const int place, const int period);
     void EditGeometry(const int place, const int period);
 
